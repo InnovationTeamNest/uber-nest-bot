@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
-import json
 
-import telegram
+import json
 import webapp2
 import actions
-
-
-from telegram.ext import Dispatcher, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
-
 import inline
+from lib import telegram
+
+from lib.telegram.ext import Dispatcher, CommandHandler, CallbackQueryHandler
 from secrets import bot_token, url
 
 ccn_bot = telegram.Bot(bot_token)
