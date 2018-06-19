@@ -1,1 +1,2 @@
-24 SCHILY.fflags=extent
+var = 24
+extent.fflags=extent

@@ -19,9 +19,9 @@
 # along with this program.  If not, see [http://www.gnu.org/licenses/].
 """This module contains an object that represents a Telegram User."""
 
-from telegram import TelegramObject
-from telegram.utils.helpers import mention_markdown as util_mention_markdown
-from telegram.utils.helpers import mention_html as util_mention_html
+from lib.telegram import TelegramObject
+from lib.telegram.utils.helpers import mention_markdown as util_mention_markdown
+from lib.telegram.utils.helpers import mention_html as util_mention_html
 
 
 class User(TelegramObject):
