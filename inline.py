@@ -2,8 +2,8 @@
 
 from lib.telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
 
+import actions
 import secrets
-from actions import get_partenza
 
 
 def inline_handler(bot, update):  # TODO Expand inline functionality
@@ -39,10 +39,10 @@ def inline_handler(bot, update):  # TODO Expand inline functionality
 def persone_keyboard():
     keyboard = []
     for i in secrets.groups_morning:
-        keyboard.append([InlineKeyboardButton(secrets.users[i] + " - " + get_partenza(i, "Salita"),
+        keyboard.append([InlineKeyboardButton(secrets.users[i] + " - " + actions.get_partenza(i, "Salita"),
                                               callback_data=create_callback_data(i, "Salita"))])
     for i in secrets.groups_evening:
-        keyboard.append([InlineKeyboardButton(secrets.users[i] + " - " + get_partenza(i, "Discesa"),
+        keyboard.append([InlineKeyboardButton(secrets.users[i] + " - " + actions.get_partenza(i, "Discesa"),
                                               callback_data=create_callback_data(i, "Discesa"))])
     return InlineKeyboardMarkup(keyboard)
 

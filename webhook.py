@@ -4,9 +4,9 @@ import json
 import webapp2
 import actions
 import inline
-from lib import telegram
+import telegram
 
-from lib.telegram.ext import Dispatcher, CommandHandler, CallbackQueryHandler
+from telegram.ext import Dispatcher, CommandHandler, CallbackQueryHandler
 from secrets import bot_token, url
 
 ccn_bot = telegram.Bot(bot_token)

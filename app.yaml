@@ -13,3 +13,9 @@ handlers:
 libraries:
 - name: webapp2
   version: "2.5.2"
+- name: setuptools
+  version: "0.6c11"
+- name: lxml
+  version: "2.3"
+- name: ssl
+  version: "2.7.11"
