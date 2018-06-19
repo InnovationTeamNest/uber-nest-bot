@@ -1,2 +1,1 @@
-var = 24
-extent.fflags=extent
+24 SCHILY.fflags=extent

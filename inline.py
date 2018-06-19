@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from lib.telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
 
 import actions
 import secrets
