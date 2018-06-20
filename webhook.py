@@ -5,18 +5,18 @@ import webapp2
 import actions
 import inline
 import telegram
+import dumpable
 
 from telegram.ext import Dispatcher, CommandHandler, MessageHandler, CallbackQueryHandler, Filters
-
 from secrets import bot_token, url
 
-ccn_bot = telegram.Bot(bot_token)
+un_bot = telegram.Bot(bot_token)
 
 
 class WebHookHandler(webapp2.RequestHandler):
     def get(self):
         dispatcher_setup()  # Ogni volta che si carica una nuova versione, bisogna rifare il setup del bot!
-        res = ccn_bot.setWebhook(url + bot_token)
+        res = un_bot.setWebhook(url + bot_token)
         if res:
             self.response.write("Webhook set!")
         else:
@@ -25,12 +25,19 @@ class WebHookHandler(webapp2.RequestHandler):
 
 class UpdateHandler(webapp2.RequestHandler):
     def post(self):  # Gli update vengono forniti da telegram in Json e vanno interpretati
-        webhook(telegram.Update.de_json(json.loads(self.request.body), ccn_bot))
+        webhook(telegram.Update.de_json(json.loads(self.request.body), un_bot))
+        dumpable.dump_data()
 
 
 def dispatcher_setup():
     global dispatcher
-    dispatcher = Dispatcher(bot=ccn_bot, update_queue=None, workers=0)
+    dispatcher = Dispatcher(bot=un_bot, update_queue=None, workers=0)
+
+    # Inizio prendendo i dati dal Datastore, altrimenti ce li salvo
+    if dumpable.empty_datastore():
+        dumpable.dump_data()
+    else:
+        dumpable.get_data()
 
     dispatcher.add_handler(CommandHandler("start", actions.start))
     dispatcher.add_handler(CommandHandler("help", actions.help))

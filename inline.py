@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
+import secrets
 
 from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
-
-import actions
-import secrets
+from dumpable import get_data, dump_data
 
 
 def inline_handler(bot, update):  # TODO Expand inline functionality
     person, direction = separate_callback_data(update.callback_query.data)
-    person = int(person)
+    person = str(person).decode('utf-8')
 
-    bot.send_chat_action(chat_id=update.callback_query.from_user.id, action=ChatAction.TYPING)
+    bot.send_chat_action(chat_id=update.callback_query.from_user.id,
+                         action=ChatAction.TYPING)
     update.callback_query.message.delete()
 
     if direction == "Salita":
@@ -21,13 +21,13 @@ def inline_handler(bot, update):  # TODO Expand inline functionality
         groups = None
 
     if len(groups[person]) < 4:
-        if update.callback_query.from_user.id == person:
+        if str(update.callback_query.from_user.id).decode('utf-8') == person:
             bot.send_message(chat_id=update.callback_query.from_user.id,
                              text="Sei tu l'autista!")
-        elif update.callback_query.from_user.id not in groups[person]:
+        elif str(update.callback_query.from_user.id).decode('utf-8') not in groups[person]:
             bot.send_message(chat_id=update.callback_query.from_user.id,
                              text="Prenotato con " + secrets.users[person] + " con successo")
-            groups[person].append(update.callback_query.from_user.id)
+            groups[person].append(str(update.callback_query.from_user.id).decode('utf-8'))
         else:
             bot.send_message(chat_id=update.callback_query.from_user.id,
                              text="Ti sei già prenotato con questa persona!")
@@ -39,12 +39,21 @@ def inline_handler(bot, update):  # TODO Expand inline functionality
 def persone_keyboard():
     keyboard = []
     for i in secrets.groups_morning:
-        keyboard.append([InlineKeyboardButton(secrets.users[i] + " - " + actions.get_partenza(i, "Salita"),
+        keyboard.append([InlineKeyboardButton(secrets.users[i] + " - " + get_partenza(i, "Salita"),
                                               callback_data=create_callback_data(i, "Salita"))])
     for i in secrets.groups_evening:
-        keyboard.append([InlineKeyboardButton(secrets.users[i] + " - " + actions.get_partenza(i, "Discesa"),
+        keyboard.append([InlineKeyboardButton(secrets.users[i] + " - " + get_partenza(i, "Discesa"),
                                               callback_data=create_callback_data(i, "Discesa"))])
     return InlineKeyboardMarkup(keyboard)
+
+
+def get_partenza(person, time):
+    if time == "Salita":
+        return str(secrets.times_morning[person].encode('utf-8') + " per Povo")
+    elif time == "Discesa":
+        return str(secrets.times_evening[person].encode('utf-8') + " per NEST")
+    else:
+        return None
 
 
 def create_callback_data(person, direction):
