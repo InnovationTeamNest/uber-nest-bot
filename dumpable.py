@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-import datetime
-
 import secrets
 import google.appengine.ext.ndb as ndb
 import logging as log
@@ -25,12 +23,12 @@ def dump_data():
         list_of_keys = Dumpable.query().fetch(keys_only=True)
         for i in list_of_keys:
             i.delete()
-        log.critical("Error: duplicate data")
+        log.info("Error: duplicate data")
     LastKey.key = Dumpable(groups_morning=secrets.groups_morning,
-             groups_evening=secrets.groups_evening,
-             times_morning = secrets.times_morning,
-             times_evening = secrets.times_evening,
-             users = secrets.users).put()
+                           groups_evening=secrets.groups_evening,
+                           times_morning=secrets.times_morning,
+                           times_evening=secrets.times_evening,
+                           users=secrets.users).put()
 
 
 def get_data():
