@@ -1,0 +1,4 @@
+cron:
+- description: set up the webhook to prevent failures
+  url: /set_webhook
+  schedule: every 5 hours

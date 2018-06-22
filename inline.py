@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
-import datetime
 
 import secrets
 
 from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
 
+from common import next_day
 
-def inline_handler(bot, update):  # TODO Expand inline functionality
+
+def inline_handler(bot, update):
     person, direction = separate_callback_data(update.callback_query.data)
     person = str(person).decode('utf-8')
 
@@ -22,7 +23,7 @@ def inline_handler(bot, update):  # TODO Expand inline functionality
         else:
             groups = None
     except KeyError as ex:
-        pass
+        groups = None
 
     if len(groups[person]) < 4:
         if str(update.callback_query.from_user.id).decode('utf-8') == person:
@@ -71,21 +72,3 @@ def create_callback_data(person, direction):
 def separate_callback_data(data):
     """ Separate the callback data"""
     return data.split(";")
-
-
-def next_day():
-    date = (datetime.datetime.today().weekday() + 1) % 7
-    if date == 0:
-        return u"Lunedi"
-    elif date == 1:
-        return u'Martedi'
-    elif date == 2:
-        return u"Mercoledi"
-    elif date == 3:
-        return u"Giovedi"
-    elif date == 4:
-        return u"Venerdi"
-    elif date == 5:
-        return u"Sabato"
-    elif date == 6:
-        return u"Domenica"
