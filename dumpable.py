@@ -10,6 +10,7 @@ class Dumpable(ndb.Model):
     times_morning = ndb.JsonProperty()
     times_evening = ndb.JsonProperty()
     users = ndb.JsonProperty()
+    drivers = ndb.JsonProperty()
 
 
 class LastKey():
@@ -28,7 +29,8 @@ def dump_data():
                            groups_evening=secrets.groups_evening,
                            times_morning=secrets.times_morning,
                            times_evening=secrets.times_evening,
-                           users=secrets.users).put()
+                           users=secrets.users,
+                           drivers=secrets.drivers).put()
 
 
 def get_data():
@@ -39,6 +41,7 @@ def get_data():
         secrets.times_morning = data.times_morning
         secrets.times_evening = data.times_evening
         secrets.users = data.users
+        secrets.drivers = data.drivers
 
 
 def empty_datastore():

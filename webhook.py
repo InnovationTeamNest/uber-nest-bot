@@ -3,6 +3,8 @@
 import json
 import webapp2
 import actions
+import actions_booking
+import actions_me
 import inline
 import telegram
 import dumpable
@@ -41,9 +43,13 @@ def dispatcher_setup():
 
     dispatcher.add_handler(CommandHandler("start", actions.start))
     dispatcher.add_handler(CommandHandler("help", actions.help))
-    dispatcher.add_handler(CommandHandler("status", actions.status))
-    dispatcher.add_handler(CommandHandler("prenota", actions.prenota))
+    dispatcher.add_handler(CommandHandler("oggi", actions.oggi))
+    dispatcher.add_handler(CommandHandler("domani", actions.domani))
+    dispatcher.add_handler(CommandHandler("settimana", actions.settimana))
+    dispatcher.add_handler(CommandHandler("prenota", actions_booking.prenota))
     dispatcher.add_handler(CommandHandler("registra", actions.registra))
+
+    dispatcher.add_handler(CommandHandler("me", actions_me.me))
 
     dispatcher.add_handler(MessageHandler(Filters.text & Filters.private, actions.text_filter))
     dispatcher.add_handler(CallbackQueryHandler(inline.inline_handler))

@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import datetime
-
-import common
 import secrets
-from inline import persone_keyboard
-from common import next_day
+from actions_booking import fetch_bookings
 
 
 # TODO: Aggiungere tutti i try-catch
@@ -27,6 +23,8 @@ def text_filter(bot, update):
                          text="Digita /help per avere informazioni sui comandi.")
     elif ReplyStatus.response_mode == 1:
         response_registra(bot, update)
+    elif ReplyStatus.response_mode == 2:
+        response_me(bot, update)
 
 
 def start(bot, update):
@@ -38,53 +36,31 @@ def start(bot, update):
 def help(bot, update):
     bot.send_message(chat_id=update.message.chat_id,
                      text="Comandi disponibili:")
+
+    text = "/oggi - Visualizza le prenotazioni per oggi.\n" \
+           + "/domani - Visualizza le prenotazioni per domani.\n" \
+           + "/settimana - Visualizza le prenotazioni per la settimana.\n\n" \
+           + "/prenota - Effettua una prenotazione.\n" \
+           + "/registra - Aggiungi il tuo nome al database."
+
+    if str(update.message.chat_id).decode('utf-8') in secrets.users:
+        text += "\n\n/me - Gestisci il tuo profilo autista."
+
     bot.send_message(chat_id=update.message.chat_id,
-                     text="/status - Visualizza le prenotazioni correnti.\n"
-                          "/prenota - Effettua una prenotazione.\n"
-                          "/registra - Aggiungi il tuo nome al database.")
+                     text=text)
 
 
-def status(bot, update):
-    if common.is_tomorrow_weekday():
-        bot.send_message(chat_id=update.message.chat_id,
-                         text="Lista delle prenotazioni per domani " + common.next_day() + ": ")
-
-        groups = secrets.groups_morning[next_day()]
-        if len(groups) > 0:
-            message = "Persone in salita: \n\n"
-            for i in groups:
-                people = []
-                for k in groups[i]:
-                    people.append(secrets.users[k])
-                bot.send_message(chat_id=update.message.chat_id,
-                                 text=message + secrets.users[i] + ":\n" + ", ".join(people))
-
-        groups = secrets.groups_evening[next_day()]
-        if len(groups) > 0:
-            message = "Persone in discesa: \n\n"
-            for i in groups:
-                people = []
-                for k in groups[i]:
-                    people.append(secrets.users[k])
-                bot.send_message(chat_id=update.message.chat_id,
-                                 text=message + secrets.users[i] + ":\n" + ", ".join(people))
-
-    else:
-        bot.send_message(chat_id=update.message.chat_id,
-                         text="Domani (" + common.next_day() + ") UberNEST non sarà attivo.")
+def oggi(bot, update):
+    fetch_bookings(bot, update, "Oggi")
 
 
-def prenota(bot, update):
-    time = (datetime.datetime.now() + datetime.timedelta(hours=1+common.is_dst())).time()
-    if datetime.time(6, 0) <= time <= datetime.time(20, 0) and common.is_tomorrow_weekday():
-        bot.send_message(chat_id=update.message.chat_id,
-                         text="Scegli una persona:",
-                         reply_markup=persone_keyboard())
-    else:
-        bot.send_message(chat_id=update.message.chat_id,
-                         text="Mi dispiace, è possibile effettuare prenotazioni"
-                              " tramite il bot solo dalle 6:00 alle 20:00 del giorno"
-                              " prima. Inoltre, UberNEST è attivo dal Lunedì al Venerdì.")
+def domani(bot, update):
+    fetch_bookings(bot, update, "Domani")
+
+
+def settimana(bot, update):
+    bot.send_message(chat_id=update.message.chat_id,
+                     text="Feature non ancora implementata.")
 
 
 def registra(bot, update):
@@ -97,7 +73,7 @@ def registra(bot, update):
                               "al gruppo UberNEST, e di aver letto ed accettato "
                               "il regolamento in tutti i suoi punti. Per ulteriori"
                               " informazioni, contatta un membro del direttivo di "
-                              "UberNEST (Filippo Spaggiari, Paolo Teta).")  # TODO Expand
+                              "UberNEST (Filippo Spaggiari, Paolo Teta).")
         bot.send_message(chat_id=update.message.chat_id,
                          text="Inserire nome e cognome, che verranno mostrati"
                               " sia agli autisti sia ai passeggeri. Ogni violazione di"
@@ -111,8 +87,7 @@ def response_registra(bot, update):
     secrets.users[str(update.message.chat_id)] = str(user)
     bot.send_message(chat_id=update.message.chat_id,
                      text="Il tuo username è stato aggiunto con successo"
-                          " al Database. Contatta un membro del Direttivo"
-                          " se desideri diventare un autista di UberNest.")
+                          " al Database. Usa il comando /me per gestire il tuo profilo.")
     bot.send_message(chat_id=secrets.owner_id,
                      text="Nuovo utente iscritto a sistema: " + user)
     ReplyStatus.response_mode = 0
