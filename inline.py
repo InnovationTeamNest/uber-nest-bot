@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
-
-from actions_booking import booking_handler
-from actions_me import me_handler
+import actions_booking
+import actions_me
 
 
 def inline_handler(bot, update):
     identifier = separate_callback_data(update.callback_query.data)[0]
     if identifier == "BOOKING":
-        booking_handler(bot, update)
+        actions_booking.booking_handler(bot, update)
     elif identifier == "ME":
-        me_handler(bot, update)
+        actions_me.me_handler(bot, update)
 
 
 def create_callback_data(identifier, args):

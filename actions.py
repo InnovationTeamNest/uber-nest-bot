@@ -2,9 +2,11 @@
 
 import secrets
 from actions_booking import fetch_bookings
+from actions_me import response_me_driver, response_me_user
 
 
 # TODO: Aggiungere tutti i try-catch
+
 
 class ReplyStatus:
     response_mode = 0
@@ -24,7 +26,9 @@ def text_filter(bot, update):
     elif ReplyStatus.response_mode == 1:
         response_registra(bot, update)
     elif ReplyStatus.response_mode == 2:
-        response_me(bot, update)
+        response_me_driver(bot, update)
+    elif ReplyStatus.response_mode == 3:
+        response_me_user(bot, update)
 
 
 def start(bot, update):
@@ -44,7 +48,7 @@ def help(bot, update):
            + "/registra - Aggiungi il tuo nome al database."
 
     if str(update.message.chat_id).decode('utf-8') in secrets.users:
-        text += "\n\n/me - Gestisci il tuo profilo autista."
+        text += "\n\n/me - Gestisci il tuo profilo."
 
     bot.send_message(chat_id=update.message.chat_id,
                      text=text)
