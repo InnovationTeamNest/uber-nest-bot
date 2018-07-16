@@ -89,6 +89,4 @@ def response_registra(bot, update):
     bot.send_message(chat_id=update.message.chat_id,
                      text="Il tuo username è stato aggiunto con successo"
                           " al Database. Usa il comando /me per gestire il tuo profilo.")
-    bot.send_message(chat_id=secrets.owner_id,
-                     text="Nuovo utente iscritto a sistema: " + user)
     ReplyStatus.response_mode = 0

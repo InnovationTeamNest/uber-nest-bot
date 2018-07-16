@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import secrets
 import google.appengine.ext.ndb as ndb
 import logging as log
