@@ -44,13 +44,13 @@ def is_dst():
     return time.localtime().tm_isdst
 
 
-def get_partenza(person, time):
+def get_partenza(person, day, hour):
     output = None
     try:
-        if time == "Salita":
-            output = str(secrets.times_morning[next_day()][person].encode('utf-8') + " per Povo")
-        elif time == "Discesa":
-            output = str(secrets.times_evening[next_day()][person].encode('utf-8') + " per NEST")
+        if hour == "Salita":
+            output = str(secrets.times_morning[day][person].encode('utf-8') + " per Povo")
+        elif hour == "Discesa":
+            output = str(secrets.times_evening[day][person].encode('utf-8') + " per NEST")
     except KeyError as ex:
         output = None
     return output

@@ -5,9 +5,6 @@ from actions_booking import fetch_bookings
 from actions_me import response_me_driver, response_me_user
 
 
-# TODO: Aggiungere tutti i try-catch
-
-
 class ReplyStatus:
     response_mode = 0
 

@@ -22,7 +22,7 @@ class WebHookHandler(webapp2.RequestHandler):
         if res:
             self.response.write("Webhook set!")
         else:
-            self.response.write("Webhook setup failed...")  # TODO Add more information about failed setup...
+            self.response.write("Webhook setup failed...")
 
 
 class UpdateHandler(webapp2.RequestHandler):

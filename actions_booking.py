@@ -3,6 +3,7 @@ import datetime
 
 from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
 
+import logging as log
 import common
 import secrets
 from common import this_day, next_day, get_partenza
@@ -15,7 +16,7 @@ def prenota(bot, update):
     if datetime.time(6, 0) <= time <= datetime.time(20, 0) and common.is_tomorrow_weekday():
         bot.send_message(chat_id=update.message.chat_id,
                          text="Scegli una persona:",
-                         reply_markup=persone_keyboard())
+                         reply_markup=persone_keyboard(next_day()))
     else:
         bot.send_message(chat_id=update.message.chat_id,
                          text="Mi dispiace, è possibile effettuare prenotazioni"
@@ -98,12 +99,19 @@ def booking_handler(bot, update):
 
 
 # Keyboard customizzata per visualizzare le prenotazioni in maniera inline
-def persone_keyboard():
+# Day è un oggetto di tipo stringa
+def persone_keyboard(day):
     keyboard = []
-    for i in secrets.groups_morning[next_day()]:
-        keyboard.append([InlineKeyboardButton(secrets.users[i] + " - " + get_partenza(i, "Salita"),
-                                              callback_data=create_callback_data("BOOKING", [i, "Salita"]))])
-    for i in secrets.groups_evening[next_day()]:
-        keyboard.append([InlineKeyboardButton(secrets.users[i] + " - " + get_partenza(i, "Discesa"),
-                                              callback_data=create_callback_data("BOOKING", [i, "Discesa"]))])
+    for i in secrets.groups_morning[day]:
+        try:
+            keyboard.append([InlineKeyboardButton(secrets.users[i] + " - " + get_partenza(i, day, "Salita"),
+                                                  callback_data=create_callback_data("BOOKING", [i, "Salita"]))])
+        except TypeError as ex:
+            log.info("No bookings found")
+    for i in secrets.groups_evening[day]:
+        try:
+            keyboard.append([InlineKeyboardButton(secrets.users[i] + " - " + get_partenza(i, day, "Discesa"),
+                                                  callback_data=create_callback_data("BOOKING", [i, "Discesa"]))])
+        except TypeError as ex:
+            log.info("No bookings found")
     return InlineKeyboardMarkup(keyboard)
