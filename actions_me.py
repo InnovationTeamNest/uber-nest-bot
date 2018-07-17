@@ -120,12 +120,10 @@ def newtrip_handler(bot, update):
                          reply_markup=InlineKeyboardMarkup([keyboard, [InlineKeyboardButton(
                              "Annulla", callback_data=inline.create_callback_data("TRIPS", ["QUIT"]))]]))
     elif day is not None and data == "SALITA":
-        time = time.hour.zfill(2) + ":" + time.minute.zfill(2)
         secrets.groups_morning[str(day)][str(chat_id)] = []
         secrets.times_morning[str(day)][str(chat_id)] = str(time)
         bot.send_message(chat_id=chat_id, text="Viaggio aggiunto con successo.")
     elif day is not None and data == "DISCESA":
-        time = time.hour.zfill(2) + ":" + time.minute.zfill(2)
         secrets.groups_evening[str(day)][str(chat_id)] = []
         secrets.times_evening[str(day)][str(chat_id)] = str(time)
         bot.send_message(chat_id=chat_id, text="Viaggio aggiunto con successo.")
@@ -136,6 +134,7 @@ def newtrip_handler(bot, update):
 def response_confirmtrip(bot, update):
     try:
         time = parser.parse(update.message.text)
+        time = time.hour.zfill(2) + ":" + time.minute.zfill(2)
     except ValueError as ex:
         bot.send_message(chat_id=update.message.chat_id,
                          text="Formato non valido!")
