@@ -43,14 +43,15 @@ def me_handler(bot, update):
         else:
             # Utente non presente
             bot.send_message(chat_id=chat_id,
-                             text="Contatta un membro del direttivo per ulteriori informazioni "
-                                  "al riguardo. ---DISCLAIMER DEL REGOLAMENTO  --- al momento l'utente"
+                             text="Contatta un membro del direttivo per ulteriori informazioni"
+                                  " al riguardo. ---DISCLAIMER DEL REGOLAMENTO  --- al momento l'utente"
                                   " è aggiunto in ogni caso")
             secrets.drivers[str(chat_id)] = str(secrets.users[str(chat_id)])
     elif data == "REMOVAL":
         bot.send_message(chat_id=chat_id,
-                         text="Sei sicuro di voler confermare la tua rimozione completa dal sistema? "
-                              " L'operazione è reversibile, ma tutte le tue prenotazioni e viaggi verranno cancellati. ")
+                         text="Sei sicuro di voler confermare la tua rimozione completa dal sistema?"
+                              " L'operazione è reversibile, ma tutte le"
+                              " tue prenotazioni e viaggi verranno cancellati.")
         bot.send_message(chat_id=chat_id,
                          text="Se sei sicuro, scrivi come messaggio il tuo nome e cognome esattamente"
                               " come l'hai inserito a sistema.")
@@ -58,7 +59,7 @@ def me_handler(bot, update):
 
 
 def trips_handler(bot, update):
-    data, direction, day = inline.separate_callback_data(update.callback_query.data)[1:4]
+    data = inline.separate_callback_data(update.callback_query.data)[1]
     chat_id = str(update.callback_query.from_user.id)
 
     bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
@@ -70,14 +71,17 @@ def trips_handler(bot, update):
     elif data == "QUIT":
         bot.send_message(chat_id=chat_id, text="Operazione annullata")
     elif data == "DELETE":
+        direction, day = inline.separate_callback_data(update.callback_query.data)[2:4]
         keyboard = []
         # 2 = salita/discesa, 3 = giorno, 4 = persona
-        keyboard.append([InlineKeyboardButton("Sì", inline.create_callback_data("TRIPS", ["YES", direction, day]))])
-        keyboard.append([InlineKeyboardButton("No", inline.create_callback_data("TRIPS", ["QUIT"]))])
+        keyboard.append(
+            [InlineKeyboardButton("Sì", callback_data=inline.create_callback_data("TRIPS", ["YES", direction, day]))])
+        keyboard.append([InlineKeyboardButton("No", callback_data=inline.create_callback_data("TRIPS", ["QUIT"]))])
         bot.send_message(chat_id=chat_id,
                          text="Sei sicuro di voler cancellare questo viaggio?",
                          reply_markup=InlineKeyboardMarkup(keyboard))
     elif data == "YES":
+        direction, day = inline.separate_callback_data(update.callback_query.data)[2:4]
         if direction == "Salita":
             del secrets.groups_morning[day][chat_id]
             del secrets.times_morning[day][chat_id]
@@ -132,32 +136,35 @@ def me_keyboard(update):
         string = "Diventare un autista di UberNEST"
 
     keyboard = []
-    keyboard.append([InlineKeyboardButton("Gestire i miei viaggi", inline.create_callback_data("ME", ["TRIPS"]))])
-    keyboard.append([InlineKeyboardButton(string, inline.create_callback_data("ME", ["DRIVER"]))])
+    keyboard.append(
+        [InlineKeyboardButton("Gestire i miei viaggi", callback_data=inline.create_callback_data("ME", ["TRIPS"]))])
+    keyboard.append([InlineKeyboardButton(string, callback_data=inline.create_callback_data("ME", ["DRIVER"]))])
     keyboard.append([InlineKeyboardButton("Cancellarmi dal sistema di UberNEST",
-                                          inline.create_callback_data("ME", ["REMOVAL"]))])
+                                          callback_data=inline.create_callback_data("ME", ["REMOVAL"]))])
     return InlineKeyboardMarkup(keyboard)
 
 
 def trips_keyboard(update):
     user = str(update.callback_query.from_user.id)
     keyboard = []
-    keyboard.append([InlineKeyboardButton("Nuovo viaggio", inline.create_callback_data("TRIPS", ["ADD"]))])
+    keyboard.append(
+        [InlineKeyboardButton("Nuovo viaggio", callback_data=inline.create_callback_data("TRIPS", ["ADD"]))])
 
     for i in range(0, 6, 1):
         trip = get_partenza(user.decode('utf-8'), day_to_string(i), "Salita")
         if trip is not None:
             keyboard.append([InlineKeyboardButton(day_to_string(i) + ": " + trip,
-                                                  inline.create_callback_data("TRIPS",
-                                                                              ["DELETE", "Salita", day_to_string(i)]))])
+                                                  callback_data=inline.create_callback_data("TRIPS",
+                                                                                            ["DELETE", "Salita",
+                                                                                             day_to_string(i)]))])
 
         trip = get_partenza(user.decode('utf-8'), day_to_string(i), "Discesa")
         if trip is not None:
             keyboard.append([InlineKeyboardButton(day_to_string(i) + ": " + trip,
-                                                  inline.create_callback_data("TRIPS",
-                                                                              ["DELETE", "Discesa",
-                                                                               day_to_string(i)]))])
+                                                  callback_data=inline.create_callback_data("TRIPS",
+                                                                                            ["DELETE", "Discesa",
+                                                                                             day_to_string(i)]))])
 
-    keyboard.append([InlineKeyboardButton("Esci", inline.create_callback_data("TRIPS", ["QUIT"]))])
+    keyboard.append([InlineKeyboardButton("Esci", callback_data=inline.create_callback_data("TRIPS", ["QUIT"]))])
 
     return InlineKeyboardMarkup(keyboard)
