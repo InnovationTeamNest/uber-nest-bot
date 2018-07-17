@@ -6,11 +6,11 @@ import time
 import secrets
 
 
-def this_day():
+def today():
     return day_to_string(datetime.datetime.today().weekday())
 
 
-def next_day():
+def tomorrow():
     return day_to_string(datetime.datetime.today().weekday() + 1)
 
 

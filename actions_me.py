@@ -69,7 +69,9 @@ def trips_handler(bot, update):
     log.info("Mode entered: " + data)
     if data == "ADD":
         bot.send_message(chat_id=chat_id,
-                         text="Inserisci l'ora di partenza nel formato HH:MM")
+
+                         text="Reminder: Se la data e l'ora sono già presenti, verranno sovrascritte."
+                              "Inserisci l'ora di partenza nel formato HH:MM.")
         actions.ReplyStatus.response_mode = 4
     elif data == "DELETE":
         direction, day = inline.separate_callback_data(update.callback_query.data)[2:4]

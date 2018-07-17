@@ -3,6 +3,7 @@
 import secrets
 from actions_booking import fetch_bookings
 from actions_me import response_me_driver, response_me_user, response_confirmtrip
+from common import tomorrow, today
 
 
 class ReplyStatus:
@@ -54,11 +55,11 @@ def help(bot, update):
 
 
 def oggi(bot, update):
-    fetch_bookings(bot, update, "Oggi")
+    fetch_bookings(bot, update, today())
 
 
 def domani(bot, update):
-    fetch_bookings(bot, update, "Domani")
+    fetch_bookings(bot, update, tomorrow())
 
 
 def settimana(bot, update):
