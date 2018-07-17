@@ -12,6 +12,8 @@ def inline_handler(bot, update):
         actions_me.me_handler(bot, update)
     elif identifier == "TRIPS":
         actions_me.trips_handler(bot, update)
+    elif identifier == "NEWTRIP":
+        actions_me.newtrip_handler(bot, update)
 
 
 def create_callback_data(identifier, args):

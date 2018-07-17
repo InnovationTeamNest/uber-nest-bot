@@ -2,7 +2,7 @@
 
 import secrets
 from actions_booking import fetch_bookings
-from actions_me import response_me_driver, response_me_user
+from actions_me import response_me_driver, response_me_user, response_confirmtrip
 
 
 class ReplyStatus:
@@ -26,6 +26,8 @@ def text_filter(bot, update):
         response_me_driver(bot, update)
     elif ReplyStatus.response_mode == 3:
         response_me_user(bot, update)
+    elif ReplyStatus.response_mode == 4:
+        response_confirmtrip(bot, update)
 
 
 def start(bot, update):
