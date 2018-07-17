@@ -134,7 +134,6 @@ def newtrip_handler(bot, update):
 def response_confirmtrip(bot, update):
     try:
         time = parser.parse(update.message.text)
-        time = time.hour.zfill(2) + ":" + time.minute.zfill(2)
     except ValueError as ex:
         bot.send_message(chat_id=update.message.chat_id,
                          text="Formato non valido!")
@@ -145,6 +144,8 @@ def response_confirmtrip(bot, update):
                          text="Formato non valido!")
         actions.ReplyStatus.response_mode = 0
         return
+
+    time = str(time.hour).zfill(2) + ":" + str(time.minute).zfill(2)
 
     keyboard = []
     keyboard.append(InlineKeyboardButton(
