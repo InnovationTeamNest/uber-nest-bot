@@ -111,43 +111,48 @@ def deletebooking_handler(bot, update):
     bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
     update.callback_query.message.delete()
 
+    log.info("Length: " + str(len(data)))
+
     if len(data) == 1:
-        bookings = common.search_by_booking(chat_id)
+        bookings = common.search_by_booking(str(chat_id))
         if len(bookings) > 0:
             keyboard = []
             for i in bookings:
                 direction, day, driver, mode = i
                 if mode == "Temporary":
-                    keyboard.append([InlineKeyboardButton("Temporanea con " + secrets.users[driver] + " - " +
-                                                          get_partenza(driver, day, direction),
-                                                          callback_data=create_callback_data("DELETEBOOKING", [i]))])
-                else:
-                    keyboard.append([InlineKeyboardButton("Permanente con " + secrets.users[driver] + " - " +
-                                                          get_partenza(driver, day, direction),
-                                                          callback_data=create_callback_data("DELETEBOOKING", [i]))])
-            keyboard.append([InlineKeyboardButton("Annulla", callback_data=create_callback_data("DELETEBOOKING", ["CANCEL"]))])
+                    keyboard.append(
+                        [InlineKeyboardButton("Temporanea il " + day + " con " + secrets.users[driver] + " - " +
+                                              get_partenza(driver, day, direction),
+                                              callback_data=create_callback_data("DELETEBOOKING", i))])
+                elif mode == "Permanent":
+                    keyboard.append(
+                        [InlineKeyboardButton("Permanente il " + day + " con " + secrets.users[driver] + " - " +
+                                              get_partenza(driver, day, direction),
+                                              callback_data=create_callback_data("DELETEBOOKING", i))])
+            keyboard.append(
+                [InlineKeyboardButton("Annulla", callback_data=create_callback_data("DELETEBOOKING", ["CANCEL"]))])
             bot.send_message(chat_id=chat_id, text="Clicca su una prenotazione per cancellarla.",
-                             reply_markup=InlineKeyboardMarkup([keyboard]))
+                             reply_markup=InlineKeyboardMarkup(keyboard))
         else:
             bot.send_message(chat_id=chat_id, text="Mi dispiace, ma non hai prenotazioni all'attivo.")
-    elif len(data) == 3:
-        if data[1] == "CANCEL":
-            bot.send_message(chat_id=chat_id, text="Operazione annullata")
-        else:
-            keyboard = []
-            keyboard.append(InlineKeyboardButton(
-                "Sì", callback_data=create_callback_data("DELETEBOOKING", ["CONFIRM", data[1]])))
-            keyboard.append(InlineKeyboardButton(
-                "No", callback_data=create_callback_data("DELETEBOOKING", ["CANCEL"])))
-            bot.send_message(chat_id=chat_id,
-                             text="Sei sicuro di voler cancellare questo viaggio?",
-                             reply_markup=InlineKeyboardMarkup([keyboard]))
-    elif len(data) == 4:
-        direction, day, driver, mode = data[2]
+    elif len(data) == 2 and data[1] == "CANCEL":
+        bot.send_message(chat_id=chat_id, text="Operazione annullata")
+    elif len(data) == 5:
+        keyboard = []
+        data[0] = "CONFIRM"
+        keyboard.append(InlineKeyboardButton(
+            "Sì", callback_data=create_callback_data("DELETEBOOKING", data)))
+        keyboard.append(InlineKeyboardButton(
+            "No", callback_data=create_callback_data("DELETEBOOKING", ["CANCEL"])))
+        bot.send_message(chat_id=chat_id,
+                         text="Sei sicuro di voler cancellare questo viaggio?",
+                         reply_markup=InlineKeyboardMarkup([keyboard]))
+    elif len(data) == 6:
+        direction, day, driver, mode = data[2:]
         if direction == "Salita":
-            secrets.groups_morning[day][driver][mode].remove(chat_id)
+            secrets.groups_morning[day][driver][mode].remove(str(chat_id))
         elif direction == "Discesa":
-            secrets.groups_evening[day][driver][mode].remove(chat_id)
+            secrets.groups_evening[day][driver][mode].remove(str(chat_id))
         bot.send_message(chat_id=chat_id, text="Prenotazione cancellata con successo.")
 
 
