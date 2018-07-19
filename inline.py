@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import actions
 import actions_booking
 import actions_me
 
@@ -17,6 +17,8 @@ def inline_handler(bot, update):
         actions_me.trips_handler(bot, update)
     elif identifier == "NEWTRIP":
         actions_me.newtrip_handler(bot, update)
+    elif identifier == "SHOWBOOKINGS":
+        actions.show_bookings(bot, update)
 
 
 def create_callback_data(identifier, args):

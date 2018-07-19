@@ -4,9 +4,9 @@ import datetime
 import logging as log
 import common
 import secrets
+import inline
 
 from common import tomorrow, get_partenza
-from inline import separate_callback_data, create_callback_data
 from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
 
 
@@ -14,11 +14,11 @@ from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
 def prenota(bot, update):
     if str(update.message.chat_id).decode('utf-8') in secrets.users:
         keyboard = [[InlineKeyboardButton("Prenotare una-tantum",
-                                          callback_data=create_callback_data("BOOKING", ["Temporary"]))],
+                                          callback_data=inline.create_callback_data("BOOKING", ["Temporary"]))],
                     [InlineKeyboardButton("Prenotare in maniera permanente",
-                                          callback_data=create_callback_data("BOOKING", ["Permanent"]))],
+                                          callback_data=inline.create_callback_data("BOOKING", ["Permanent"]))],
                     [InlineKeyboardButton("Visualizza e disdici una prenotazione",
-                                          callback_data=create_callback_data("DELETEBOOKING", []))]]
+                                          callback_data=inline.create_callback_data("DELETEBOOKING", []))]]
         bot.send_message(chat_id=update.message.chat_id,
                          text="Cosa vuoi fare?",
                          reply_markup=InlineKeyboardMarkup(keyboard))
@@ -34,7 +34,7 @@ def booking_handler(bot, update):
     bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
     update.callback_query.message.delete()
 
-    data = separate_callback_data(update.callback_query.data)
+    data = inline.separate_callback_data(update.callback_query.data)
     mode = data[1]
 
     log.info("Mode:" + str(mode) + ", length: " + str(len(data)))
@@ -81,7 +81,7 @@ def booking_handler(bot, update):
 
 def deletebooking_handler(bot, update):
     chat_id = update.callback_query.from_user.id
-    data = separate_callback_data(update.callback_query.data)
+    data = inline.separate_callback_data(update.callback_query.data)
 
     bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
     update.callback_query.message.delete()
@@ -98,14 +98,15 @@ def deletebooking_handler(bot, update):
                     keyboard.append(
                         [InlineKeyboardButton("Temporanea il " + day + " con " + secrets.users[driver] + " - " +
                                               get_partenza(driver, day, direction),
-                                              callback_data=create_callback_data("DELETEBOOKING", i))])
+                                              callback_data=inline.create_callback_data("DELETEBOOKING", i))])
                 elif mode == "Permanent":
                     keyboard.append(
                         [InlineKeyboardButton("Permanente il " + day + " con " + secrets.users[driver] + " - " +
                                               get_partenza(driver, day, direction),
-                                              callback_data=create_callback_data("DELETEBOOKING", i))])
+                                              callback_data=inline.create_callback_data("DELETEBOOKING", i))])
             keyboard.append(
-                [InlineKeyboardButton("Annulla", callback_data=create_callback_data("DELETEBOOKING", ["CANCEL"]))])
+                [InlineKeyboardButton("Annulla",
+                                      callback_data=inline.create_callback_data("DELETEBOOKING", ["CANCEL"]))])
             bot.send_message(chat_id=chat_id, text="Clicca su una prenotazione per cancellarla.",
                              reply_markup=InlineKeyboardMarkup(keyboard))
         else:
@@ -116,9 +117,9 @@ def deletebooking_handler(bot, update):
         keyboard = []
         data[0] = "CONFIRM"
         keyboard.append(InlineKeyboardButton(
-            "Sì", callback_data=create_callback_data("DELETEBOOKING", data)))
+            "Sì", callback_data=inline.create_callback_data("DELETEBOOKING", data)))
         keyboard.append(InlineKeyboardButton(
-            "No", callback_data=create_callback_data("DELETEBOOKING", ["CANCEL"])))
+            "No", callback_data=inline.create_callback_data("DELETEBOOKING", ["CANCEL"])))
         bot.send_message(chat_id=chat_id,
                          text="Sei sicuro di voler cancellare questo viaggio?",
                          reply_markup=InlineKeyboardMarkup([keyboard]))
@@ -138,13 +139,15 @@ def booking_keyboard(mode, day):
     for i in secrets.groups_morning[day]:
         try:
             keyboard.append([InlineKeyboardButton(secrets.users[i] + " - " + get_partenza(i, day, "Salita"),
-                                                  callback_data=create_callback_data("BOOKING", [mode, i, "Salita"]))])
+                                                  callback_data=inline.create_callback_data("BOOKING",
+                                                                                            [mode, i, "Salita"]))])
         except TypeError:
             log.info("No bookings found")
     for i in secrets.groups_evening[day]:
         try:
             keyboard.append([InlineKeyboardButton(secrets.users[i] + " - " + get_partenza(i, day, "Discesa"),
-                                                  callback_data=create_callback_data("BOOKING", [mode, i, "Discesa"]))])
+                                                  callback_data=inline.create_callback_data("BOOKING",
+                                                                                            [mode, i, "Discesa"]))])
         except TypeError:
             log.info("No bookings found")
     return InlineKeyboardMarkup(keyboard)

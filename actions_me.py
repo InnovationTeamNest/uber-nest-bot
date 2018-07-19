@@ -76,11 +76,10 @@ def trips_handler(bot, update):
     elif data == "DELETE":
         direction, day = inline.separate_callback_data(update.callback_query.data)[2:4]
         # Creo una tastiera custom per Sì/No
-        keyboard = []
-        keyboard.append(InlineKeyboardButton(
-            "Sì", callback_data=inline.create_callback_data("TRIPS", ["CONFIRMDELETION", direction, day])))
-        keyboard.append(InlineKeyboardButton(
-            "No", callback_data=inline.create_callback_data("TRIPS", ["QUIT"])))
+        keyboard = [InlineKeyboardButton("Sì", callback_data=inline.create_callback_data(
+                        "TRIPS", ["CONFIRMDELETION", direction, day])),
+                    InlineKeyboardButton("No", callback_data=inline.create_callback_data(
+                        "TRIPS", ["QUIT"]))]
 
         bot.send_message(chat_id=chat_id,
                          text="Sei sicuro di voler cancellare questo viaggio?",
@@ -100,7 +99,7 @@ def newtrip_handler(bot, update):
     data, time = inline.separate_callback_data(update.callback_query.data)[1:3]
     try:
         day = inline.separate_callback_data(update.callback_query.data)[3]
-    except IndexError as ex:
+    except IndexError:
         day = None
 
     chat_id = str(update.callback_query.from_user.id)
@@ -131,7 +130,7 @@ def newtrip_handler(bot, update):
 def response_confirmtrip(bot, update):
     try:
         time = parser.parse(update.message.text)
-    except ValueError as ex:
+    except ValueError:
         bot.send_message(chat_id=update.message.chat_id,
                          text="Formato non valido!")
         actions.ReplyStatus.response_mode = 0
@@ -139,11 +138,10 @@ def response_confirmtrip(bot, update):
 
     time = str(time.hour).zfill(2) + ":" + str(time.minute).zfill(2)
 
-    keyboard = []
-    keyboard.append(InlineKeyboardButton(
-        "per Povo", callback_data=inline.create_callback_data("NEWTRIP", ["Salita", time])))
-    keyboard.append(InlineKeyboardButton(
-        "per il NEST", callback_data=inline.create_callback_data("NEWTRIP", ["Discesa", time])))
+    keyboard = [InlineKeyboardButton(
+                "per Povo", callback_data=inline.create_callback_data("NEWTRIP", ["Salita", time])),
+                InlineKeyboardButton(
+                "per il NEST", callback_data=inline.create_callback_data("NEWTRIP", ["Discesa", time]))]
 
     bot.send_message(chat_id=update.message.chat_id,
                      text="Vuoi aggiungere un viaggio verso il NEST o Povo?",
@@ -191,20 +189,19 @@ def me_keyboard(update):
 
     keyboard = []
     if str(update.message.chat_id).decode('utf-8') in secrets.drivers:
-        keyboard.append([InlineKeyboardButton(
-            "Gestire i miei viaggi", callback_data=inline.create_callback_data("ME", ["TRIPS"]))])
-    keyboard.append([InlineKeyboardButton(
-        string, callback_data=inline.create_callback_data("ME", ["DRIVER"]))])
-    keyboard.append([InlineKeyboardButton(
-        "Cancellarmi dal sistema di UberNEST", callback_data=inline.create_callback_data("ME", ["REMOVAL"]))])
+        keyboard.append([InlineKeyboardButton("Gestire i miei viaggi",
+                                              callback_data=inline.create_callback_data("ME", ["TRIPS"]))])
+    keyboard.append([InlineKeyboardButton(string,
+                                          callback_data=inline.create_callback_data("ME", ["DRIVER"]))])
+    keyboard.append([InlineKeyboardButton("Cancellarmi dal sistema di UberNEST",
+                                          callback_data=inline.create_callback_data("ME", ["REMOVAL"]))])
     return InlineKeyboardMarkup(keyboard)
 
 
 def trips_keyboard(update):
     user = str(update.callback_query.from_user.id)
-    keyboard = []
-    keyboard.append([InlineKeyboardButton(
-        "Aggiungi un nuovo viaggio", callback_data=inline.create_callback_data("TRIPS", ["ADD"]))])
+    keyboard = [[InlineKeyboardButton(
+        "Aggiungi un nuovo viaggio", callback_data=inline.create_callback_data("TRIPS", ["ADD"]))]]
 
     for i in range(0, 5, 1):
         trip = common.get_partenza(user.decode('utf-8'), common.day_to_string(i), "Salita")
@@ -212,14 +209,16 @@ def trips_keyboard(update):
             keyboard.append([InlineKeyboardButton(
                 common.day_to_string(i) + ": " + trip, callback_data=inline.create_callback_data("TRIPS",
                                                                                                  ["DELETE", "Salita",
-                                                                                                  common.day_to_string(i)]))])
+                                                                                                  common.day_to_string(
+                                                                                                      i)]))])
 
         trip = common.get_partenza(user.decode('utf-8'), common.day_to_string(i), "Discesa")
         if trip is not None:
             keyboard.append([InlineKeyboardButton(
                 common.day_to_string(i) + ": " + trip, callback_data=inline.create_callback_data("TRIPS",
                                                                                                  ["DELETE", "Discesa",
-                                                                                                  common.day_to_string(i)]))])
+                                                                                                  common.day_to_string(
+                                                                                                      i)]))])
 
     keyboard.append([InlineKeyboardButton("Esci", callback_data=inline.create_callback_data("TRIPS", ["QUIT"]))])
     return InlineKeyboardMarkup(keyboard)

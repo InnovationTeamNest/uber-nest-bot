@@ -6,7 +6,7 @@ import actions_me
 import inline
 
 from common import tomorrow, today, day_to_string
-from lib.telegram import InlineKeyboardButton, ChatAction
+from telegram import InlineKeyboardButton, ChatAction, InlineKeyboardMarkup
 
 
 class ReplyStatus:
@@ -62,12 +62,12 @@ def settimana(bot, update):
     keyboard = []
 
     for i in range(0, 5, 1):
-        keyboard.append(InlineKeyboardButton(
-            day_to_string(i)[:2],
-            callback_data=inline.create_callback_data("SHOWBOOKINGS", [day_to_string(i)])))
+        day = str(day_to_string(i))
+        keyboard.append(InlineKeyboardButton(day[:2],
+                        callback_data=inline.create_callback_data("SHOWBOOKINGS", [day])))
 
-    bot.send_message(chat_id=update.message.chat_id, text="Scegli il giorno di cui visualizzare le prenotazioni",
-                     reply_markup=[keyboard])
+    bot.send_message(chat_id=update.message.chat_id, text="Scegli il giorno di cui visualizzare le prenotazioni. ",
+                     reply_markup=InlineKeyboardMarkup([keyboard]))
 
 
 def show_bookings(bot, update):
@@ -86,23 +86,23 @@ def fetch_bookings(bot, chat_id, day):
                          text="Lista delle prenotazioni per "
                               + day.lower() + ": ")
 
-        groups = secrets.groups_morning[day]
-        if len(groups) > 0:
+        day_group = secrets.groups_morning[day]
+        if len(day_group) > 0:
             message = "Persone in salita: \n\n"
-            for day in groups:
-                people = [secrets.users[user] for day in groups for mode in groups[day]
-                          if mode != u"Time" for user in groups[day][mode]]
+            for driver in day_group:
+                people = [secrets.users[user] for driver in day_group for mode in day_group[driver]
+                          if mode != u"Time" for user in day_group[driver][mode]]
                 bot.send_message(chat_id=chat_id,
-                                 text=message + secrets.users[day] + ":\n" + ", ".join(people))
+                                 text=message + secrets.users[driver] + ":\n" + ", ".join(people))
 
-        groups = secrets.groups_evening[day]
-        if len(groups) > 0:
+        day_group = secrets.groups_evening[day]
+        if len(day_group) > 0:
             message = "Persone in discesa: \n\n"
-            for day in groups:
-                people = [secrets.users[user] for day in groups for mode in groups[day]
-                          if mode != u"Time" for user in groups[day][mode]]
+            for driver in day_group:
+                people = [secrets.users[user] for driver in day_group for mode in day_group[driver]
+                          if mode != u"Time" for user in day_group[driver][mode]]
                 bot.send_message(chat_id=chat_id,
-                                 text=message + secrets.users[day] + ":\n" + ", ".join(people))
+                                 text=message + secrets.users[driver] + ":\n" + ", ".join(people))
 
     else:
         bot.send_message(chat_id=chat_id,
