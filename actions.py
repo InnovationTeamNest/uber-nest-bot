@@ -86,24 +86,15 @@ def fetch_bookings(bot, chat_id, day):
                          text="Lista delle prenotazioni per "
                               + day.lower() + ": ")
 
-        day_group = secrets.groups_morning[day]
+    for direction in secrets.groups:
+        day_group = secrets.groups[direction][day]
         if len(day_group) > 0:
-            message = "Persone in salita: \n\n"
+            message = "Persone in " + direction.lower() + ": \n\n"
             for driver in day_group:
                 people = [secrets.users[user] for driver in day_group for mode in day_group[driver]
                           if mode != u"Time" for user in day_group[driver][mode]]
                 bot.send_message(chat_id=chat_id,
                                  text=message + secrets.users[driver] + ":\n" + ", ".join(people))
-
-        day_group = secrets.groups_evening[day]
-        if len(day_group) > 0:
-            message = "Persone in discesa: \n\n"
-            for driver in day_group:
-                people = [secrets.users[user] for driver in day_group for mode in day_group[driver]
-                          if mode != u"Time" for user in day_group[driver][mode]]
-                bot.send_message(chat_id=chat_id,
-                                 text=message + secrets.users[driver] + ":\n" + ", ".join(people))
-
     else:
         bot.send_message(chat_id=chat_id,
                          text=day + " UberNEST non sarà attivo.")

@@ -2,8 +2,9 @@
 
 import datetime
 import time
-import secrets
 import logging as log
+
+from secrets import groups
 
 
 def today():
@@ -57,26 +58,29 @@ def is_dst():
     return time.localtime().tm_isdst
 
 
-def get_partenza(driver, day, direction):
-    output = None
+def get_partenza(driver, date, direction):
     try:
-        if direction == "Salita":
-            output = str(secrets.groups_morning[day][driver]["Time"].encode('utf-8') + " per Povo")
-        elif direction == "Discesa":
-            output = str(secrets.groups_evening[day][driver]["Time"].encode('utf-8') + " per NEST")
+        output = str(groups[direction][date][driver]["Time"].encode('utf-8') + " " + direction_to_name(direction))
     except KeyError as ex:
         log.info("Nessuna partenza trovata!" + ex.message)
         output = None
     return output
 
 
-def search_by_booking(person):
-    groups = secrets.groups_morning
-    data = [["Salita", date, driver, mode] for date in groups for driver in groups[date]
-            for mode in groups[date][driver] if person in groups[date][driver][mode]]
+def direction_to_name(direction):
+    if direction == "Salita":
+        return "per Povo"
+    elif direction == "Discesa":
+        return "per il NEST"
+    else:
+        return " - "
 
-    groups = secrets.groups_evening
-    data.extend([["Discesa", date, driver, mode] for date in groups for driver in groups[date]
-                for mode in groups[date][driver] if person in groups[date][driver][mode]])
+
+def search_by_booking(person):
+    data = []
+    
+    for direction in groups:
+        data.extend([[direction, date, driver, mode] for date in groups[direction] for driver in groups[direction][date]
+                    for mode in groups[direction][date][driver] if person in groups[direction][date][driver][mode]])
 
     return data

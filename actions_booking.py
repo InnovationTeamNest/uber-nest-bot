@@ -55,12 +55,7 @@ def booking_handler(bot, update):
         person = str(person).decode('utf-8')
 
         try:
-            if direction == "Salita":
-                groups = secrets.groups_morning[tomorrow()]
-            elif direction == "Discesa":
-                groups = secrets.groups_evening[tomorrow()]
-            else:
-                groups = None
+            groups = secrets.groups[direction][tomorrow()]
         except KeyError:
             groups = None
 
@@ -125,10 +120,7 @@ def deletebooking_handler(bot, update):
                          reply_markup=InlineKeyboardMarkup([keyboard]))
     elif len(data) == 6:
         direction, day, driver, mode = data[2:]
-        if direction == "Salita":
-            secrets.groups_morning[day][driver][mode].remove(str(chat_id))
-        elif direction == "Discesa":
-            secrets.groups_evening[day][driver][mode].remove(str(chat_id))
+        secrets.groups[direction][day][driver][mode].remove(str(chat_id))
         bot.send_message(chat_id=chat_id, text="Prenotazione cancellata con successo.")
 
 
@@ -136,18 +128,14 @@ def deletebooking_handler(bot, update):
 # Day è un oggetto di tipo stringa
 def booking_keyboard(mode, day):
     keyboard = []
-    for i in secrets.groups_morning[day]:
-        try:
-            keyboard.append([InlineKeyboardButton(secrets.users[i] + " - " + get_partenza(i, day, "Salita"),
-                                                  callback_data=inline.create_callback_data("BOOKING",
-                                                                                            [mode, i, "Salita"]))])
-        except TypeError:
-            log.info("No bookings found")
-    for i in secrets.groups_evening[day]:
-        try:
-            keyboard.append([InlineKeyboardButton(secrets.users[i] + " - " + get_partenza(i, day, "Discesa"),
-                                                  callback_data=inline.create_callback_data("BOOKING",
-                                                                                            [mode, i, "Discesa"]))])
-        except TypeError:
-            log.info("No bookings found")
+
+    for direction in secrets.groups:
+        for driver in secrets.groups[direction][day]:
+            try:
+                keyboard.append(
+                    [InlineKeyboardButton(secrets.users[driver] + " - " + get_partenza(driver, day, direction),
+                                          callback_data=inline.create_callback_data("BOOKING",
+                                                                                    [mode, driver, direction]))])
+            except TypeError:
+                log.info("No bookings found")
     return InlineKeyboardMarkup(keyboard)

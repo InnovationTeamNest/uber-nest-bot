@@ -86,10 +86,7 @@ def trips_handler(bot, update):
                          reply_markup=InlineKeyboardMarkup([keyboard]))
     elif data == "CONFIRMDELETION":
         direction, day = inline.separate_callback_data(update.callback_query.data)[2:4]
-        if direction == "Salita":
-            del secrets.groups_morning[day][chat_id]
-        elif direction == "Discesa":
-            del secrets.groups_evening[day][chat_id]
+        del secrets.groups[direction][day][chat_id]
         bot.send_message(chat_id=chat_id, text="Viaggio cancellato con successo.")
     elif data == "QUIT":
         bot.send_message(chat_id=chat_id, text="Operazione annullata.")
@@ -117,11 +114,8 @@ def newtrip_handler(bot, update):
                          text="Scegli la data del viaggio.",
                          reply_markup=InlineKeyboardMarkup([keyboard, [InlineKeyboardButton(
                              "Annulla", callback_data=inline.create_callback_data("TRIPS", ["QUIT"]))]]))
-    elif day is not None and data == "Salita":
-        secrets.groups_morning[str(day)][str(chat_id)] = {u"Time": str(time), u"Permanent": [], u"Temporary": []}
-        bot.send_message(chat_id=chat_id, text="Viaggio aggiunto con successo.")
-    elif day is not None and data == "Discesa":
-        secrets.groups_evening[str(day)][str(chat_id)] = {u"Time": str(time), u"Permanent": [], u"Temporary": []}
+    elif day is not None and (data == "Salita" or data == "Discesa"):
+        secrets.groups[data][str(day)][str(chat_id)] = {u"Time": str(time), u"Permanent": [], u"Temporary": []}
         bot.send_message(chat_id=chat_id, text="Viaggio aggiunto con successo.")
     else:
         bot.send_message(chat_id=chat_id, text="Spiacente, si è verificato un errore. Riprova più tardi.")
@@ -153,14 +147,12 @@ def response_confirmtrip(bot, update):
 def response_me_driver(bot, update):
     chat_id = update.message.chat_id
     if secrets.drivers[str(chat_id)] == str(update.message.text):
-
         del secrets.drivers[str(chat_id)]
-        for day in secrets.groups_morning:
-            if str(chat_id) in secrets.groups_morning[day]:
-                del secrets.groups_morning[day][str(chat_id)]
-        for day in secrets.groups_evening:
-            if str(chat_id) in secrets.groups_evening[day]:
-                del secrets.groups_evening[day][str(chat_id)]
+
+        for direction in secrets.groups:
+            for day in secrets.groups[direction]:
+                if str(chat_id) in secrets.groups[direction][day]:
+                    del secrets.groups[direction][day][str(chat_id)]
 
         bot.send_message(chat_id=update.message.chat_id,
                          text="Sei stato rimosso con successo dall'elenco degli autisti.")
