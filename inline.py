@@ -8,6 +8,8 @@ def inline_handler(bot, update):
 
     if identifier == "BOOKING":
         actions_booking.booking_handler(bot, update)
+    elif identifier == "DELETEBOOKING":
+        actions_booking.deletebooking_handler(bot, update)
     elif identifier == "ME":
         actions_me.me_handler(bot, update)
     elif identifier == "TRIPS":

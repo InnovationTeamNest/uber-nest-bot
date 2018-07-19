@@ -122,11 +122,11 @@ def newtrip_handler(bot, update):
                          reply_markup=InlineKeyboardMarkup([keyboard, [InlineKeyboardButton(
                              "Annulla", callback_data=inline.create_callback_data("TRIPS", ["QUIT"]))]]))
     elif day is not None and data == "SALITA":
-        secrets.groups_morning[str(day)][str(chat_id)] = []
+        secrets.groups_morning[str(day)][str(chat_id)] = {u"Permanent": [], u"Temporary": []}
         secrets.times_morning[str(day)][str(chat_id)] = str(time)
         bot.send_message(chat_id=chat_id, text="Viaggio aggiunto con successo.")
     elif day is not None and data == "DISCESA":
-        secrets.groups_evening[str(day)][str(chat_id)] = []
+        secrets.groups_evening[str(day)][str(chat_id)] = {u"Permanent": [], u"Temporary": []}
         secrets.times_evening[str(day)][str(chat_id)] = str(time)
         bot.send_message(chat_id=chat_id, text="Viaggio aggiunto con successo.")
     else:

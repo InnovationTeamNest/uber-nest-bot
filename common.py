@@ -44,13 +44,25 @@ def is_dst():
     return time.localtime().tm_isdst
 
 
-def get_partenza(person, day, hour):
+def get_partenza(driver, day, direction):
     output = None
     try:
-        if hour == "Salita":
-            output = str(secrets.times_morning[day][person].encode('utf-8') + " per Povo")
-        elif hour == "Discesa":
-            output = str(secrets.times_evening[day][person].encode('utf-8') + " per NEST")
+        if direction == "Salita":
+            output = str(secrets.times_morning[day][driver].encode('utf-8') + " per Povo")
+        elif direction == "Discesa":
+            output = str(secrets.times_evening[day][driver].encode('utf-8') + " per NEST")
     except KeyError as ex:
         output = None
     return output
+
+
+def search_by_booking(person):
+    groups = secrets.groups_morning
+    data = [["Salita", date, driver, mode] for date in groups for driver in groups[date]
+            for mode in groups[date][driver] if person in groups[date][driver][mode]]
+
+    groups = secrets.groups_evening
+    data.extend([["Discesa", date, driver, mode] for date in groups for driver in groups[date]
+                for mode in groups[date][driver] if person in groups[date][driver][mode]])
+
+    return data
