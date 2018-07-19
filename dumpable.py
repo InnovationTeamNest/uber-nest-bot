@@ -8,8 +8,6 @@ import logging as log
 class Dumpable(ndb.Model):
     groups_morning = ndb.JsonProperty()
     groups_evening = ndb.JsonProperty()
-    times_morning = ndb.JsonProperty()
-    times_evening = ndb.JsonProperty()
     users = ndb.JsonProperty()
     drivers = ndb.JsonProperty()
 
@@ -28,8 +26,6 @@ def dump_data():
         log.info("Error: duplicate data")
     LastKey.key = Dumpable(groups_morning=secrets.groups_morning,
                            groups_evening=secrets.groups_evening,
-                           times_morning=secrets.times_morning,
-                           times_evening=secrets.times_evening,
                            users=secrets.users,
                            drivers=secrets.drivers).put()
 
@@ -39,8 +35,6 @@ def get_data():
         data = Dumpable.query().fetch()[0]
         secrets.groups_morning = data.groups_morning
         secrets.groups_evening = data.groups_evening
-        secrets.times_morning = data.times_morning
-        secrets.times_evening = data.times_evening
         secrets.users = data.users
         secrets.drivers = data.drivers
 

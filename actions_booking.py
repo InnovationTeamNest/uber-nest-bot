@@ -1,55 +1,31 @@
 # -*- coding: utf-8 -*-
+
 import datetime
-
-from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
-
 import logging as log
 import common
 import secrets
-from common import today, tomorrow, get_partenza
+
+from common import tomorrow, get_partenza
 from inline import separate_callback_data, create_callback_data
+from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
 
 
 # Comando iniziale che viene chiamato dall'utente
 def prenota(bot, update):
-    keyboard = []
-    keyboard.append([InlineKeyboardButton("Prenotare una-tantum",
-                                          callback_data=create_callback_data("BOOKING", ["Temporary"]))])
-    keyboard.append([InlineKeyboardButton("Prenotare in maniera permanente",
-                                          callback_data=create_callback_data("BOOKING", ["Permanent"]))])
-    keyboard.append([InlineKeyboardButton("Visualizza e disdici una prenotazione",
-                                          callback_data=create_callback_data("DELETEBOOKING", []))])
-    bot.send_message(chat_id=update.message.chat_id,
-                     text="Cosa vuoi fare?",
-                     reply_markup=InlineKeyboardMarkup(keyboard))
-
-
-# Funzione per prelevare le prenotazioni da secrets
-def fetch_bookings(bot, update, date):
-    if (date == today() and common.is_today_weekday()) or (date == tomorrow() and common.is_tomorrow_weekday()):
+    if str(update.message.chat_id).decode('utf-8') in secrets.users:
+        keyboard = []
+        keyboard.append([InlineKeyboardButton("Prenotare una-tantum",
+                                              callback_data=create_callback_data("BOOKING", ["Temporary"]))])
+        keyboard.append([InlineKeyboardButton("Prenotare in maniera permanente",
+                                              callback_data=create_callback_data("BOOKING", ["Permanent"]))])
+        keyboard.append([InlineKeyboardButton("Visualizza e disdici una prenotazione",
+                                              callback_data=create_callback_data("DELETEBOOKING", []))])
         bot.send_message(chat_id=update.message.chat_id,
-                         text="Lista delle prenotazioni per "
-                              + date.lower() + ": ")
-
-        groups = secrets.groups_morning[date]
-        if len(groups) > 0:
-            message = "Persone in salita: \n\n"
-            for day in groups:
-                people = [secrets.users[user] for day in groups for mode in groups[day] for user in groups[day][mode]]
-                bot.send_message(chat_id=update.message.chat_id,
-                                 text=message + secrets.users[day] + ":\n" + ", ".join(people))
-
-        groups = secrets.groups_evening[date]
-        if len(groups) > 0:
-            message = "Persone in discesa: \n\n"
-            for day in groups:
-                people = [secrets.users[user] for day in groups for k in groups[day] for user in groups[day][k]]
-                bot.send_message(chat_id=update.message.chat_id,
-                                 text=message + secrets.users[day] + ":\n" + ", ".join(people))
-
+                         text="Cosa vuoi fare?",
+                         reply_markup=InlineKeyboardMarkup(keyboard))
     else:
         bot.send_message(chat_id=update.message.chat_id,
-                         text=date + " UberNEST non sarà attivo.")
+                         text="Per effettuare una prenotazione, registrati con /registra.")
 
 
 # Funzione chiamata in seguito alla risposta dell'utente
@@ -66,10 +42,10 @@ def booking_handler(bot, update):
 
     if len(data) == 2 and (mode == "Permanent" or mode == "Temporary"):
         time = (datetime.datetime.now() + datetime.timedelta(hours=1 + common.is_dst())).time()
-        if datetime.time(6, 0) <= time <= datetime.time(20, 0) and common.is_tomorrow_weekday():
+        if datetime.time(6, 0) <= time <= datetime.time(20, 0) and common.is_weekday(tomorrow()):
             bot.send_message(chat_id=chat_id,
                              text="Scegli una persona:",
-                             reply_markup=persone_keyboard(mode, tomorrow()))
+                             reply_markup=booking_keyboard(mode, tomorrow()))
         else:
             bot.send_message(chat_id=chat_id,
                              text="Mi dispiace, è possibile effettuare prenotazioni"
@@ -158,7 +134,7 @@ def deletebooking_handler(bot, update):
 
 # Keyboard customizzata per visualizzare le prenotazioni in maniera inline
 # Day è un oggetto di tipo stringa
-def persone_keyboard(mode, day):
+def booking_keyboard(mode, day):
     keyboard = []
     for i in secrets.groups_morning[day]:
         try:

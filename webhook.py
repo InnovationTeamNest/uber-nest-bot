@@ -8,17 +8,17 @@ import actions_me
 import inline
 import telegram
 import dumpable
+import secrets
 
 from telegram.ext import Dispatcher, CommandHandler, MessageHandler, CallbackQueryHandler, Filters
-from secrets import bot_token, url
 
-un_bot = telegram.Bot(bot_token)
+un_bot = telegram.Bot(secrets.bot_token)
 
 
 class WebHookHandler(webapp2.RequestHandler):
     def get(self):
         dispatcher_setup()  # Ogni volta che si carica una nuova versione, bisogna rifare il setup del bot!
-        res = un_bot.setWebhook(url + bot_token)
+        res = un_bot.setWebhook(secrets.url + secrets.bot_token)
         if res:
             self.response.write("Webhook set!")
         else:

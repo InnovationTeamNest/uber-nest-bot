@@ -2,7 +2,6 @@
 
 import datetime
 import time
-
 import secrets
 
 
@@ -32,12 +31,25 @@ def day_to_string(input):
         return u"Domenica"
 
 
-def is_today_weekday():
-    return 0 <= datetime.datetime.today().weekday() <= 4
+def string_to_day(input):
+    if input == u"Lunedi":
+        return 0
+    elif input == u"Martedi":
+        return 1
+    elif input == u"Mercoledi":
+        return 2
+    elif input == u"Giovedi":
+        return 3
+    elif input == u"Venerdi":
+        return 4
+    elif input == u"Sabato":
+        return 5
+    elif input == u"Domenica":
+        return 6
 
 
-def is_tomorrow_weekday():
-    return 0 <= datetime.datetime.today().weekday() + 1 <= 4
+def is_weekday(input):
+    return 0 <= string_to_day(input) <= 4
 
 
 def is_dst():
@@ -48,9 +60,9 @@ def get_partenza(driver, day, direction):
     output = None
     try:
         if direction == "Salita":
-            output = str(secrets.times_morning[day][driver].encode('utf-8') + " per Povo")
+            output = str(secrets.groups_morning[day][driver]["Time"].encode('utf-8') + " per Povo")
         elif direction == "Discesa":
-            output = str(secrets.times_evening[day][driver].encode('utf-8') + " per NEST")
+            output = str(secrets.groups_evening[day][driver]["Time"].encode('utf-8') + " per NEST")
     except KeyError as ex:
         output = None
     return output

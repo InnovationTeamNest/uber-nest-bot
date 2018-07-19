@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import common
 import secrets
-from actions_booking import fetch_bookings
-from actions_me import response_me_driver, response_me_user, response_confirmtrip
-from common import tomorrow, today
+import actions_me
+import inline
+
+from common import tomorrow, today, day_to_string
+from lib.telegram import InlineKeyboardButton, ChatAction
 
 
 class ReplyStatus:
@@ -24,11 +27,11 @@ def text_filter(bot, update):
     elif ReplyStatus.response_mode == 1:
         response_registra(bot, update)
     elif ReplyStatus.response_mode == 2:
-        response_me_driver(bot, update)
+        actions_me.response_me_driver(bot, update)
     elif ReplyStatus.response_mode == 3:
-        response_me_user(bot, update)
+        actions_me.response_me_user(bot, update)
     elif ReplyStatus.response_mode == 4:
-        response_confirmtrip(bot, update)
+        actions_me.response_confirmtrip(bot, update)
 
 
 def start(bot, update):
@@ -41,36 +44,81 @@ def help(bot, update):
     bot.send_message(chat_id=update.message.chat_id,
                      text="Comandi disponibili:")
 
-    text = "/oggi - Visualizza le prenotazioni per oggi.\n" \
-           + "/domani - Visualizza le prenotazioni per domani.\n" \
-           + "/settimana - Visualizza le prenotazioni per la settimana.\n\n" \
-           + "/prenota - Effettua una prenotazione.\n" \
-           + "/registra - Aggiungi il tuo nome al database."
-
     if str(update.message.chat_id).decode('utf-8') in secrets.users:
-        text += "\n\n/me - Gestisci il tuo profilo."
+        text = "/me - Gestisci il tuo profilo." \
+               + "\n/prenota - Gestisci le prenotazioni."
+    else:
+        text = "/registra - Aggiungi il tuo nome al database."
 
-    bot.send_message(chat_id=update.message.chat_id,
-                     text=text)
+    text = text + "\n\n/oggi - Visualizza le prenotazioni per oggi." \
+                + "\n/domani - Visualizza le prenotazioni per domani." \
+                + "\n/settimana - Visualizza le prenotazioni per la settimana."
+
+    bot.send_message(chat_id=update.message.chat_id, text=text)
 
 
 def oggi(bot, update):
-    fetch_bookings(bot, update, today())
+    fetch_bookings(bot, update.message.chat_id, today())
 
 
 def domani(bot, update):
-    fetch_bookings(bot, update, tomorrow())
+    fetch_bookings(bot, update.message.chat_id, tomorrow())
 
 
 def settimana(bot, update):
-    bot.send_message(chat_id=update.message.chat_id,
-                     text="Feature non ancora implementata.")
+    keyboard = []
+
+    for i in range(0, 5, 1):
+        keyboard.append(InlineKeyboardButton(
+            day_to_string(i)[:2],
+            callback_data=inline.create_callback_data("SHOWBOOKINGS", [day_to_string(i)])))
+
+    bot.send_message(chat_id=update.message.chat_id, text="Scegli il giorno di cui visualizzare le prenotazioni",
+                     reply_markup=[keyboard])
+
+
+def show_bookings(bot, update):
+    chat_id = update.callback_query.from_user.id
+
+    bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
+    update.callback_query.message.delete()
+
+    data = inline.separate_callback_data(update.callback_query.data)
+    fetch_bookings(bot, chat_id, data[1])
+
+
+def fetch_bookings(bot, chat_id, day):
+    if common.is_weekday(day):
+        bot.send_message(chat_id=chat_id,
+                         text="Lista delle prenotazioni per "
+                              + day.lower() + ": ")
+
+        groups = secrets.groups_morning[day]
+        if len(groups) > 0:
+            message = "Persone in salita: \n\n"
+            for day in groups:
+                people = [secrets.users[user] for day in groups for mode in groups[day]
+                          if mode != u"Time" for user in groups[day][mode]]
+                bot.send_message(chat_id=chat_id,
+                                 text=message + secrets.users[day] + ":\n" + ", ".join(people))
+
+        groups = secrets.groups_evening[day]
+        if len(groups) > 0:
+            message = "Persone in discesa: \n\n"
+            for day in groups:
+                people = [secrets.users[user] for day in groups for mode in groups[day]
+                          if mode != u"Time" for user in groups[day][mode]]
+                bot.send_message(chat_id=chat_id,
+                                 text=message + secrets.users[day] + ":\n" + ", ".join(people))
+
+    else:
+        bot.send_message(chat_id=chat_id,
+                         text=day + " UberNEST non sarà attivo.")
 
 
 def registra(bot, update):
     if str(update.message.chat_id).decode('utf-8') in secrets.users:
-        bot.send_message(chat_id=update.message.chat_id,
-                         text="Questo utente risulta già iscritto a sistema!")
+        bot.send_message(chat_id=update.message.chat_id, text="Questo utente risulta già iscritto a sistema!")
     else:
         bot.send_message(chat_id=update.message.chat_id,
                          text="In seguito all'iscrizione, assicurati di unirti "
