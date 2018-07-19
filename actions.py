@@ -12,13 +12,6 @@ from lib.telegram import InlineKeyboardButton, ChatAction
 class ReplyStatus:
     response_mode = 0
 
-    def __init__(self):
-        pass
-
-    @staticmethod
-    def allfalse():
-        ReplyStatus.response_mode = 0
-
 
 def text_filter(bot, update):
     if ReplyStatus.response_mode == 0:

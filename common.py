@@ -3,6 +3,7 @@
 import datetime
 import time
 import secrets
+import logging as log
 
 
 def today():
@@ -13,8 +14,8 @@ def tomorrow():
     return day_to_string(datetime.datetime.today().weekday() + 1)
 
 
-def day_to_string(input):
-    date = (input) % 7
+def day_to_string(day_number):
+    date = day_number % 7
     if date == 0:
         return u"Lunedi"
     elif date == 1:
@@ -31,25 +32,25 @@ def day_to_string(input):
         return u"Domenica"
 
 
-def string_to_day(input):
-    if input == u"Lunedi":
+def string_to_day(string):
+    if string == u"Lunedi":
         return 0
-    elif input == u"Martedi":
+    elif string == u"Martedi":
         return 1
-    elif input == u"Mercoledi":
+    elif string == u"Mercoledi":
         return 2
-    elif input == u"Giovedi":
+    elif string == u"Giovedi":
         return 3
-    elif input == u"Venerdi":
+    elif string == u"Venerdi":
         return 4
-    elif input == u"Sabato":
+    elif string == u"Sabato":
         return 5
-    elif input == u"Domenica":
+    elif string == u"Domenica":
         return 6
 
 
-def is_weekday(input):
-    return 0 <= string_to_day(input) <= 4
+def is_weekday(string):
+    return 0 <= string_to_day(string) <= 4
 
 
 def is_dst():
@@ -64,6 +65,7 @@ def get_partenza(driver, day, direction):
         elif direction == "Discesa":
             output = str(secrets.groups_evening[day][driver]["Time"].encode('utf-8') + " per NEST")
     except KeyError as ex:
+        log.info("Nessuna partenza trovata!" + ex.message)
         output = None
     return output
 

@@ -13,13 +13,12 @@ from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
 # Comando iniziale che viene chiamato dall'utente
 def prenota(bot, update):
     if str(update.message.chat_id).decode('utf-8') in secrets.users:
-        keyboard = []
-        keyboard.append([InlineKeyboardButton("Prenotare una-tantum",
-                                              callback_data=create_callback_data("BOOKING", ["Temporary"]))])
-        keyboard.append([InlineKeyboardButton("Prenotare in maniera permanente",
-                                              callback_data=create_callback_data("BOOKING", ["Permanent"]))])
-        keyboard.append([InlineKeyboardButton("Visualizza e disdici una prenotazione",
-                                              callback_data=create_callback_data("DELETEBOOKING", []))])
+        keyboard = [[InlineKeyboardButton("Prenotare una-tantum",
+                                          callback_data=create_callback_data("BOOKING", ["Temporary"]))],
+                    [InlineKeyboardButton("Prenotare in maniera permanente",
+                                          callback_data=create_callback_data("BOOKING", ["Permanent"]))],
+                    [InlineKeyboardButton("Visualizza e disdici una prenotazione",
+                                          callback_data=create_callback_data("DELETEBOOKING", []))]]
         bot.send_message(chat_id=update.message.chat_id,
                          text="Cosa vuoi fare?",
                          reply_markup=InlineKeyboardMarkup(keyboard))
@@ -51,7 +50,7 @@ def booking_handler(bot, update):
                              text="Mi dispiace, è possibile effettuare prenotazioni"
                                   " tramite il bot solo dalle 6:00 alle 20:00 del giorno"
                                   " prima. Inoltre, UberNEST è attivo dal Lunedì al Venerdì.")
-    elif (mode == "Permanent" or mode == "Temporary"):
+    elif mode == "Permanent" or mode == "Temporary":
         person, direction = data[2:]
         person = str(person).decode('utf-8')
 
@@ -62,7 +61,7 @@ def booking_handler(bot, update):
                 groups = secrets.groups_evening[tomorrow()]
             else:
                 groups = None
-        except KeyError as ex:
+        except KeyError:
             groups = None
 
         booker = str(chat_id).decode('utf-8')
@@ -140,12 +139,12 @@ def booking_keyboard(mode, day):
         try:
             keyboard.append([InlineKeyboardButton(secrets.users[i] + " - " + get_partenza(i, day, "Salita"),
                                                   callback_data=create_callback_data("BOOKING", [mode, i, "Salita"]))])
-        except TypeError as ex:
+        except TypeError:
             log.info("No bookings found")
     for i in secrets.groups_evening[day]:
         try:
             keyboard.append([InlineKeyboardButton(secrets.users[i] + " - " + get_partenza(i, day, "Discesa"),
                                                   callback_data=create_callback_data("BOOKING", [mode, i, "Discesa"]))])
-        except TypeError as ex:
+        except TypeError:
             log.info("No bookings found")
     return InlineKeyboardMarkup(keyboard)
