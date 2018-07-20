@@ -44,8 +44,8 @@ def help(bot, update):
         text = "/registra - Aggiungi il tuo nome al database."
 
     text = text + "\n\n/oggi - Visualizza le prenotazioni per oggi." \
-                + "\n/domani - Visualizza le prenotazioni per domani." \
-                + "\n/settimana - Visualizza le prenotazioni per la settimana."
+           + "\n/domani - Visualizza le prenotazioni per domani." \
+           + "\n/settimana - Visualizza le prenotazioni per la settimana."
 
     bot.send_message(chat_id=update.message.chat_id, text=text)
 
@@ -64,7 +64,7 @@ def settimana(bot, update):
     for i in range(0, 5, 1):
         day = str(day_to_string(i))
         keyboard.append(InlineKeyboardButton(day[:2],
-                        callback_data=inline.create_callback_data("SHOWBOOKINGS", [day])))
+                                             callback_data=inline.create_callback_data("SHOWBOOKINGS", [day])))
 
     bot.send_message(chat_id=update.message.chat_id, text="Scegli il giorno di cui visualizzare le prenotazioni. ",
                      reply_markup=InlineKeyboardMarkup([keyboard]))
@@ -82,9 +82,7 @@ def show_bookings(bot, update):
 
 def fetch_bookings(bot, chat_id, day):
     if common.is_weekday(day):
-        bot.send_message(chat_id=chat_id,
-                         text="Lista delle prenotazioni per "
-                              + day.lower() + ": ")
+        bot.send_message(chat_id=chat_id, text="Lista delle prenotazioni per " + day.lower() + ": ")
 
     for direction in secrets.groups:
         day_group = secrets.groups[direction][day]
@@ -96,8 +94,7 @@ def fetch_bookings(bot, chat_id, day):
                 bot.send_message(chat_id=chat_id,
                                  text=message + secrets.users[driver] + ":\n" + ", ".join(people))
     else:
-        bot.send_message(chat_id=chat_id,
-                         text=day + " UberNEST non sarà attivo.")
+        bot.send_message(chat_id=chat_id, text=day + " UberNEST non sarà attivo.")
 
 
 def registra(bot, update):

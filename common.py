@@ -78,9 +78,9 @@ def direction_to_name(direction):
 
 def search_by_booking(person):
     data = []
-    
+
     for direction in groups:
         data.extend([[direction, date, driver, mode] for date in groups[direction] for driver in groups[direction][date]
-                    for mode in groups[direction][date][driver] if person in groups[direction][date][driver][mode]])
+                     for mode in groups[direction][date][driver] if person in groups[direction][date][driver][mode]])
 
     return data

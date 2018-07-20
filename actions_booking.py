@@ -89,16 +89,18 @@ def deletebooking_handler(bot, update):
             keyboard = []
             for i in bookings:
                 direction, day, driver, mode = i
+
                 if mode == "Temporary":
-                    keyboard.append(
-                        [InlineKeyboardButton("Temporanea il " + day + " con " + secrets.users[driver] + " - " +
-                                              get_partenza(driver, day, direction),
-                                              callback_data=inline.create_callback_data("DELETEBOOKING", i))])
+                    mode_string = "Temporanea"
                 elif mode == "Permanent":
-                    keyboard.append(
-                        [InlineKeyboardButton("Permanente il " + day + " con " + secrets.users[driver] + " - " +
-                                              get_partenza(driver, day, direction),
-                                              callback_data=inline.create_callback_data("DELETEBOOKING", i))])
+                    mode_string = "Permanente"
+                else:
+                    mode_string = " - "
+
+                keyboard.append(
+                    [InlineKeyboardButton(mode_string + " il " + day + " con " + secrets.users[driver] + " - " +
+                                          get_partenza(driver, day, direction),
+                                          callback_data=inline.create_callback_data("DELETEBOOKING", i))])
             keyboard.append(
                 [InlineKeyboardButton("Annulla",
                                       callback_data=inline.create_callback_data("DELETEBOOKING", ["CANCEL"]))])
@@ -111,10 +113,12 @@ def deletebooking_handler(bot, update):
     elif len(data) == 5:
         keyboard = []
         data[0] = "CONFIRM"
+
         keyboard.append(InlineKeyboardButton(
             "Sì", callback_data=inline.create_callback_data("DELETEBOOKING", data)))
         keyboard.append(InlineKeyboardButton(
             "No", callback_data=inline.create_callback_data("DELETEBOOKING", ["CANCEL"])))
+
         bot.send_message(chat_id=chat_id,
                          text="Sei sicuro di voler cancellare questo viaggio?",
                          reply_markup=InlineKeyboardMarkup([keyboard]))
