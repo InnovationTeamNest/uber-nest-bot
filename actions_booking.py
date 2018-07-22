@@ -91,8 +91,6 @@ def delete_booking(bot, update):
     bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
     update.callback_query.message.delete()
 
-    log.info("Length: " + str(len(data)))
-
     if len(data) == 1:
         bookings = common.search_by_booking(str(chat_id))
         if len(bookings) > 0:

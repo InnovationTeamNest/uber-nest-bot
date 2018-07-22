@@ -39,7 +39,7 @@ def me_handler(bot, update):
                                   " completo di tutte le prenotazioni.",
                              reply_markup=InlineKeyboardMarkup([keyboard]))
         else:
-            keyboard = [InlineKeyboardButton("Sì", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER")),
+            keyboard = [InlineKeyboardButton("Sì", callback_data=inline.create_callback_data("ME", "SLOTSDRIVER")),
                         InlineKeyboardButton("No", callback_data=inline.create_callback_data("CANCEL"))]
             bot.send_message(chat_id=chat_id,
                              text="Una volta finalizzata l'iscrizione come autista, potrai gestire i tuoi"
@@ -56,11 +56,23 @@ def me_handler(bot, update):
                               " L'operazione è reversibile, ma tutte le"
                               " tue prenotazioni e viaggi verranno cancellati.",
                          reply_markup=InlineKeyboardMarkup([keyboard]))
+    elif data == "SLOTSDRIVER":
+        keyboard = [InlineKeyboardButton("2", callback_data=inline.create_callback_data("ME", "CONFIRMRDRIVER", "2")),
+                    InlineKeyboardButton("3", callback_data=inline.create_callback_data("ME", "CONFIRMRDRIVER", "3")),
+                    InlineKeyboardButton("4", callback_data=inline.create_callback_data("ME", "CONFIRMRDRIVER", "4")),
+                    InlineKeyboardButton("5", callback_data=inline.create_callback_data("ME", "CONFIRMRDRIVER", "5")),
+                    InlineKeyboardButton("6", callback_data=inline.create_callback_data("ME", "CONFIRMRDRIVER", "6"))]
+        bot.send_message(chat_id=chat_id,
+                         text="Inserisci il numero di posti disponibili nella tua macchina (autista escluso). "
+                              "Per una questione logistica, non e' possibile modificare tale cifra; se necessario, "
+                              "basta cancellarsi e reiscriversi come autista.",
+                         reply_markup=InlineKeyboardMarkup([keyboard]))
     elif data == "CONFIRMDRIVER":
-        secrets.drivers[str(chat_id)] = {u"Slots": 5, u"Credit": 0}
+        slots = int(data[2])
+        secrets.drivers[str(chat_id)] = {u"Slots": slots, u"Credit": 0}
         bot.send_message(chat_id=chat_id,
                          text="Sei stato inserito nella lista degli autisti! Usa il menu /me per gestire"
-                              " il tuo profilo guidatore.")
+                              " il tuo profilo autista.")
     elif data == "DELETEDRIVER":
         del secrets.drivers[str(chat_id)]
 
@@ -111,7 +123,7 @@ def trips_handler(bot, update):
         bot.send_message(chat_id=chat_id, text="Viaggio cancellato con successo.")
 
 
-def newtrip_handler(bot, update):
+def new_trip(bot, update):
     data, time = inline.separate_callback_data(update.callback_query.data)[1:3]
     try:
         day = inline.separate_callback_data(update.callback_query.data)[3]
