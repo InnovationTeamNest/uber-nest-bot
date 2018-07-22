@@ -15,22 +15,16 @@ class ReplyStatus:
 
 def text_filter(bot, update):
     if ReplyStatus.response_mode == 0:
-        bot.send_message(chat_id=update.message.chat_id,
-                         text="Digita /help per avere informazioni sui comandi.")
+        bot.send_message(chat_id=update.message.chat_id, text="Digita /help per avere informazioni sui comandi.")
     elif ReplyStatus.response_mode == 1:
         response_registra(bot, update)
-    elif ReplyStatus.response_mode == 2:
-        actions_me.response_me_driver(bot, update)
-    elif ReplyStatus.response_mode == 3:
-        actions_me.response_me_user(bot, update)
     elif ReplyStatus.response_mode == 4:
         actions_me.response_confirmtrip(bot, update)
 
 
 def start(bot, update):
-    bot.send_message(chat_id=update.message.chat_id,
-                     text="Benvenuto nel bot di UberNEST. Per iniziare,"
-                          " digita /help per visualizzare i comandi.")
+    bot.send_message(chat_id=update.message.chat_id, text="Benvenuto nel bot di UberNEST. Per iniziare,"
+                                                          " digita /help per visualizzare i comandi.")
 
 
 def help(bot, update):
@@ -64,7 +58,7 @@ def settimana(bot, update):
     for i in range(0, 5, 1):
         day = str(day_to_string(i))
         keyboard.append(InlineKeyboardButton(day[:2],
-                                             callback_data=inline.create_callback_data("SHOWBOOKINGS", [day])))
+                                             callback_data=inline.create_callback_data("SHOWBOOKINGS", day)))
 
     bot.send_message(chat_id=update.message.chat_id, text="Scegli il giorno di cui visualizzare le prenotazioni. ",
                      reply_markup=InlineKeyboardMarkup([keyboard]))

@@ -34,17 +34,11 @@ def cancel_handler(bot, update):
     bot.send_message(chat_id=chat_id, text="Operazione annullata.")
 
 
-def create_callback_data(identifier, args):
+def create_callback_data(*arg):
     """ Create the callback data associated to each button"""
-    args.insert(0, identifier)
-    return ";".join(str(i) for i in args)
+    return ";".join(str(i) for i in arg)
 
 
 def separate_callback_data(data):
     """ Separate the callback data"""
     return data.split(";")
-
-
-def create_callback_data_temp(*arg):
-    """ Create the callback data associated to each button"""
-    return ";".join(str(i) for i in arg)
