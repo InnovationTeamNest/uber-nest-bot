@@ -97,7 +97,7 @@ def trips_handler(bot, update):
         actions.ReplyStatus.response_mode = 4
     elif data == "DELETE":
         direction, day = inline.separate_callback_data(update.callback_query.data)[2:4]
-        # Creo una tastiera custom per Sì/No
+
         keyboard = [InlineKeyboardButton("Sì", callback_data=inline.create_callback_data(
                         "TRIPS", "CONFIRMDELETION", direction, day)),
                     InlineKeyboardButton("No", callback_data=inline.create_callback_data("CANCEL"))]
@@ -195,8 +195,7 @@ def trips_keyboard(update):
             if trip is not None:
                 keyboard.append([
                     InlineKeyboardButton(day + ": " + trip,
-                                         callback_data=inline.create_callback_data("TRIPS",
-                                                                                   "DELETE", direction, day))])
+                                         callback_data=inline.create_callback_data("TRIPS", "DELETE", direction, day))])
 
     keyboard.append([InlineKeyboardButton("Esci", callback_data=inline.create_callback_data("CANCEL"))])
     return InlineKeyboardMarkup(keyboard)

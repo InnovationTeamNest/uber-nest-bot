@@ -37,44 +37,54 @@ def booking_handler(bot, update):
     update.callback_query.message.delete()
 
     data = inline.separate_callback_data(update.callback_query.data)
-    mode = data[1]
 
-    log.info("Mode:" + str(mode) + ", length: " + str(len(data)))
-
-    if len(data) == 2 and mode == "Temporary":
-        if common.booking_time():
-            bot.send_message(chat_id=chat_id,
-                             text="Scegli una persona:",
-                             reply_markup=booking_keyboard(mode, tomorrow()))
-        else:
-            bot.send_message(chat_id=chat_id,
-                             text="Mi dispiace, è possibile effettuare prenotazioni"
-                                  " tramite il bot solo dalle 6:00 alle 20:00 del giorno"
-                                  " prima. Inoltre, UberNEST è attivo dal Lunedì al Venerdì.")
-    elif len(data) == 2 and mode == "Permanent":
-        bot.send_message(chat_id=chat_id, text="Funzionalità non ancora implementata")
-    elif mode == "Permanent" or mode == "Temporary":
-        person, direction = data[2:]
-
-        person = str(person).decode('utf-8')
-        booker = str(chat_id).decode('utf-8')
-
-        trips = secrets.groups[direction][tomorrow()][person]
-
-        if len(trips["Permanent"]) + len(trips["Temporary"]) < 4:
-            if booker == person:
-                bot.send_message(chat_id=chat_id, text="Sei tu l'autista!")
-            elif booker not in trips["Temporary"] and booker not in trips["Permanent"]:
-                trips[mode].append(booker)
-                bot.send_message(chat_id=chat_id, text="Prenotato con "
-                                                       + secrets.users[person] + " per domani con successo.")
+    if len(data) == 2:  # Caso in cui è stato appena selezionato il bottone dal menu
+        mode = data[1]
+        if mode == "Temporary":
+            if common.booking_time():
+                bot.send_message(chat_id=chat_id,
+                                 text="Viaggi disponibili per " + tomorrow().lower(),
+                                 reply_markup=booking_keyboard(mode, tomorrow()))
             else:
-                bot.send_message(chat_id=chat_id, text="Ti sei già prenotato per domani con questa persona!")
+                bot.send_message(chat_id=chat_id,
+                                 text="Mi dispiace, è possibile effettuare prenotazioni"
+                                      " tramite il bot solo dalle 6:00 alle 20:00 del giorno"
+                                      " prima. Inoltre, UberNEST è attivo dal Lunedì al Venerdì.")
+        elif mode == "Permanent":
+            keyboard = []
+            for i in range(0, 5, 1):
+                keyboard.append(InlineKeyboardButton(common.day_to_string(i)[:2],  # Abbreviazione del giorno
+                                callback_data=inline.create_callback_data("BOOKING", mode, common.day_to_string(i))))
+            bot.send_message(chat_id=chat_id, text="Scegli la data della prenotazione.",
+                             reply_markup=InlineKeyboardMarkup([keyboard, [InlineKeyboardButton(
+                                 "Annulla", callback_data=inline.create_callback_data("CANCEL"))]]))
+    elif len(data) == 3:
+        mode, day = data[1:3]
+        if mode == "Permanent":
+            bot.send_message(chat_id=chat_id, text="Viaggi disponibili per " + day.lower(),
+                             reply_markup=booking_keyboard(mode, day))
+    else:
+        direction, day, driver, mode = data[1:]
+
+        trips = secrets.groups[direction][tomorrow()][driver]
+
+        if len(trips["Permanent"]) + len(trips["Temporary"]) < secrets.drivers[driver][u"Slots"]:
+            if str(chat_id) == driver:
+                bot.send_message(chat_id=chat_id, text="Sei tu l'autista!")
+            elif str(chat_id) not in trips["Temporary"] and str(chat_id) not in trips["Permanent"]:
+                trips[mode].append(str(chat_id))
+                bot.send_message(chat_id=chat_id, text="Prenotazione completata. Dati del viaggio:"
+                                                       + "\n\nAutista: " + secrets.users[driver]
+                                                       + "\nGiorno: " + day
+                                                       + "\nDirezione: " + common.direction_to_name(direction)
+                                                       + "\nModalità: " + common.localize_direction(mode))
+            else:
+                bot.send_message(chat_id=chat_id, text="Ti sei già prenotato in questa data con questa persona!")
         else:
-            bot.send_message(chat_id=chat_id, text="Posti per domani esauriti.")
+            bot.send_message(chat_id=chat_id, text="Posti in questa data esauriti.")
 
 
-def deletebooking_handler(bot, update):
+def delete_booking(bot, update):
     chat_id = update.callback_query.from_user.id
     data = inline.separate_callback_data(update.callback_query.data)
 
@@ -130,8 +140,8 @@ def booking_keyboard(mode, day):
             try:
                 keyboard.append(
                     [InlineKeyboardButton(secrets.users[driver] + " - " + get_partenza(driver, day, direction),
-                                          callback_data=inline.create_callback_data("BOOKING",
-                                                                                    mode, driver, direction))])
+                                          callback_data=inline.create_callback_data(
+                                              "BOOKING", direction, day, driver, mode))])
             except TypeError:
                 log.info("No bookings found")
 
