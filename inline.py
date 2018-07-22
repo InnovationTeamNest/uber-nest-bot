@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from telegram import ChatAction
+
 import actions
 import actions_booking
 import actions_me
@@ -19,6 +21,17 @@ def inline_handler(bot, update):
         actions_me.newtrip_handler(bot, update)
     elif identifier == "SHOWBOOKINGS":
         actions.show_bookings(bot, update)
+    elif identifier == "CANCEL":
+        cancel_handler(bot, update)
+
+
+def cancel_handler(bot, update):
+    chat_id = update.callback_query.from_user.id
+
+    bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
+    update.callback_query.message.delete()
+
+    bot.send_message(chat_id=chat_id, text="Operazione annullata.")
 
 
 def create_callback_data(identifier, args):
@@ -30,3 +43,8 @@ def create_callback_data(identifier, args):
 def separate_callback_data(data):
     """ Separate the callback data"""
     return data.split(";")
+
+
+def create_callback_data_temp(*arg):
+    """ Create the callback data associated to each button"""
+    return ";".join(str(i) for i in arg)

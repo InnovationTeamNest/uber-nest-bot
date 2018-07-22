@@ -10,7 +10,7 @@ from dateutil import parser
 
 
 def me(bot, update):
-    if str(update.message.chat_id).decode('utf-8') in secrets.users:
+    if str(update.message.chat_id) in secrets.users:
         bot.send_message(chat_id=update.message.chat_id, text="Cosa vuoi fare?", reply_markup=me_keyboard(update))
 
 
@@ -43,10 +43,20 @@ def me_handler(bot, update):
         else:
             # Utente non presente
             bot.send_message(chat_id=chat_id,
-                             text="Contatta un membro del direttivo per ulteriori informazioni"
-                                  " al riguardo. ---DISCLAIMER DEL REGOLAMENTO  --- al momento l'utente"
-                                  " è aggiunto in ogni caso")
-            secrets.drivers[str(chat_id)] = {u"Slots": 5, u"Credit": 0}
+                             text="Una volta finalizzata l'iscrizione come autista, potrai gestire i tuoi"
+                                  " viaggi direttamente da questo bot. Contatta un membro del direttivo di"
+                                  " UberNEST per ulteriori informazioni.")
+            bot.send_message(chat_id=chat_id,
+                             text="Sei sicuro di voler diventare un autista di UberNEST?")
+            keyboard = [InlineKeyboardButton("Sì", callback_data=inline.create_callback_data(
+                            "ME", ["CONFIRMDRIVER"])),
+                        InlineKeyboardButton("No", callback_data=inline.create_callback_data(
+                            "CANCEL", []))]
+    elif data == "CONFIRMDRIVER":
+        secrets.drivers[str(chat_id)] = {u"Slots": 5, u"Credit": 0}
+        bot.send_message(chat_id=chat_id,
+                         text="Sei stato inserito nella lista degli autisti! Usa il menu /me per gestire"
+                              " il tuo profilo guidatore.")
     elif data == "REMOVAL":
         bot.send_message(chat_id=chat_id,
                          text="Sei sicuro di voler confermare la tua rimozione completa dal sistema?"
@@ -68,16 +78,16 @@ def trips_handler(bot, update):
     log.info("Mode entered: " + data)
     if data == "ADD":
         bot.send_message(chat_id=chat_id,
-                         text="Reminder: Se la data e l'ora sono già presenti, verranno sovrascritte."
-                              "Inserisci l'ora di partenza nel formato HH:MM.")
+                         text="Inserisci l'ora di partenza nel formato HH:MM. Se la combinazione di data e ora"
+                              " e' già presente, verrà sovrascritta.")
         actions.ReplyStatus.response_mode = 4
     elif data == "DELETE":
         direction, day = inline.separate_callback_data(update.callback_query.data)[2:4]
         # Creo una tastiera custom per Sì/No
         keyboard = [InlineKeyboardButton("Sì", callback_data=inline.create_callback_data(
-            "TRIPS", ["CONFIRMDELETION", direction, day])),
+                        "TRIPS", ["CONFIRMDELETION", direction, day])),
                     InlineKeyboardButton("No", callback_data=inline.create_callback_data(
-                        "TRIPS", ["QUIT"]))]
+                        "CANCEL", []))]
 
         bot.send_message(chat_id=chat_id,
                          text="Sei sicuro di voler cancellare questo viaggio?",
@@ -86,8 +96,6 @@ def trips_handler(bot, update):
         direction, day = inline.separate_callback_data(update.callback_query.data)[2:4]
         del secrets.groups[direction][day][chat_id]
         bot.send_message(chat_id=chat_id, text="Viaggio cancellato con successo.")
-    elif data == "QUIT":
-        bot.send_message(chat_id=chat_id, text="Operazione annullata.")
 
 
 def newtrip_handler(bot, update):
@@ -113,7 +121,7 @@ def newtrip_handler(bot, update):
         bot.send_message(chat_id=chat_id,
                          text="Scegli la data del viaggio.",
                          reply_markup=InlineKeyboardMarkup([keyboard, [InlineKeyboardButton(
-                             "Annulla", callback_data=inline.create_callback_data("TRIPS", ["QUIT"]))]]))
+                             "Annulla", callback_data=inline.create_callback_data("CANCEL", []))]]))
 
     elif day is not None and (data == "Salita" or data == "Discesa"):
         secrets.groups[data][str(day)][str(chat_id)] = {u"Time": str(time), u"Permanent": [], u"Temporary": []}
@@ -159,7 +167,7 @@ def response_me_driver(bot, update):
                          text="Sei stato rimosso con successo dall'elenco degli autisti.")
     else:
         bot.send_message(chat_id=update.message.chat_id,
-                         text="Cancellazione interrotta.")
+                         text="Spiacente, si è verificato un errore. ")
     actions.ReplyStatus.response_mode = 0
 
 
@@ -169,14 +177,13 @@ def response_me_user(bot, update):
         del secrets.users[str(chat_id)]
         response_me_driver(bot, update)
         bot.send_message(chat_id=chat_id, text="Sei stato rimosso con successo dal sistema.")
-    else:
-        bot.send_message(chat_id=chat_id, text="Cancellazione interrotta.")
+    actions.ReplyStatus.response_mode = 0
     actions.ReplyStatus.response_mode = 0
 
 
 def me_keyboard(update):
     keyboard = []
-    if str(update.message.chat_id).decode('utf-8') in secrets.drivers:
+    if str(update.message.chat_id) in secrets.drivers:
         string = "Smettere di essere un autista di UberNEST"
         keyboard.append([InlineKeyboardButton("Gestire i miei viaggi",
                                               callback_data=inline.create_callback_data("ME", ["TRIPS"]))])
@@ -187,6 +194,8 @@ def me_keyboard(update):
                                           callback_data=inline.create_callback_data("ME", ["DRIVER"]))])
     keyboard.append([InlineKeyboardButton("Cancellarmi dal sistema di UberNEST",
                                           callback_data=inline.create_callback_data("ME", ["REMOVAL"]))])
+    keyboard.append([InlineKeyboardButton("Esci dal menu",
+                                          callback_data=inline.create_callback_data("CANCEL", []))])
     return InlineKeyboardMarkup(keyboard)
 
 
@@ -204,5 +213,5 @@ def trips_keyboard(update):
                                          callback_data=inline.create_callback_data("TRIPS",
                                                                                    ["DELETE", direction, day]))])
 
-    keyboard.append([InlineKeyboardButton("Esci", callback_data=inline.create_callback_data("TRIPS", ["QUIT"]))])
+    keyboard.append([InlineKeyboardButton("Esci", callback_data=inline.create_callback_data("CANCEL", []))])
     return InlineKeyboardMarkup(keyboard)

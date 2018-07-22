@@ -84,3 +84,17 @@ def search_by_booking(person):
                      for mode in groups[direction][date][driver] if person in groups[direction][date][driver][mode]])
 
     return data
+
+
+def booking_time():
+    now = (datetime.datetime.now() + datetime.timedelta(hours=1 + is_dst())).time()
+    return (datetime.time(6, 0) <= now <= datetime.time(20, 0)) and is_weekday(tomorrow())
+
+
+def localize_direction(mode):
+    if mode == "Temporary":
+        return "Temporanea"
+    elif mode == "Permanent":
+        return "Permanente"
+    else:
+        return " - "

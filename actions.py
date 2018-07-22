@@ -37,15 +37,15 @@ def help(bot, update):
     bot.send_message(chat_id=update.message.chat_id,
                      text="Comandi disponibili:")
 
-    if str(update.message.chat_id).decode('utf-8') in secrets.users:
+    if str(update.message.chat_id) in secrets.users:
         text = "/me - Gestisci il tuo profilo." \
                + "\n/prenota - Gestisci le prenotazioni."
     else:
         text = "/registra - Aggiungi il tuo nome al database."
 
     text = text + "\n\n/oggi - Visualizza le prenotazioni per oggi." \
-           + "\n/domani - Visualizza le prenotazioni per domani." \
-           + "\n/settimana - Visualizza le prenotazioni per la settimana."
+                + "\n/domani - Visualizza le prenotazioni per domani." \
+                + "\n/settimana - Visualizza le prenotazioni per la settimana."
 
     bot.send_message(chat_id=update.message.chat_id, text=text)
 
@@ -98,7 +98,7 @@ def fetch_bookings(bot, chat_id, day):
 
 
 def registra(bot, update):
-    if str(update.message.chat_id).decode('utf-8') in secrets.users:
+    if str(update.message.chat_id) in secrets.users:
         bot.send_message(chat_id=update.message.chat_id, text="Questo utente risulta già iscritto a sistema!")
     else:
         bot.send_message(chat_id=update.message.chat_id,

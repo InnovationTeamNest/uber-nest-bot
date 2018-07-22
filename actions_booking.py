@@ -12,13 +12,15 @@ from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
 
 # Comando iniziale che viene chiamato dall'utente
 def prenota(bot, update):
-    if str(update.message.chat_id).decode('utf-8') in secrets.users:
-        keyboard = [[InlineKeyboardButton("Prenotare una-tantum",
+    if str(update.message.chat_id) in secrets.users:
+        keyboard = [[InlineKeyboardButton("Prenotare una-tantum (solo per il giorno dopo)",
                                           callback_data=inline.create_callback_data("BOOKING", ["Temporary"]))],
                     [InlineKeyboardButton("Prenotare in maniera permanente",
                                           callback_data=inline.create_callback_data("BOOKING", ["Permanent"]))],
                     [InlineKeyboardButton("Visualizza e disdici una prenotazione",
-                                          callback_data=inline.create_callback_data("DELETEBOOKING", []))]]
+                                          callback_data=inline.create_callback_data("DELETEBOOKING", []))],
+                    [InlineKeyboardButton("Esci dal menu",
+                                          callback_data=inline.create_callback_data("CANCEL", []))]]
         bot.send_message(chat_id=update.message.chat_id,
                          text="Cosa vuoi fare?",
                          reply_markup=InlineKeyboardMarkup(keyboard))
@@ -39,9 +41,8 @@ def booking_handler(bot, update):
 
     log.info("Mode:" + str(mode) + ", length: " + str(len(data)))
 
-    if len(data) == 2 and (mode == "Permanent" or mode == "Temporary"):
-        time = (datetime.datetime.now() + datetime.timedelta(hours=1 + common.is_dst())).time()
-        if datetime.time(6, 0) <= time <= datetime.time(20, 0) and common.is_weekday(tomorrow()):
+    if len(data) == 2 and mode == "Temporary":
+        if common.booking_time():
             bot.send_message(chat_id=chat_id,
                              text="Scegli una persona:",
                              reply_markup=booking_keyboard(mode, tomorrow()))
@@ -50,24 +51,23 @@ def booking_handler(bot, update):
                              text="Mi dispiace, è possibile effettuare prenotazioni"
                                   " tramite il bot solo dalle 6:00 alle 20:00 del giorno"
                                   " prima. Inoltre, UberNEST è attivo dal Lunedì al Venerdì.")
+    elif len(data) == 2 and mode == "Permanent":
+        bot.send_message(chat_id=chat_id, text="Funzionalità non ancora implementata")
     elif mode == "Permanent" or mode == "Temporary":
         person, direction = data[2:]
+
         person = str(person).decode('utf-8')
-
-        try:
-            groups = secrets.groups[direction][tomorrow()]
-        except KeyError:
-            groups = None
-
         booker = str(chat_id).decode('utf-8')
-        if len(groups[person]["Permanent"]) + len(groups[person]["Temporary"]) < 4:
+
+        trips = secrets.groups[direction][tomorrow()][person]
+
+        if len(trips["Permanent"]) + len(trips["Temporary"]) < 4:
             if booker == person:
                 bot.send_message(chat_id=chat_id, text="Sei tu l'autista!")
-            elif booker not in groups[person]["Temporary"] and \
-                    booker not in groups[person]["Permanent"]:
+            elif booker not in trips["Temporary"] and booker not in trips["Permanent"]:
+                trips[mode].append(booker)
                 bot.send_message(chat_id=chat_id, text="Prenotato con "
                                                        + secrets.users[person] + " per domani con successo.")
-                groups[person][mode].append(booker)
             else:
                 bot.send_message(chat_id=chat_id, text="Ti sei già prenotato per domani con questa persona!")
         else:
@@ -90,15 +90,9 @@ def deletebooking_handler(bot, update):
             for i in bookings:
                 direction, day, driver, mode = i
 
-                if mode == "Temporary":
-                    mode_string = "Temporanea"
-                elif mode == "Permanent":
-                    mode_string = "Permanente"
-                else:
-                    mode_string = " - "
-
                 keyboard.append(
-                    [InlineKeyboardButton(mode_string + " il " + day + " con " + secrets.users[driver] + " - " +
+                    [InlineKeyboardButton(common.localize_direction(mode) + " il " + day
+                                          + " con " + secrets.users[driver] + " - " +
                                           get_partenza(driver, day, direction),
                                           callback_data=inline.create_callback_data("DELETEBOOKING", i))])
             keyboard.append(
@@ -108,8 +102,6 @@ def deletebooking_handler(bot, update):
                              reply_markup=InlineKeyboardMarkup(keyboard))
         else:
             bot.send_message(chat_id=chat_id, text="Mi dispiace, ma non hai prenotazioni all'attivo.")
-    elif len(data) == 2 and data[1] == "CANCEL":
-        bot.send_message(chat_id=chat_id, text="Operazione annullata")
     elif len(data) == 5:
         keyboard = []
         data[0] = "CONFIRM"
@@ -117,7 +109,7 @@ def deletebooking_handler(bot, update):
         keyboard.append(InlineKeyboardButton(
             "Sì", callback_data=inline.create_callback_data("DELETEBOOKING", data)))
         keyboard.append(InlineKeyboardButton(
-            "No", callback_data=inline.create_callback_data("DELETEBOOKING", ["CANCEL"])))
+            "No", callback_data=inline.create_callback_data("CANCEL", [])))
 
         bot.send_message(chat_id=chat_id,
                          text="Sei sicuro di voler cancellare questo viaggio?",
@@ -142,4 +134,6 @@ def booking_keyboard(mode, day):
                                                                                     [mode, driver, direction]))])
             except TypeError:
                 log.info("No bookings found")
+
+    keyboard.append([InlineKeyboardButton("Annulla", callback_data=inline.create_callback_data("CANCEL", []))])
     return InlineKeyboardMarkup(keyboard)

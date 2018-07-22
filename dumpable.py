@@ -11,7 +11,7 @@ class Dumpable(ndb.Model):
     drivers = ndb.JsonProperty()
 
 
-class LastKey():
+class LastKey:
     key = None
 
 
