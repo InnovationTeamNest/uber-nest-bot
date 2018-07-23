@@ -57,11 +57,11 @@ def me_handler(bot, update):
                               " tue prenotazioni e viaggi verranno cancellati.",
                          reply_markup=InlineKeyboardMarkup([keyboard]))
     elif data == "SLOTSDRIVER":
-        keyboard = [InlineKeyboardButton("2", callback_data=inline.create_callback_data("ME", "CONFIRMRDRIVER", "2")),
-                    InlineKeyboardButton("3", callback_data=inline.create_callback_data("ME", "CONFIRMRDRIVER", "3")),
-                    InlineKeyboardButton("4", callback_data=inline.create_callback_data("ME", "CONFIRMRDRIVER", "4")),
-                    InlineKeyboardButton("5", callback_data=inline.create_callback_data("ME", "CONFIRMRDRIVER", "5")),
-                    InlineKeyboardButton("6", callback_data=inline.create_callback_data("ME", "CONFIRMRDRIVER", "6"))]
+        keyboard = [InlineKeyboardButton("2", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "2")),
+                    InlineKeyboardButton("3", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "3")),
+                    InlineKeyboardButton("4", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "4")),
+                    InlineKeyboardButton("5", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "5")),
+                    InlineKeyboardButton("6", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "6"))]
         bot.send_message(chat_id=chat_id,
                          text="Inserisci il numero di posti disponibili nella tua macchina (autista escluso). "
                               "Per una questione logistica, non e' possibile modificare tale cifra; se necessario, "
@@ -81,16 +81,17 @@ def me_handler(bot, update):
                 if str(chat_id) in secrets.groups[direction][day]:
                     del secrets.groups[direction][day][str(chat_id)]
 
-        bot.send_message(chat_id=update.message.chat_id,
+        bot.send_message(chat_id=chat_id,
                          text="Sei stato rimosso con successo dall'elenco degli autisti.")
     elif data == "CONFIRMREMOVAL":
         del secrets.users[str(chat_id)]
-        del secrets.drivers[str(chat_id)]
+        if str(chat_id) in secrets.drivers:
+            del secrets.drivers[str(chat_id)]
 
-        for direction in secrets.groups:
-            for day in secrets.groups[direction]:
-                if str(chat_id) in secrets.groups[direction][day]:
-                    del secrets.groups[direction][day][str(chat_id)]
+            for direction in secrets.groups:
+                for day in secrets.groups[direction]:
+                    if str(chat_id) in secrets.groups[direction][day]:
+                        del secrets.groups[direction][day][str(chat_id)]
         bot.send_message(chat_id=chat_id, text="Sei stato rimosso con successo dal sistema.")
 
 
