@@ -68,7 +68,7 @@ def me_handler(bot, update):
                               "basta cancellarsi e reiscriversi come autista.",
                          reply_markup=InlineKeyboardMarkup([keyboard]))
     elif data == "CONFIRMDRIVER":
-        slots = int(data[2])
+        slots = int(inline.separate_callback_data(update.callback_query.data)[2])
         secrets.drivers[str(chat_id)] = {u"Slots": slots, u"Credit": 0}
         bot.send_message(chat_id=chat_id,
                          text="Sei stato inserito nella lista degli autisti! Usa il menu /me per gestire"
