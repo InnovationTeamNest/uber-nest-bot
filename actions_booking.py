@@ -53,8 +53,10 @@ def booking_handler(bot, update):
         elif mode == "Permanent":
             keyboard = []
             for i in range(0, 5, 1):
-                keyboard.append(InlineKeyboardButton(common.day_to_string(i)[:2],  # Abbreviazione del giorno
-                                callback_data=inline.create_callback_data("BOOKING", mode, common.day_to_string(i))))
+                if i != datetime.datetime.today().weekday():
+                    keyboard.append(InlineKeyboardButton(
+                        common.day_to_string(i)[:2],  # Abbreviazione del giorno
+                        callback_data=inline.create_callback_data("BOOKING", mode, common.day_to_string(i))))
             bot.send_message(chat_id=chat_id, text="Scegli la data della prenotazione.",
                              reply_markup=InlineKeyboardMarkup([keyboard, [InlineKeyboardButton(
                                  "Annulla", callback_data=inline.create_callback_data("CANCEL"))]]))
