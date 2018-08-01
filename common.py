@@ -76,12 +76,17 @@ def direction_to_name(direction):
         return " - "
 
 
-def search_by_booking(person):
+def search_by_booking(person, include_today=False):
     data = []
 
     for direction in groups:
         data.extend([[direction, date, driver, mode] for date in groups[direction] for driver in groups[direction][date]
                      for mode in groups[direction][date][driver] if person in groups[direction][date][driver][mode]])
+
+    if not include_today:
+        for booking in data:
+            if booking[1] == today():
+                data.remove(booking)
 
     return data
 

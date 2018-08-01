@@ -56,20 +56,20 @@ def me_handler(bot, update):
                               " L'operazione è reversibile, ma tutte le"
                               " tue prenotazioni e viaggi verranno cancellati.",
                          reply_markup=InlineKeyboardMarkup([keyboard]))
-    elif data == "SLOTSDRIVER":
-        keyboard = [InlineKeyboardButton("2", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "2")),
-                    InlineKeyboardButton("3", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "3")),
-                    InlineKeyboardButton("4", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "4")),
-                    InlineKeyboardButton("5", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "5")),
-                    InlineKeyboardButton("6", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "6"))]
+    elif data == "SLOTSDRIVER":  # Supporto sensato da macchine con 3 posti fino a 7
+        keyboard = [InlineKeyboardButton("2", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "3")),
+                    InlineKeyboardButton("3", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "4")),
+                    InlineKeyboardButton("4", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "5")),
+                    InlineKeyboardButton("5", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "6")),
+                    InlineKeyboardButton("6", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "7"))]
         bot.send_message(chat_id=chat_id,
-                         text="Inserisci il numero di posti disponibili nella tua macchina (autista escluso). "
-                              "Per una questione logistica, non e' possibile modificare tale cifra; se necessario, "
+                         text="Inserisci il numero di posti disponibili nella tua macchina (autista escluso!). "
+                              "Al momento, non e' possibile modificare tale cifra; se necessario, "
                               "basta cancellarsi e reiscriversi come autista.",
                          reply_markup=InlineKeyboardMarkup([keyboard]))
     elif data == "CONFIRMDRIVER":
         slots = int(inline.separate_callback_data(update.callback_query.data)[2])
-        secrets.drivers[str(chat_id)] = {u"Slots": slots, u"Credit": 0}
+        secrets.drivers[str(chat_id)] = {u"Slots": slots}
         bot.send_message(chat_id=chat_id,
                          text="Sei stato inserito nella lista degli autisti! Usa il menu /me per gestire"
                               " il tuo profilo autista.")

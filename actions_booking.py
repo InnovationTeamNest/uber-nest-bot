@@ -94,7 +94,7 @@ def delete_booking(bot, update):
     update.callback_query.message.delete()
 
     if len(data) == 1:
-        bookings = common.search_by_booking(str(chat_id))
+        bookings = common.search_by_booking(str(chat_id), include_today=False)
         if len(bookings) > 0:
             keyboard = []
             for i in bookings:
@@ -108,7 +108,8 @@ def delete_booking(bot, update):
             keyboard.append(
                 [InlineKeyboardButton("Annulla",
                                       callback_data=inline.create_callback_data("CANCEL"))])
-            bot.send_message(chat_id=chat_id, text="Clicca su una prenotazione per cancellarla.",
+            bot.send_message(chat_id=chat_id, text="Clicca su una prenotazione per cancellarla. Ricorda che non è "
+                                                   "possibile cancellare le prenotazioni in data odierna.",
                              reply_markup=InlineKeyboardMarkup(keyboard))
         else:
             bot.send_message(chat_id=chat_id, text="Mi dispiace, ma non hai prenotazioni all'attivo.")
