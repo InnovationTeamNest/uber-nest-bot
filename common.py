@@ -15,21 +15,21 @@ def tomorrow():
     return day_to_string(datetime.datetime.today().weekday() + 1)
 
 
-def day_to_string(day_number):
-    date = day_number % 7
-    if date == 0:
+def day_to_string(number):
+    day = number % 7
+    if day == 0:
         return u"Lunedi"
-    elif date == 1:
+    elif day == 1:
         return u'Martedi'
-    elif date == 2:
+    elif day == 2:
         return u"Mercoledi"
-    elif date == 3:
+    elif day == 3:
         return u"Giovedi"
-    elif date == 4:
+    elif day == 4:
         return u"Venerdi"
-    elif date == 5:
+    elif day == 5:
         return u"Sabato"
-    elif date == 6:
+    elif day == 6:
         return u"Domenica"
 
 

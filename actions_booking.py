@@ -60,12 +60,12 @@ def booking_handler(bot, update):
             bot.send_message(chat_id=chat_id, text="Scegli la data della prenotazione.",
                              reply_markup=InlineKeyboardMarkup([keyboard, [InlineKeyboardButton(
                                  "Annulla", callback_data=inline.create_callback_data("CANCEL"))]]))
-    elif len(data) == 3:
+    elif len(data) == 3:  # Caso in cui il trip sarà Permanent
         mode, day = data[1:3]
         if mode == "Permanent":
             bot.send_message(chat_id=chat_id, text="Viaggi disponibili per " + day.lower(),
                              reply_markup=booking_keyboard(mode, day))
-    else:
+    else:  # Caso in cui il trip sarà Temporaneo
         direction, day, driver, mode = data[1:]
 
         trips = secrets.groups[direction][tomorrow()][driver]
@@ -76,7 +76,7 @@ def booking_handler(bot, update):
             elif str(chat_id) not in trips["Temporary"] and str(chat_id) not in trips["Permanent"]:
                 trips[mode].append(str(chat_id))
                 bot.send_message(chat_id=chat_id, text="Prenotazione completata. Dati del viaggio:"
-                                                       + "\n\nAutista: " + secrets.users[driver]
+                                                       + "\n\nAutista: " + secrets.users[driver][u"Name"]
                                                        + "\nGiorno: " + day
                                                        + "\nDirezione: " + common.direction_to_name(direction)
                                                        + "\nModalità: " + common.localize_direction(mode))
@@ -102,12 +102,12 @@ def delete_booking(bot, update):
 
                 keyboard.append(
                     [InlineKeyboardButton(common.localize_direction(mode) + " il " + day
-                                          + " con " + secrets.users[driver] + " - " +
+                                          + " con " + secrets.users[driver][u"Name"] + " - " +
                                           get_partenza(driver, day, direction),
                                           callback_data=inline.create_callback_data("DELETEBOOKING", *i))])
             keyboard.append(
                 [InlineKeyboardButton("Annulla",
-                                      callback_data=inline.create_callback_data("DELETEBOOKING", "CANCEL"))])
+                                      callback_data=inline.create_callback_data("CANCEL"))])
             bot.send_message(chat_id=chat_id, text="Clicca su una prenotazione per cancellarla.",
                              reply_markup=InlineKeyboardMarkup(keyboard))
         else:
@@ -117,7 +117,7 @@ def delete_booking(bot, update):
         data[0] = "CONFIRM"
 
         keyboard.append(InlineKeyboardButton(
-            "Sì", callback_data=inline.create_callback_data("DELETEBOOKING", *data)))
+            "Sì", callback_data=inline.create_callback_data("DELETEBOOKING", *data)))  # len == 6
         keyboard.append(InlineKeyboardButton(
             "No", callback_data=inline.create_callback_data("CANCEL")))
 
@@ -139,7 +139,7 @@ def booking_keyboard(mode, day):
         for driver in secrets.groups[direction][day]:
             try:
                 keyboard.append(
-                    [InlineKeyboardButton(secrets.users[driver] + " - " + get_partenza(driver, day, direction),
+                    [InlineKeyboardButton(secrets.users[driver][u"Name"] + " - " + get_partenza(driver, day, direction),
                                           callback_data=inline.create_callback_data(
                                               "BOOKING", direction, day, driver, mode))])
             except TypeError:

@@ -31,9 +31,9 @@ def help(bot, update):
     bot.send_message(chat_id=update.message.chat_id,
                      text="Comandi disponibili:")
 
-    text = "/me - Gestisci il tuo profilo." \
-           + "\n/prenota - Gestisci le prenotazioni." \
-        if str(update.message.chat_id) in secrets.users else "/registra - Aggiungi il tuo nome al database."
+    text = "/me - Gestisci il tuo profilo." + "\n/prenota - Gestisci le prenotazioni." \
+           if str(update.message.chat_id) in secrets.users else \
+           "/registra - Aggiungi il tuo nome al database."
 
     text = text + "\n\n/oggi - Visualizza le prenotazioni per oggi." \
                 + "\n/domani - Visualizza le prenotazioni per domani." \
@@ -55,8 +55,8 @@ def settimana(bot, update):
 
     for i in range(0, 5, 1):
         day = str(day_to_string(i))
-        keyboard.append(InlineKeyboardButton(day[:2],
-                                             callback_data=inline.create_callback_data("SHOWBOOKINGS", day)))
+        keyboard.append(
+            InlineKeyboardButton(day[:2], callback_data=inline.create_callback_data("SHOWBOOKINGS", day)))
 
     bot.send_message(chat_id=update.message.chat_id, text="Scegli il giorno di cui visualizzare le prenotazioni. ",
                      reply_markup=InlineKeyboardMarkup([keyboard]))
@@ -77,14 +77,14 @@ def fetch_bookings(bot, chat_id, day):
         bot.send_message(chat_id=chat_id, text="Lista delle prenotazioni per " + day.lower() + ": ")
 
         for direction in secrets.groups:
-            day_group = secrets.groups[direction][day]
-            if len(day_group) > 0:
+            day_group = secrets.groups[direction][day]  # Rappresenta l'insieme di trip per coppia direzione/giorno
+            if len(day_group) > 0:  # Caso in cui c'è qualcuno che effettivamente farà un viaggio
                 message = "Persone in " + direction.lower() + ": \n\n"
-                for driver in day_group:
-                    people = [secrets.users[user] for driver in day_group for mode in day_group[driver]
+                for driver in day_group:  # Stringhe separate per ogni autista
+                    people = [secrets.users[user][u"Name"] for driver in day_group for mode in day_group[driver]
                               if mode != u"Time" for user in day_group[driver][mode]]
                     bot.send_message(chat_id=chat_id,
-                                     text=message + secrets.users[driver] + ":\n" + ", ".join(people))
+                                     text=message + secrets.users[driver][u"Name"] + ":\n" + ", ".join(people))
     else:
         bot.send_message(chat_id=chat_id, text=day + " UberNEST non sara' attivo.")
 
@@ -109,7 +109,7 @@ def registra(bot, update):
 
 def response_registra(bot, update):
     user = update.message.text
-    secrets.users[str(update.message.chat_id)] = str(user)
+    secrets.users[str(update.message.chat_id)] = {u"Name": str(user), u"Debit": 0}
     bot.send_message(chat_id=update.message.chat_id,
                      text="Il tuo username è stato aggiunto con successo"
                           " al Database. Usa il comando /me per gestire il tuo profilo.")
