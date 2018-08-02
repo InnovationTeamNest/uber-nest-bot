@@ -50,7 +50,7 @@ def me_handler(bot, update):
                              text="Sei sicuro di voler diventare un autista di UberNEST?",
                              reply_markup=InlineKeyboardMarkup([keyboard]))
     elif data == "MONEY":
-        debits = money.get_debits(chat_id)
+        debits = money.get_debits(str(chat_id))
         if len(debits) != 0:
             string = ""
             for creditor in debits:
@@ -59,7 +59,7 @@ def me_handler(bot, update):
                              text="Al momento possiedi debiti verso le seguenti persone: \n" + string)
 
         if str(chat_id) in secrets.drivers:
-            credits = money.get_debits(chat_id)
+            credits = money.get_debits(str(chat_id))
             if len(credits) != 0:
                 string = ""
                 for debitor in credits:
