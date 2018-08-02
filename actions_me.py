@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import money
 import secrets
 import actions
 import inline
@@ -48,6 +49,23 @@ def me_handler(bot, update):
             bot.send_message(chat_id=chat_id,
                              text="Sei sicuro di voler diventare un autista di UberNEST?",
                              reply_markup=InlineKeyboardMarkup([keyboard]))
+    elif data == "MONEY":
+        debits = money.get_debits(chat_id)
+        if len(debits) != 0:
+            string = ""
+            for creditor in debits:
+                string += str(creditor[0]) + " - " + str(creditor[1]) + " EUR\n"
+            bot.send_message(chat_id=chat_id,
+                             text="Al momento possiedi debiti verso le seguenti persone: \n" + string)
+
+        if str(chat_id) in secrets.drivers:
+            credits = money.get_debits(chat_id)
+            if len(credits) != 0:
+                string = ""
+                for debitor in credits:
+                    string += str(debitor[0]) + " - " + str(debitor[1]) + " EUR\n"
+                bot.send_message(chat_id=chat_id,
+                                 text="Al momento possiedi queste persone hanno debiti con te: \n" + string)
     elif data == "REMOVAL":
         keyboard = [InlineKeyboardButton("Sì", callback_data=inline.create_callback_data("ME", "CONFIRMREMOVAL")),
                     InlineKeyboardButton("No", callback_data=inline.create_callback_data("CANCEL"))]
@@ -56,12 +74,12 @@ def me_handler(bot, update):
                               " L'operazione è reversibile, ma tutte le"
                               " tue prenotazioni e viaggi verranno cancellati.",
                          reply_markup=InlineKeyboardMarkup([keyboard]))
-    elif data == "SLOTSDRIVER":  # Supporto sensato da macchine con 3 posti fino a 7
-        keyboard = [InlineKeyboardButton("2", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "3")),
-                    InlineKeyboardButton("3", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "4")),
-                    InlineKeyboardButton("4", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "5")),
-                    InlineKeyboardButton("5", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "6")),
-                    InlineKeyboardButton("6", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "7"))]
+    elif data == "SLOTSDRIVER":  # Supporto sensato da macchine con 2 posti fino a 5
+        keyboard = [InlineKeyboardButton("1", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "1")),
+                    InlineKeyboardButton("2", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "2")),
+                    InlineKeyboardButton("3", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "3")),
+                    InlineKeyboardButton("4", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "4")),
+                    InlineKeyboardButton("5", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "5"))]
         bot.send_message(chat_id=chat_id,
                          text="Inserisci il numero di posti disponibili nella tua macchina (autista escluso!). "
                               "Al momento, non e' possibile modificare tale cifra; se necessario, "
@@ -182,14 +200,18 @@ def response_confirmtrip(bot, update):
 def me_keyboard(update):
     keyboard = []
     if str(update.message.chat_id) in secrets.drivers:
-        string = "Smettere di essere un autista di UberNEST"
+        driver_string = "Smettere di essere un autista di UberNEST"
+        money_string = "Gestire i miei debiti e i miei crediti"
         keyboard.append([InlineKeyboardButton("Gestire i miei viaggi",
                                               callback_data=inline.create_callback_data("ME", "TRIPS"))])
     else:
-        string = "Diventare un autista di UberNEST"
+        driver_string = "Diventare un autista di UberNEST"
+        money_string = "Gestire i miei debiti"
 
-    keyboard.append([InlineKeyboardButton(string,
+    keyboard.append([InlineKeyboardButton(driver_string,
                                           callback_data=inline.create_callback_data("ME", "DRIVER"))])
+    keyboard.append([InlineKeyboardButton(money_string,
+                                          callback_data=inline.create_callback_data("ME", "MONEY"))])
     keyboard.append([InlineKeyboardButton("Cancellarmi dal sistema di UberNEST",
                                           callback_data=inline.create_callback_data("ME", "REMOVAL"))])
     keyboard.append([InlineKeyboardButton("Esci dal menu",
