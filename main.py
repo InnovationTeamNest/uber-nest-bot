@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import webapp2
+import money
 import dumpable
 
 from webhook import WebHookHandler, UpdateHandler
@@ -12,15 +13,22 @@ class MainHandler(webapp2.RequestHandler):
         self.response.write('Uber Nest Bot is running!')
 
 
-class DumpData(webapp2.RequestHandler):
+class DataHandler(webapp2.RequestHandler):
     def get(self):
         dumpable.print_data()
         self.response.write('Data output in console.')
 
 
+class MoneyHandler(webapp2.RequestHandler):
+    def get(self):
+        money.process_debits()
+        self.response.write('See console for output.')
+
+
 app = webapp2.WSGIApplication([
     ('/', MainHandler),
-    ('/data', DumpData),
+    ('/data', DataHandler),
+    ('/money', MoneyHandler),
     ('/set_webhook', WebHookHandler),
     ('/' + bot_token, UpdateHandler)
 ], debug=True)

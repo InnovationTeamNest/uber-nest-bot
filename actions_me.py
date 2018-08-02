@@ -45,9 +45,8 @@ def me_handler(bot, update):
             bot.send_message(chat_id=chat_id,
                              text="Una volta finalizzata l'iscrizione come autista, potrai gestire i tuoi"
                                   " viaggi direttamente da questo bot. Contatta un membro del direttivo di"
-                                  " UberNEST per ulteriori informazioni.")
-            bot.send_message(chat_id=chat_id,
-                             text="Sei sicuro di voler diventare un autista di UberNEST?",
+                                  " UberNEST per ulteriori informazioni.\n\n"
+                                  "Sei sicuro di voler diventare un autista di UberNEST?",
                              reply_markup=InlineKeyboardMarkup([keyboard]))
     elif data == "MONEY":
         debits = money.get_debits(str(chat_id))
@@ -73,8 +72,10 @@ def me_handler(bot, update):
                                  text=message + "\n\nAl momento possiedi queste persone hanno debiti con te. Clicca "
                                                 "su uno per modificarne o azzerarne il debito:",
                                  reply_markup=InlineKeyboardMarkup(keyboard))
+            else:
+                bot.send_message(chat_id=chat_id, text=message + "\n\nNessuno ti deve denaro al momento.")
         else:
-            bot.send_message(chat_id=chat_id, text=message + "\n\nNessuno ti deve denaro al momento.")
+            bot.send_message(chat_id=chat_id, text=message)
     elif data == "REMOVAL":
         keyboard = [InlineKeyboardButton("Sì", callback_data=inline.create_callback_data("ME", "CONFIRMREMOVAL")),
                     InlineKeyboardButton("No", callback_data=inline.create_callback_data("CANCEL"))]
@@ -84,11 +85,9 @@ def me_handler(bot, update):
                               " tue prenotazioni e viaggi verranno cancellati.",
                          reply_markup=InlineKeyboardMarkup([keyboard]))
     elif data == "SLOTSDRIVER":  # Supporto sensato da macchine con 2 posti fino a 5
-        keyboard = [InlineKeyboardButton("1", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "1")),
-                    InlineKeyboardButton("2", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "2")),
-                    InlineKeyboardButton("3", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "3")),
-                    InlineKeyboardButton("4", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "4")),
-                    InlineKeyboardButton("5", callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", "5"))]
+        keyboard = [InlineKeyboardButton(str(i),
+                                         callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", str(i)))
+                    for i in xrange(1, 6, 1)]  # Inserisco 5 bottoni per i posti con la list comprehension
         bot.send_message(chat_id=chat_id,
                          text="Inserisci il numero di posti disponibili nella tua macchina (autista escluso!). "
                               "Al momento, non e' possibile modificare tale cifra; se necessario, "
@@ -131,15 +130,19 @@ def trips_handler(bot, update):
 
     log.info("Mode entered: " + data)
     if data == "ADD":
+        keyboard = [InlineKeyboardButton("per Povo",
+                                         callback_data=inline.create_callback_data("NEWTRIP", "Salita")),
+                    InlineKeyboardButton("per il NEST",
+                                         callback_data=inline.create_callback_data("NEWTRIP", "Discesa"))]
+
         bot.send_message(chat_id=chat_id,
-                         text="Inserisci l'ora di partenza nel formato HH:MM. Se la combinazione di data e ora"
-                              " e' già presente, verrà sovrascritta.")
-        actions.ReplyStatus.response_mode = 4
+                         text="Vuoi aggiungere un viaggio verso il NEST o Povo?",
+                         reply_markup=InlineKeyboardMarkup([keyboard]))
     elif data == "DELETE":
         direction, day = inline.separate_callback_data(update.callback_query.data)[2:4]
 
-        keyboard = [InlineKeyboardButton("Sì", callback_data=inline.create_callback_data(
-                        "TRIPS", "CONFIRMDELETION", direction, day)),
+        keyboard = [InlineKeyboardButton("Sì", callback_data=inline.create_callback_data("TRIPS", "CONFIRMDELETION",
+                                                                                         direction, day)),
                     InlineKeyboardButton("No", callback_data=inline.create_callback_data("CANCEL"))]
 
         bot.send_message(chat_id=chat_id,
@@ -151,59 +154,56 @@ def trips_handler(bot, update):
         bot.send_message(chat_id=chat_id, text="Viaggio cancellato con successo.")
 
 
-def new_trip(bot, update):
-    data, time = inline.separate_callback_data(update.callback_query.data)[1:3]
-    try:
-        day = inline.separate_callback_data(update.callback_query.data)[3]
-    except IndexError:
-        day = None
+def newtrip_handler(bot, update):
+    data = inline.separate_callback_data(update.callback_query.data)[1:]
 
     chat_id = str(update.callback_query.from_user.id)
 
     bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
     update.callback_query.message.delete()
-
-    if day is None and (data == "Salita" or data == "Discesa"):
+    # NOTA BENE: (Python 2.7 non supporta argomenti di posizione dopo *)
+    if len(data) == 1:
         keyboard = []
 
         for i in range(0, 5, 1):
-            keyboard.append(InlineKeyboardButton(
-                common.day_to_string(i)[:2],
-                callback_data=inline.create_callback_data("NEWTRIP", data, time, common.day_to_string(i))))
+            keyboard.append(InlineKeyboardButton(common.day_to_string(i)[:2],  # Ordine: giorno, direzione
+                            callback_data=inline.create_callback_data("NEWTRIP", common.day_to_string(i), *data)))
+        # Aggiungo il pulsante annulla
+        keyboard = [keyboard, [InlineKeyboardButton("Annulla", callback_data=inline.create_callback_data("CANCEL"))]]
 
-        bot.send_message(chat_id=chat_id,
-                         text="Scegli la data del viaggio.",
-                         reply_markup=InlineKeyboardMarkup([keyboard, [InlineKeyboardButton(
-                             "Annulla", callback_data=inline.create_callback_data("CANCEL"))]]))
+        bot.send_message(chat_id=chat_id, text="Scegli il giorno della settimana del viaggio.",
+                         reply_markup=InlineKeyboardMarkup(keyboard))
+    elif len(data) == 2:
+        keyboard = [  # Ordine: ora, giorno, direzione
+            [InlineKeyboardButton(str(i), callback_data=inline.create_callback_data("NEWTRIP", str(i), *data))
+             for i in xrange(7, 14, 1)],
+            [InlineKeyboardButton(str(i), callback_data=inline.create_callback_data("NEWTRIP", str(i), *data))
+             for i in xrange(14, 21, 1)],
+            [InlineKeyboardButton("Annulla", callback_data=inline.create_callback_data("CANCEL"))]
+        ]
+        bot.send_message(chat_id=chat_id, text="Scegli l'ora di partenza del viaggio",
+                         reply_markup=InlineKeyboardMarkup(keyboard))
+    elif len(data) == 3:
+        keyboard = [  # Ordine: minuti, ora, giorno, direzione
+            [InlineKeyboardButton(str(i), callback_data=inline.create_callback_data("NEWTRIP", str(i), *data))
+             for i in xrange(0, 30, 5)],
+            [InlineKeyboardButton(str(i), callback_data=inline.create_callback_data("NEWTRIP", str(i), *data))
+             for i in xrange(30, 60, 5)],
+            [InlineKeyboardButton("Annulla", callback_data=inline.create_callback_data("CANCEL"))]
+        ]
+        bot.send_message(chat_id=chat_id, text="Scegli i minuti di partenza del viaggio",
+                         reply_markup=InlineKeyboardMarkup(keyboard))
+    elif len(data) == 4:
+        minute, hour, day, direction = data
+        time = hour.zfill(2) + ":" + minute.zfill(2)
 
-    elif day is not None and (data == "Salita" or data == "Discesa"):
-        secrets.groups[data][str(day)][str(chat_id)] = {u"Time": str(time), u"Permanent": [], u"Temporary": []}
-        bot.send_message(chat_id=chat_id, text="Viaggio aggiunto con successo.")
+        secrets.groups[direction][str(day)][str(chat_id)] = {u"Time": str(time), u"Permanent": [], u"Temporary": []}
+        bot.send_message(chat_id=chat_id, text="Viaggio aggiunto con successo:" +
+                                               "\n\nOrario: " + str(time) +
+                                               "\nGiorno: " + str(day) +
+                                               "\nDirezione: " + common.direction_to_name(direction))
     else:
         bot.send_message(chat_id=chat_id, text="Spiacente, si è verificato un errore. Riprova più tardi.")
-
-
-def response_confirmtrip(bot, update):
-    try:
-        time = parser.parse(update.message.text)
-    except ValueError:
-        bot.send_message(chat_id=update.message.chat_id,
-                         text="Formato non valido!")
-        actions.ReplyStatus.response_mode = 0
-        return
-
-    time = str(time.hour).zfill(2) + ":" + str(time.minute).zfill(2)
-
-    keyboard = [InlineKeyboardButton("per Povo",
-                                     callback_data=inline.create_callback_data("NEWTRIP", "Salita", time)),
-                InlineKeyboardButton("per il NEST",
-                                     callback_data=inline.create_callback_data("NEWTRIP", "Discesa", time))]
-
-    bot.send_message(chat_id=update.message.chat_id,
-                     text="Vuoi aggiungere un viaggio verso il NEST o Povo?",
-                     reply_markup=InlineKeyboardMarkup([keyboard]))
-
-    actions.ReplyStatus.response_mode = 0
 
 
 def me_keyboard(update):

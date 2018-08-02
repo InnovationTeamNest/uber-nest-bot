@@ -2,7 +2,6 @@
 
 import common
 import secrets
-import actions_me
 import inline
 
 from common import tomorrow, today, day_to_string
@@ -18,8 +17,6 @@ def text_filter(bot, update):
         bot.send_message(chat_id=update.message.chat_id, text="Digita /help per avere informazioni sui comandi.")
     elif ReplyStatus.response_mode == 1:
         response_registra(bot, update)
-    elif ReplyStatus.response_mode == 4:
-        actions_me.response_confirmtrip(bot, update)
 
 
 def start(bot, update):

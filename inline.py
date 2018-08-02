@@ -8,6 +8,7 @@ import money
 
 
 def inline_handler(bot, update):
+    # Nelle callback query, il primo elemento è sempre l'identificatore
     identifier = separate_callback_data(update.callback_query.data)[0]
 
     if identifier == "BOOKING":
@@ -19,7 +20,7 @@ def inline_handler(bot, update):
     elif identifier == "TRIPS":
         actions_me.trips_handler(bot, update)
     elif identifier == "NEWTRIP":
-        actions_me.new_trip(bot, update)
+        actions_me.newtrip_handler(bot, update)
     elif identifier == "SHOWBOOKINGS":
         actions.show_bookings(bot, update)
     elif identifier == "CANCEL":
