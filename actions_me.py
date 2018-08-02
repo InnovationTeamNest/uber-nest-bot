@@ -54,16 +54,16 @@ def me_handler(bot, update):
         if len(debits) != 0:
             string = ""
             for creditor in debits:
-                string += str(creditor[0]) + " - " + str(creditor[1]) + " EUR\n"
+                string += secrets.users[str(creditor[0])] + " - " + str(creditor[1]) + " EUR\n"
             bot.send_message(chat_id=chat_id,
                              text="Al momento possiedi debiti verso le seguenti persone: \n" + string)
 
         if str(chat_id) in secrets.drivers:
-            credits = money.get_debits(str(chat_id))
+            credits = money.get_credits(str(chat_id))
             if len(credits) != 0:
                 string = ""
                 for debitor in credits:
-                    string += str(debitor[0]) + " - " + str(debitor[1]) + " EUR\n"
+                    string += secrets.users[str(debitor[0])] + " - " + str(debitor[1]) + " EUR\n"
                 bot.send_message(chat_id=chat_id,
                                  text="Al momento possiedi queste persone hanno debiti con te: \n" + string)
     elif data == "REMOVAL":
