@@ -4,6 +4,7 @@ from telegram import ChatAction
 import actions
 import actions_booking
 import actions_me
+import money
 
 
 def inline_handler(bot, update):
@@ -23,6 +24,8 @@ def inline_handler(bot, update):
         actions.show_bookings(bot, update)
     elif identifier == "CANCEL":
         cancel_handler(bot, update)
+    elif identifier == "EDITMONEY":
+        money.edit_money(bot, update)
 
 
 def cancel_handler(bot, update):

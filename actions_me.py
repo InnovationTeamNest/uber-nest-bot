@@ -55,17 +55,26 @@ def me_handler(bot, update):
             string = ""
             for creditor in debits:
                 string += secrets.users[str(creditor[0])]["Name"] + " - " + str(creditor[1]) + " EUR\n"
-            bot.send_message(chat_id=chat_id,
-                             text="Al momento possiedi debiti verso le seguenti persone: \n" + string)
+            message = "Al momento possiedi debiti verso le seguenti persone: \n" + string \
+                      + "\nContattali per saldare i debiti."
+        else:
+            message = "Al momento sei a posto con i debiti."
 
         if str(chat_id) in secrets.drivers:
             credits = money.get_credits(str(chat_id))
             if len(credits) != 0:
-                string = ""
+                keyboard = []
                 for debitor in credits:
-                    string += secrets.users[str(debitor[0])]["Name"] + " - " + str(debitor[1]) + " EUR\n"
+                    keyboard.append([InlineKeyboardButton(
+                        secrets.users[str(debitor[0])][u"Name"] + " - " + str(debitor[1]) + " EUR",
+                        callback_data=inline.create_callback_data("EDITMONEY", "NONE", *debitor))])
+                keyboard.append([InlineKeyboardButton("Esci", callback_data=inline.create_callback_data("CANCEL"))])
                 bot.send_message(chat_id=chat_id,
-                                 text="Al momento possiedi queste persone hanno debiti con te: \n" + string)
+                                 text=message + "\n\nAl momento possiedi queste persone hanno debiti con te. Clicca "
+                                                "su uno per modificarne o azzerarne il debito:",
+                                 reply_markup=InlineKeyboardMarkup(keyboard))
+        else:
+            bot.send_message(chat_id=chat_id, text=message + "\n\nNessuno ti deve denaro al momento.")
     elif data == "REMOVAL":
         keyboard = [InlineKeyboardButton("Sì", callback_data=inline.create_callback_data("ME", "CONFIRMREMOVAL")),
                     InlineKeyboardButton("No", callback_data=inline.create_callback_data("CANCEL"))]
