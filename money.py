@@ -17,9 +17,9 @@ def process_debits():  # Questo comando verrà fatto partire alle 02:00 di ogni 
                     if mode != u"Time":
                         for user in trips[driver][mode]:
                             try:
-                                secrets.users[user][u"Debit"][driver] += Decimal(secrets.trip_price)
+                                secrets.users[user][u"Debit"][driver] += secrets.trip_price
                             except KeyError:
-                                secrets.users[user][u"Debit"][driver] = Decimal(secrets.trip_price)
+                                secrets.users[user][u"Debit"][driver] = secrets.trip_price
                 trips[driver][u"Temporary"] = {}
 
 
