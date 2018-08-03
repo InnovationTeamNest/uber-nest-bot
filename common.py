@@ -4,7 +4,7 @@ import datetime
 import time
 import logging as log
 
-from secrets import groups
+from secrets import groups, drivers
 
 
 def today():
@@ -103,3 +103,12 @@ def localize_direction(mode):
         return "Permanente"
     else:
         return " - "
+
+
+def delete_driver(chat_id):
+    del drivers[str(chat_id)]
+
+    for direction in groups:
+        for day in groups[direction]:
+            if str(chat_id) in groups[direction][day]:
+                del groups[direction][day][str(chat_id)]

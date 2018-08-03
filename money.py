@@ -2,7 +2,6 @@
 
 import datetime
 import common
-import dumpable
 import inline
 import secrets
 import logging as log

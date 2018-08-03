@@ -20,7 +20,7 @@ def me_handler(bot, update):
     bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
     update.callback_query.message.delete()
 
-    log.info("Mode entered: " + data)
+    log.debug("Mode entered: " + data)
 
     if data == "TRIPS":
         # Visualizza i vari trips dell'utente
@@ -80,7 +80,7 @@ def me_handler(bot, update):
         bot.send_message(chat_id=chat_id,
                          text="Sei sicuro di voler confermare la tua rimozione completa dal sistema?"
                               " L'operazione è reversibile, ma tutte le"
-                              " tue prenotazioni e viaggi verranno cancellati.",
+                              " tue prenotazioni e viaggi verranno cancellati per sempre.",
                          reply_markup=InlineKeyboardMarkup([keyboard]))
     elif data == "SLOTSDRIVER":  # Supporto sensato da macchine con 2 posti fino a 5
         keyboard = [InlineKeyboardButton(str(i),
@@ -100,24 +100,13 @@ def me_handler(bot, update):
                                   " il tuo profilo autista.")
         secrets.drivers[str(chat_id)] = {u"Slots": slots}
     elif data == "DELETEDRIVER":
-        del secrets.drivers[str(chat_id)]
-
-        for direction in secrets.groups:
-            for day in secrets.groups[direction]:
-                if str(chat_id) in secrets.groups[direction][day]:
-                    del secrets.groups[direction][day][str(chat_id)]
-
+        common.delete_driver(chat_id)
         bot.send_message(chat_id=chat_id,
                          text="Sei stato rimosso con successo dall'elenco degli autisti.")
     elif data == "CONFIRMREMOVAL":
         del secrets.users[str(chat_id)]
         if str(chat_id) in secrets.drivers:
-            del secrets.drivers[str(chat_id)]
-
-            for direction in secrets.groups:
-                for day in secrets.groups[direction]:
-                    if str(chat_id) in secrets.groups[direction][day]:
-                        del secrets.groups[direction][day][str(chat_id)]
+            common.delete_driver(chat_id)
         bot.send_message(chat_id=chat_id, text="Sei stato rimosso con successo dal sistema.")
 
 
@@ -128,7 +117,7 @@ def trips_handler(bot, update):
     bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
     update.callback_query.message.delete()
 
-    log.info("Mode entered: " + data)
+    log.debug("Mode entered: " + data)
     if data == "ADD":
         keyboard = [
             [InlineKeyboardButton("per Povo", callback_data=inline.create_callback_data("NEWTRIP", "Salita")),
