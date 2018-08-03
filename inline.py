@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-from telegram import ChatAction
-
 import actions
 import actions_booking
 import actions_me
 import money
+
+from telegram import ChatAction
 
 
 def inline_handler(bot, update):

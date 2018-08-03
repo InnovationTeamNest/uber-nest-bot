@@ -2,8 +2,10 @@
 
 import datetime
 import common
+import dumpable
 import inline
 import secrets
+import logging as log
 
 from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
 
@@ -21,6 +23,8 @@ def process_debits():  # Questo comando verrà fatto partire alle 02:00 di ogni 
                                 secrets.users[user][u"Debit"][driver] += secrets.trip_price
                             except KeyError:
                                 secrets.users[user][u"Debit"][driver] = secrets.trip_price
+                            log.debug(user + "'s debit from "
+                                      + driver + " = " + str(secrets.users[user][u"Debit"][driver]))
                 trips[driver][u"Temporary"] = {}
 
 

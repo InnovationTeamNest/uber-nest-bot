@@ -22,10 +22,7 @@ def dump_data():
         list_of_keys = Dumpable.query().fetch(keys_only=True)
         for i in list_of_keys:
             i.delete()
-        log.info("Error: duplicate data")
-    LastKey.key = Dumpable(groups=secrets.groups,
-                           users=secrets.users,
-                           drivers=secrets.drivers).put()
+    LastKey.key = Dumpable(groups=secrets.groups, users=secrets.users, drivers=secrets.drivers).put()
 
 
 def get_data():
@@ -42,4 +39,4 @@ def empty_datastore():
 
 def print_data():
     data = Dumpable.query().fetch()[0]
-    log.info(data)
+    log.debug(data)

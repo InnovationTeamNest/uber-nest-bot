@@ -22,6 +22,7 @@ class DataHandler(webapp2.RequestHandler):
 class MoneyHandler(webapp2.RequestHandler):
     def get(self):
         money.process_debits()
+        dumpable.dump_data()
         self.response.write('See console for output.')
 
 

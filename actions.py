@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import common
 import secrets
 import inline
+import common
 
-from common import tomorrow, today, day_to_string
 from telegram import InlineKeyboardButton, ChatAction, InlineKeyboardMarkup
 
 
@@ -20,16 +19,15 @@ def text_filter(bot, update):
 
 
 def start(bot, update):
-    bot.send_message(chat_id=update.message.chat_id, text="Benvenuto nel bot di UberNEST. Per iniziare,"
-                                                          " digita /help per visualizzare i comandi.")
+    bot.send_message(chat_id=update.message.chat_id,
+                     text="Benvenuto nel bot di UberNEST. Per iniziare, digita /help per visualizzare i comandi.")
 
 
 def help(bot, update):
-    bot.send_message(chat_id=update.message.chat_id,
-                     text="Comandi disponibili:")
+    bot.send_message(chat_id=update.message.chat_id, text="Comandi disponibili:")
 
-    text = "/me - Gestisci il tuo profilo." + "\n/prenota - Gestisci le prenotazioni." \
-           if str(update.message.chat_id) in secrets.users else \
+    text = "/me - Gestisci il tuo profilo." \
+           + "\n/prenota - Gestisci le prenotazioni." if str(update.message.chat_id) in secrets.users else \
            "/registra - Aggiungi il tuo nome al database."
 
     text = text + "\n\n/oggi - Visualizza le prenotazioni per oggi." \
@@ -40,18 +38,18 @@ def help(bot, update):
 
 
 def oggi(bot, update):
-    fetch_bookings(bot, update.message.chat_id, today())
+    fetch_bookings(bot, update.message.chat_id, common.today())
 
 
 def domani(bot, update):
-    fetch_bookings(bot, update.message.chat_id, tomorrow())
+    fetch_bookings(bot, update.message.chat_id, common.tomorrow())
 
 
 def settimana(bot, update):
     keyboard = []
 
     for i in range(0, 5, 1):
-        day = str(day_to_string(i))
+        day = str(common.day_to_string(i))
         keyboard.append(
             InlineKeyboardButton(day[:2], callback_data=inline.create_callback_data("SHOWBOOKINGS", day)))
 
