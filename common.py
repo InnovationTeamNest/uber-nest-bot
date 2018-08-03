@@ -4,6 +4,7 @@ import datetime
 import time
 import logging as log
 
+from lib.jinja2 import exceptions
 from secrets import groups, drivers
 
 
@@ -18,35 +19,35 @@ def tomorrow():
 def day_to_string(number):
     day = number % 7
     if day == 0:
-        return u"Lunedi"
+        return "Lunedì"
     elif day == 1:
-        return u'Martedi'
+        return "Martedì"
     elif day == 2:
-        return u"Mercoledi"
+        return "Mercoledì"
     elif day == 3:
-        return u"Giovedi"
+        return "Giovedì"
     elif day == 4:
-        return u"Venerdi"
+        return "Venerdì"
     elif day == 5:
-        return u"Sabato"
+        return "Sabato"
     elif day == 6:
-        return u"Domenica"
+        return "Domenica"
 
 
 def string_to_day(string):
-    if string == u"Lunedi":
+    if string == "Lunedì":
         return 0
-    elif string == u"Martedi":
+    elif string == "Martedì":
         return 1
-    elif string == u"Mercoledi":
+    elif string == "Mercoledì":
         return 2
-    elif string == u"Giovedi":
+    elif string == "Giovedì":
         return 3
-    elif string == u"Venerdi":
+    elif string == "Venerdì":
         return 4
-    elif string == u"Sabato":
+    elif string == "Sabato":
         return 5
-    elif string == u"Domenica":
+    elif string == "Domenica":
         return 6
 
 
@@ -60,7 +61,7 @@ def is_dst():
 
 def get_partenza(driver, date, direction):
     try:
-        output = str(groups[direction][date][driver]["Time"].encode('utf-8') + " " + direction_to_name(direction))
+        output = str(groups[direction][date][driver]["Time"] + " " + direction_to_name(direction))
     except KeyError as ex:
         log.info("Nessuna partenza trovata!" + ex.message)
         output = None
@@ -112,3 +113,12 @@ def delete_driver(chat_id):
         for day in groups[direction]:
             if str(chat_id) in groups[direction][day]:
                 del groups[direction][day][str(chat_id)]
+
+
+def convert_unicode(string):
+    if isinstance(string, str):
+        return string
+    elif isinstance(string, unicode):
+        return string.encode("utf-8")
+    else:
+        return str(string)

@@ -38,8 +38,8 @@ def dispatcher_setup():
     # Inizio prendendo i dati dal Datastore, altrimenti ce li salvo
     if dumpable.empty_datastore():
         dumpable.dump_data()
-    else:
-        dumpable.get_data()
+    #  else:
+    #      dumpable.get_data()
 
     dispatcher.add_handler(CommandHandler("start", actions.start))
     dispatcher.add_handler(CommandHandler("help", actions.help))

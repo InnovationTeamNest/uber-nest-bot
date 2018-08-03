@@ -68,16 +68,16 @@ def booking_handler(bot, update):
     else:  # Caso in cui il trip sarà Temporaneo
         direction, day, driver, mode = data[1:]
 
-        trips = groups[direction][tomorrow()][driver]
+        trips = groups[direction][day][driver]
 
-        if len(trips["Permanent"]) + len(trips["Temporary"]) < drivers[driver][u"Slots"]:
+        if len(trips["Permanent"]) + len(trips["Temporary"]) < drivers[driver]["Slots"]:
             if str(chat_id) == driver:
                 bot.send_message(chat_id=chat_id, text="Sei tu l'autista!")
             elif str(chat_id) not in trips["Temporary"] and str(chat_id) not in trips["Permanent"]:
                 trips[mode].append(str(chat_id))
                 bot.send_message(chat_id=chat_id, text="Prenotazione completata. Dati del viaggio:"
-                                                       + "\n\nAutista: " + users[driver][u"Name"]
-                                                       + "\nGiorno: " + day
+                                                       + "\n\nAutista: " + str(users[driver]["Name"])
+                                                       + "\nGiorno: " + str(day)
                                                        + "\nDirezione: " + common.direction_to_name(direction)
                                                        + "\nModalità: " + common.localize_direction(mode))
             else:
@@ -102,7 +102,7 @@ def delete_booking(bot, update):
 
                 keyboard.append([
                     InlineKeyboardButton(common.localize_direction(mode) + " il " + day + " con " +
-                                         users[driver][u"Name"] + " - " + get_partenza(driver, day, direction),
+                                         users[driver]["Name"] + " - " + get_partenza(driver, day, direction),
                                          callback_data=inline.create_callback_data("DELETEBOOKING", *item))])
             keyboard.append(
                 [InlineKeyboardButton("Annulla",
@@ -135,7 +135,7 @@ def booking_keyboard(mode, day):
         for driver in groups[direction][day]:
             try:
                 keyboard.append(
-                    [InlineKeyboardButton(users[driver][u"Name"] + " - " + get_partenza(driver, day, direction),
+                    [InlineKeyboardButton(users[driver]["Name"] + " - " + get_partenza(driver, day, direction),
                                           callback_data=inline.create_callback_data(
                                               "BOOKING", direction, day, driver, mode))])
             except TypeError:

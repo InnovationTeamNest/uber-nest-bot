@@ -16,15 +16,15 @@ def process_debits():  # Questo comando verrà fatto partire alle 02:00 di ogni 
             trips = secrets.groups[direction][common.day_to_string(today - 1)]
             for driver in trips:
                 for mode in trips[driver]:
-                    if mode != u"Time":
+                    if mode != "Time":
                         for user in trips[driver][mode]:
                             try:
-                                secrets.users[user][u"Debit"][driver] += secrets.trip_price
+                                secrets.users[user]["Debit"][driver] += secrets.trip_price
                             except KeyError:
-                                secrets.users[user][u"Debit"][driver] = secrets.trip_price
+                                secrets.users[user]["Debit"][driver] = secrets.trip_price
                             log.debug(user + "'s debit from "
-                                      + driver + " = " + str(secrets.users[user][u"Debit"][driver]))
-                trips[driver][u"Temporary"] = {}
+                                      + driver + " = " + str(secrets.users[user]["Debit"][driver]))
+                trips[driver]["Temporary"] = {}
 
 
 def edit_money(bot, update):
@@ -35,14 +35,14 @@ def edit_money(bot, update):
     update.callback_query.message.delete()
 
     if action == "SUBTRACT":
-        secrets.users[user][u"Debit"][str(chat_id)] -= secrets.trip_price
+        secrets.users[user]["Debit"][str(chat_id)] -= secrets.trip_price
         money = str(float(money) - secrets.trip_price)
-        message = secrets.users[user][u"Name"] + ": " + money + " EUR"
+        message = secrets.users[user]["Name"] + ": " + money + " EUR"
     elif action == "ZERO":
         money = "0"
-        message = secrets.users[user][u"Name"] + ": 0 EUR"
+        message = secrets.users[user]["Name"] + ": 0 EUR"
     else:
-        message = secrets.users[user][u"Name"] + ": " + money + " EUR"
+        message = secrets.users[user]["Name"] + ": " + money + " EUR"
 
     keyboard = []
 
@@ -54,7 +54,7 @@ def edit_money(bot, update):
                                              callback_data=inline.create_callback_data(
                                                  "EDITMONEY", "ZERO", user, 0)))
     else:
-        del secrets.users[user][u"Debit"][str(chat_id)]
+        del secrets.users[user]["Debit"][str(chat_id)]
 
     keyboard.append(InlineKeyboardButton("Indietro", callback_data=inline.create_callback_data("ME", "MONEY")))
 
@@ -62,10 +62,10 @@ def edit_money(bot, update):
 
 
 def get_credits(input_creditor):
-    return [(user, secrets.users[user][u"Debit"][creditor]) for user in secrets.users
-            for creditor in secrets.users[user][u"Debit"] if creditor == input_creditor]
+    return [(user, secrets.users[user]["Debit"][creditor]) for user in secrets.users
+            for creditor in secrets.users[user]["Debit"] if creditor == input_creditor]
 
 
 def get_debits(input_debitor):
-    return [(creditor, secrets.users[input_debitor][u"Debit"][creditor])
-            for creditor in secrets.users[input_debitor][u"Debit"]]
+    return [(creditor, secrets.users[input_debitor]["Debit"][creditor])
+            for creditor in secrets.users[input_debitor]["Debit"]]

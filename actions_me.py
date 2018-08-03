@@ -28,24 +28,24 @@ def me_handler(bot, update):
                          text="Viaggi (clicca su un viaggio per rimuoverlo):",
                          reply_markup=trips_keyboard(update))
     elif data == "DRIVER":
-        if str(chat_id).decode('utf-8') in secrets.drivers:
-            keyboard = [InlineKeyboardButton("Sì", callback_data=inline.create_callback_data("ME", "DELETEDRIVER")),
-                        InlineKeyboardButton("No", callback_data=inline.create_callback_data("CANCEL"))]
+        if str(chat_id) in secrets.drivers:
+            keyboard = [[InlineKeyboardButton("Sì", callback_data=inline.create_callback_data("ME", "DELETEDRIVER")),
+                         InlineKeyboardButton("No", callback_data=inline.create_callback_data("CANCEL"))]]
             bot.send_message(chat_id=chat_id,
                              text="Sei sicuro di voler confermare la tua rimozione dalla"
                                   " lista degli autisti? Se cambiassi idea, puoi sempre iscriverti"
                                   " di nuovo da /me. La cancellazione dal sistema comporterà il reset"
                                   " completo di tutte le prenotazioni.",
-                             reply_markup=InlineKeyboardMarkup([keyboard]))
+                             reply_markup=InlineKeyboardMarkup(keyboard))
         else:
-            keyboard = [InlineKeyboardButton("Sì", callback_data=inline.create_callback_data("ME", "SLOTSDRIVER")),
-                        InlineKeyboardButton("No", callback_data=inline.create_callback_data("CANCEL"))]
+            keyboard = [[InlineKeyboardButton("Sì", callback_data=inline.create_callback_data("ME", "SLOTSDRIVER")),
+                         InlineKeyboardButton("No", callback_data=inline.create_callback_data("CANCEL"))]]
             bot.send_message(chat_id=chat_id,
                              text="Una volta finalizzata l'iscrizione come autista, potrai gestire i tuoi"
                                   " viaggi direttamente da questo bot. Contatta un membro del direttivo di"
                                   " UberNEST per ulteriori informazioni.\n\n"
                                   "Sei sicuro di voler diventare un autista di UberNEST?",
-                             reply_markup=InlineKeyboardMarkup([keyboard]))
+                             reply_markup=InlineKeyboardMarkup(keyboard))
     elif data == "MONEY":
         debits = money.get_debits(str(chat_id))
         if len(debits) != 0:
@@ -59,11 +59,12 @@ def me_handler(bot, update):
 
         if str(chat_id) in secrets.drivers:
             credits = money.get_credits(str(chat_id))
-            if len(credits) != 0:
+            if len(credits) > 0:
                 keyboard = []
+                print credits
                 for debitor in credits:
                     keyboard.append([InlineKeyboardButton(
-                        secrets.users[str(debitor[0])][u"Name"] + " - " + str(debitor[1]) + " EUR",
+                        secrets.users[str(debitor[0])]["Name"] + " - " + str(debitor[1]) + " EUR",
                         callback_data=inline.create_callback_data("EDITMONEY", "NONE", *debitor))])
                 keyboard.append([InlineKeyboardButton("Esci", callback_data=inline.create_callback_data("CANCEL"))])
                 bot.send_message(chat_id=chat_id,
@@ -75,17 +76,17 @@ def me_handler(bot, update):
         else:
             bot.send_message(chat_id=chat_id, text=message)
     elif data == "REMOVAL":
-        keyboard = [InlineKeyboardButton("Sì", callback_data=inline.create_callback_data("ME", "CONFIRMREMOVAL")),
-                    InlineKeyboardButton("No", callback_data=inline.create_callback_data("CANCEL"))]
+        keyboard = [[InlineKeyboardButton("Sì", callback_data=inline.create_callback_data("ME", "CONFIRMREMOVAL")),
+                    InlineKeyboardButton("No", callback_data=inline.create_callback_data("CANCEL"))]]
         bot.send_message(chat_id=chat_id,
                          text="Sei sicuro di voler confermare la tua rimozione completa dal sistema?"
                               " L'operazione è reversibile, ma tutte le"
                               " tue prenotazioni e viaggi verranno cancellati per sempre.",
-                         reply_markup=InlineKeyboardMarkup([keyboard]))
+                         reply_markup=InlineKeyboardMarkup(keyboard))
     elif data == "SLOTSDRIVER":  # Supporto sensato da macchine con 2 posti fino a 5
         keyboard = [InlineKeyboardButton(str(i),
                                          callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER", str(i)))
-                    for i in xrange(1, 6, 1)]  # Inserisco 5 bottoni per i posti con la list comprehension
+                    for i in range(1, 6, 1)]  # Inserisco 5 bottoni per i posti con la list comprehension
         bot.send_message(chat_id=chat_id,
                          text="Inserisci il numero di posti disponibili nella tua macchina, autista escluso.",
                          reply_markup=InlineKeyboardMarkup([keyboard]))
@@ -98,7 +99,7 @@ def me_handler(bot, update):
             bot.send_message(chat_id=chat_id,
                              text="Sei stato inserito nella lista degli autisti! Usa il menu /me per gestire"
                                   " il tuo profilo autista.")
-        secrets.drivers[str(chat_id)] = {u"Slots": slots}
+        secrets.drivers[str(chat_id)] = {"Slots": slots}
     elif data == "DELETEDRIVER":
         common.delete_driver(chat_id)
         bot.send_message(chat_id=chat_id,
@@ -125,17 +126,19 @@ def trips_handler(bot, update):
             [InlineKeyboardButton("Annulla", callback_data=inline.create_callback_data("CANCEL"))]
         ]
         bot.send_message(chat_id=chat_id, text="Vuoi aggiungere un viaggio verso il NEST o Povo?",
-                         reply_markup=InlineKeyboardMarkup([keyboard]))
+                         reply_markup=InlineKeyboardMarkup(keyboard))
     elif data == "DELETE":
         direction, day = inline.separate_callback_data(update.callback_query.data)[2:4]
 
-        keyboard = [InlineKeyboardButton("Sì", callback_data=inline.create_callback_data("TRIPS", "CONFIRMDELETION",
-                                                                                         direction, day)),
-                    InlineKeyboardButton("No", callback_data=inline.create_callback_data("CANCEL"))]
+        keyboard = [[
+            InlineKeyboardButton("Sì", callback_data=inline.create_callback_data("TRIPS", "CONFIRMDELETION",
+                                                                                 direction, day)),
+            InlineKeyboardButton("No", callback_data=inline.create_callback_data("CANCEL"))
+        ]]
 
         bot.send_message(chat_id=chat_id,
                          text="Sei sicuro di voler cancellare questo viaggio?",
-                         reply_markup=InlineKeyboardMarkup([keyboard]))
+                         reply_markup=InlineKeyboardMarkup(keyboard))
     elif data == "CONFIRMDELETION":
         direction, day = inline.separate_callback_data(update.callback_query.data)[2:4]
         del secrets.groups[direction][day][chat_id]
@@ -163,9 +166,9 @@ def newtrip_handler(bot, update):
     elif len(data) == 2:
         keyboard = [  # Ordine: ora, giorno, direzione
             [InlineKeyboardButton(str(i), callback_data=inline.create_callback_data("NEWTRIP", str(i), *data))
-             for i in xrange(7, 14, 1)],
+             for i in range(7, 14, 1)],
             [InlineKeyboardButton(str(i), callback_data=inline.create_callback_data("NEWTRIP", str(i), *data))
-             for i in xrange(14, 21, 1)],
+             for i in range(14, 21, 1)],
             [InlineKeyboardButton("Annulla", callback_data=inline.create_callback_data("CANCEL"))]
         ]
         bot.send_message(chat_id=chat_id, text="Scegli l'ora di partenza del viaggio",
@@ -173,9 +176,9 @@ def newtrip_handler(bot, update):
     elif len(data) == 3:
         keyboard = [  # Ordine: minuti, ora, giorno, direzione
             [InlineKeyboardButton(str(i), callback_data=inline.create_callback_data("NEWTRIP", str(i), *data))
-             for i in xrange(0, 30, 5)],
+             for i in range(0, 30, 5)],
             [InlineKeyboardButton(str(i), callback_data=inline.create_callback_data("NEWTRIP", str(i), *data))
-             for i in xrange(30, 60, 5)],
+             for i in range(30, 60, 5)],
             [InlineKeyboardButton("Annulla", callback_data=inline.create_callback_data("CANCEL"))]
         ]
         bot.send_message(chat_id=chat_id, text="Scegli i minuti di partenza del viaggio",
@@ -184,7 +187,7 @@ def newtrip_handler(bot, update):
         minute, hour, day, direction = data
         time = hour.zfill(2) + ":" + minute.zfill(2)
 
-        secrets.groups[direction][str(day)][str(chat_id)] = {u"Time": str(time), u"Permanent": [], u"Temporary": []}
+        secrets.groups[direction][str(day)][str(chat_id)] = {"Time": str(time), "Permanent": [], "Temporary": []}
         bot.send_message(chat_id=chat_id, text="Viaggio aggiunto con successo:" +
                                                "\n\nOrario: " + str(time) +
                                                "\nGiorno: " + str(day) +
@@ -224,10 +227,11 @@ def trips_keyboard(update):
 
     for direction in common.groups:
         for day in common.groups[direction]:
-            trip = common.get_partenza(user.decode('utf-8'), day, direction)
+            trip = common.get_partenza(user, day, direction)
             if trip is not None:
-                keyboard.append([InlineKeyboardButton(day + ": " + trip, callback_data=inline.create_callback_data(
-                    "TRIPS", "DELETE", direction, day))])
+                keyboard.append([InlineKeyboardButton(day + ": " + trip,
+                                                      callback_data=inline.create_callback_data("TRIPS", "DELETE",
+                                                                                                direction, day))])
 
     keyboard.append([InlineKeyboardButton("Esci", callback_data=inline.create_callback_data("CANCEL"))])
     return InlineKeyboardMarkup(keyboard)

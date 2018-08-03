@@ -49,7 +49,7 @@ def settimana(bot, update):
     keyboard = []
 
     for i in range(0, 5, 1):
-        day = str(common.day_to_string(i))
+        day = common.day_to_string(i)
         keyboard.append(
             InlineKeyboardButton(day[:2], callback_data=inline.create_callback_data("SHOWBOOKINGS", day)))
 
@@ -76,10 +76,10 @@ def fetch_bookings(bot, chat_id, day):
             if len(day_group) > 0:  # Caso in cui c'è qualcuno che effettivamente farà un viaggio
                 message = "Persone in " + direction.lower() + ": \n\n"
                 for driver in day_group:  # Stringhe separate per ogni autista
-                    people = [secrets.users[user][u"Name"] for driver in day_group for mode in day_group[driver]
-                              if mode != u"Time" for user in day_group[driver][mode]]
+                    people = [secrets.users[user]["Name"] for driver in day_group for mode in day_group[driver]
+                              if mode != "Time" for user in day_group[driver][mode]]
                     bot.send_message(chat_id=chat_id,
-                                     text=message + secrets.users[driver][u"Name"] + ":\n" + ", ".join(people))
+                                     text=message + secrets.users[driver]["Name"] + ":\n" + ", ".join(people))
     else:
         bot.send_message(chat_id=chat_id, text=day + " UberNEST non sara' attivo.")
 
@@ -104,8 +104,8 @@ def registra(bot, update):
 
 def response_registra(bot, update):
     user = update.message.text
-    secrets.users[str(update.message.chat_id)] = {u"Name": str(user), u"Debit": {}}
+    secrets.users[str(update.message.chat_id)] = {"Name": str(user), "Debit": {}}
     bot.send_message(chat_id=update.message.chat_id,
                      text="Il tuo username è stato aggiunto con successo"
-                          " al Database. Usa il comando /me per gestire il tuo profilo.")
+                          " al database. Usa il comando /me per gestire il tuo profilo.")
     ReplyStatus.response_mode = 0

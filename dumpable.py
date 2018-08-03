@@ -25,12 +25,15 @@ def dump_data():
     LastKey.key = Dumpable(groups=secrets.groups, users=secrets.users, drivers=secrets.drivers).put()
 
 
+"""
 def get_data():
+    log.critical("Entering get_data")
     if LastKey.key is not None and not empty_datastore():
         data = Dumpable.query().fetch()[0]
         secrets.groups = data.groups
         secrets.users = data.users
         secrets.drivers = data.drivers
+"""
 
 
 def empty_datastore():
