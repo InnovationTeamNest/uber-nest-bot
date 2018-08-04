@@ -1,5 +1,6 @@
 # Created by .ignore support plugin (hsz.mobi)
 .idea/
-secrets.py
+.vscode/
+secret_data.py
 client_secret.json
 calendar-python-quickstart.json

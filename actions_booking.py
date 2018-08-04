@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 
 import datetime
 import logging as log
@@ -6,7 +7,7 @@ import common
 import inline
 
 from common import tomorrow, get_partenza
-from secrets import groups, drivers, users
+from secret_data import groups, drivers, users
 from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
 
 

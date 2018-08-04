@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 
 import datetime
 import common
 import inline
-import secrets
+import secret_data
 import logging as log
 
 from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
@@ -12,18 +13,18 @@ from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
 def process_debits():  # Questo comando verrà fatto partire alle 02:00 di ogni giorno
     today = datetime.datetime.today().weekday()
     if 1 <= today <= 5:
-        for direction in secrets.groups:
-            trips = secrets.groups[direction][common.day_to_string(today - 1)]
+        for direction in secret_data.groups:
+            trips = secret_data.groups[direction][common.day_to_string(today - 1)]
             for driver in trips:
                 for mode in trips[driver]:
                     if mode != "Time":
                         for user in trips[driver][mode]:
                             try:
-                                secrets.users[user]["Debit"][driver] += secrets.trip_price
+                                secret_data.users[user]["Debit"][driver] += secret_data.trip_price
                             except KeyError:
-                                secrets.users[user]["Debit"][driver] = secrets.trip_price
+                                secret_data.users[user]["Debit"][driver] = secret_data.trip_price
                             log.debug(user + "'s debit from "
-                                      + driver + " = " + str(secrets.users[user]["Debit"][driver]))
+                                      + driver + " = " + str(secret_data.users[user]["Debit"][driver]))
                 trips[driver]["Temporary"] = {}
 
 
@@ -35,26 +36,26 @@ def edit_money(bot, update):
     update.callback_query.message.delete()
 
     if action == "SUBTRACT":
-        secrets.users[user]["Debit"][str(chat_id)] -= secrets.trip_price
-        money = str(float(money) - secrets.trip_price)
-        message = secrets.users[user]["Name"] + ": " + money + " EUR"
+        secret_data.users[user]["Debit"][str(chat_id)] -= secret_data.trip_price
+        money = str(float(money) - secret_data.trip_price)
+        message = secret_data.users[user]["Name"] + ": " + money + " EUR"
     elif action == "ZERO":
         money = "0"
-        message = secrets.users[user]["Name"] + ": 0 EUR"
+        message = secret_data.users[user]["Name"] + ": 0 EUR"
     else:
-        message = secrets.users[user]["Name"] + ": " + money + " EUR"
+        message = secret_data.users[user]["Name"] + ": " + money + " EUR"
 
     keyboard = []
 
     if float(money) > 0:
-        keyboard.append(InlineKeyboardButton("-" + str(secrets.trip_price) + " EUR",
+        keyboard.append(InlineKeyboardButton("-" + str(secret_data.trip_price) + " EUR",
                                              callback_data=inline.create_callback_data(
                                                  "EDITMONEY", "SUBTRACT", user, money)))
         keyboard.append(InlineKeyboardButton("Azzera",
                                              callback_data=inline.create_callback_data(
                                                  "EDITMONEY", "ZERO", user, 0)))
     else:
-        del secrets.users[user]["Debit"][str(chat_id)]
+        del secret_data.users[user]["Debit"][str(chat_id)]
 
     keyboard.append(InlineKeyboardButton("Indietro", callback_data=inline.create_callback_data("ME", "MONEY")))
 
@@ -62,10 +63,10 @@ def edit_money(bot, update):
 
 
 def get_credits(input_creditor):
-    return [(user, secrets.users[user]["Debit"][creditor]) for user in secrets.users
-            for creditor in secrets.users[user]["Debit"] if creditor == input_creditor]
+    return [(user, secret_data.users[user]["Debit"][creditor]) for user in secret_data.users
+            for creditor in secret_data.users[user]["Debit"] if creditor == input_creditor]
 
 
 def get_debits(input_debitor):
-    return [(creditor, secrets.users[input_debitor]["Debit"][creditor])
-            for creditor in secrets.users[input_debitor]["Debit"]]
+    return [(creditor, secret_data.users[input_debitor]["Debit"][creditor])
+            for creditor in secret_data.users[input_debitor]["Debit"]]

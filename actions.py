@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 
-import secrets
+import secret_data
 import inline
 import common
 
@@ -27,7 +28,7 @@ def help(bot, update):
     bot.send_message(chat_id=update.message.chat_id, text="Comandi disponibili:")
 
     text = "/me - Gestisci il tuo profilo." \
-           + "\n/prenota - Gestisci le prenotazioni." if str(update.message.chat_id) in secrets.users else \
+           + "\n/prenota - Gestisci le prenotazioni." if str(update.message.chat_id) in secret_data.users else \
            "/registra - Aggiungi il tuo nome al database."
 
     text = text + "\n\n/oggi - Visualizza le prenotazioni per oggi." \
@@ -71,21 +72,21 @@ def fetch_bookings(bot, chat_id, day):
     if common.is_weekday(day):
         bot.send_message(chat_id=chat_id, text="Lista delle prenotazioni per " + day.lower() + ": ")
 
-        for direction in secrets.groups:
-            day_group = secrets.groups[direction][day]  # Rappresenta l'insieme di trip per coppia direzione/giorno
+        for direction in secret_data.groups:
+            day_group = secret_data.groups[direction][day]  # Rappresenta l'insieme di trip per coppia direzione/giorno
             if len(day_group) > 0:  # Caso in cui c'è qualcuno che effettivamente farà un viaggio
                 message = "Persone in " + direction.lower() + ": \n\n"
                 for driver in day_group:  # Stringhe separate per ogni autista
-                    people = [secrets.users[user]["Name"] for driver in day_group for mode in day_group[driver]
+                    people = [secret_data.users[user]["Name"] for driver in day_group for mode in day_group[driver]
                               if mode != "Time" for user in day_group[driver][mode]]
                     bot.send_message(chat_id=chat_id,
-                                     text=message + secrets.users[driver]["Name"] + ":\n" + ", ".join(people))
+                                     text=message + secret_data.users[driver]["Name"] + ":\n" + ", ".join(people))
     else:
         bot.send_message(chat_id=chat_id, text=day + " UberNEST non sara' attivo.")
 
 
 def registra(bot, update):
-    if str(update.message.chat_id) in secrets.users:
+    if str(update.message.chat_id) in secret_data.users:
         bot.send_message(chat_id=update.message.chat_id, text="Questo utente risulta già iscritto a sistema!")
     else:
         bot.send_message(chat_id=update.message.chat_id,
@@ -104,7 +105,7 @@ def registra(bot, update):
 
 def response_registra(bot, update):
     user = update.message.text
-    secrets.users[str(update.message.chat_id)] = {"Name": str(user), "Debit": {}}
+    secret_data.users[str(update.message.chat_id)] = {"Name": str(user), "Debit": {}}
     bot.send_message(chat_id=update.message.chat_id,
                      text="Il tuo username è stato aggiunto con successo"
                           " al database. Usa il comando /me per gestire il tuo profilo.")

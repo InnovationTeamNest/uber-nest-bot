@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import money
-import secrets
+import secret_data
 import inline
 import logging as log
 import common
@@ -9,7 +12,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ChatAction
 
 
 def me(bot, update):
-    if str(update.message.chat_id) in secrets.users:
+    if str(update.message.chat_id) in secret_data.users:
         bot.send_message(chat_id=update.message.chat_id, text="Cosa vuoi fare?", reply_markup=me_keyboard(update))
 
 
@@ -28,7 +31,7 @@ def me_handler(bot, update):
                          text="Viaggi (clicca su un viaggio per rimuoverlo):",
                          reply_markup=trips_keyboard(update))
     elif data == "DRIVER":
-        if str(chat_id) in secrets.drivers:
+        if str(chat_id) in secret_data.drivers:
             keyboard = [[InlineKeyboardButton("Sì", callback_data=inline.create_callback_data("ME", "DELETEDRIVER")),
                          InlineKeyboardButton("No", callback_data=inline.create_callback_data("CANCEL"))]]
             bot.send_message(chat_id=chat_id,
@@ -51,20 +54,19 @@ def me_handler(bot, update):
         if len(debits) != 0:
             string = ""
             for creditor in debits:
-                string += secrets.users[str(creditor[0])]["Name"] + " - " + str(creditor[1]) + " EUR\n"
+                string += secret_data.users[str(creditor[0])]["Name"] + " - " + str(creditor[1]) + " EUR\n"
             message = "Al momento possiedi debiti verso le seguenti persone: \n" + string \
                       + "\nContattali per saldare i debiti."
         else:
             message = "Al momento sei a posto con i debiti."
 
-        if str(chat_id) in secrets.drivers:
+        if str(chat_id) in secret_data.drivers:
             credits = money.get_credits(str(chat_id))
             if len(credits) > 0:
                 keyboard = []
-                print credits
                 for debitor in credits:
                     keyboard.append([InlineKeyboardButton(
-                        secrets.users[str(debitor[0])]["Name"] + " - " + str(debitor[1]) + " EUR",
+                        secret_data.users[str(debitor[0])]["Name"] + " - " + str(debitor[1]) + " EUR",
                         callback_data=inline.create_callback_data("EDITMONEY", "NONE", *debitor))])
                 keyboard.append([InlineKeyboardButton("Esci", callback_data=inline.create_callback_data("CANCEL"))])
                 bot.send_message(chat_id=chat_id,
@@ -92,21 +94,21 @@ def me_handler(bot, update):
                          reply_markup=InlineKeyboardMarkup([keyboard]))
     elif data == "CONFIRMDRIVER":
         slots = int(inline.separate_callback_data(update.callback_query.data)[2])
-        if str(chat_id) in secrets.drivers:
+        if str(chat_id) in secret_data.drivers:
             bot.send_message(chat_id=chat_id,
                              text="Numero di posti della vettura aggiornato con successo.")
         else:
             bot.send_message(chat_id=chat_id,
                              text="Sei stato inserito nella lista degli autisti! Usa il menu /me per gestire"
                                   " il tuo profilo autista.")
-        secrets.drivers[str(chat_id)] = {"Slots": slots}
+        secret_data.drivers[str(chat_id)] = {"Slots": slots}
     elif data == "DELETEDRIVER":
         common.delete_driver(chat_id)
         bot.send_message(chat_id=chat_id,
                          text="Sei stato rimosso con successo dall'elenco degli autisti.")
     elif data == "CONFIRMREMOVAL":
-        del secrets.users[str(chat_id)]
-        if str(chat_id) in secrets.drivers:
+        del secret_data.users[str(chat_id)]
+        if str(chat_id) in secret_data.drivers:
             common.delete_driver(chat_id)
         bot.send_message(chat_id=chat_id, text="Sei stato rimosso con successo dal sistema.")
 
@@ -141,7 +143,7 @@ def trips_handler(bot, update):
                          reply_markup=InlineKeyboardMarkup(keyboard))
     elif data == "CONFIRMDELETION":
         direction, day = inline.separate_callback_data(update.callback_query.data)[2:4]
-        del secrets.groups[direction][day][chat_id]
+        del secret_data.groups[direction][day][chat_id]
         bot.send_message(chat_id=chat_id, text="Viaggio cancellato con successo.")
 
 
@@ -187,7 +189,7 @@ def newtrip_handler(bot, update):
         minute, hour, day, direction = data
         time = hour.zfill(2) + ":" + minute.zfill(2)
 
-        secrets.groups[direction][str(day)][str(chat_id)] = {"Time": str(time), "Permanent": [], "Temporary": []}
+        secret_data.groups[direction][str(day)][str(chat_id)] = {"Time": str(time), "Permanent": [], "Temporary": []}
         bot.send_message(chat_id=chat_id, text="Viaggio aggiunto con successo:" +
                                                "\n\nOrario: " + str(time) +
                                                "\nGiorno: " + str(day) +
@@ -198,7 +200,7 @@ def newtrip_handler(bot, update):
 
 def me_keyboard(update):
     keyboard = []
-    if str(update.message.chat_id) in secrets.drivers:
+    if str(update.message.chat_id) in secret_data.drivers:
         money_string = "Gestire i miei debiti e i miei crediti"
         driver_string = "Smettere di essere un autista di UberNEST"
         keyboard.append([InlineKeyboardButton("Gestire i miei viaggi",

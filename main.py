@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 
 import webapp2
 import money
 import dumpable
 
 from webhook import WebHookHandler, UpdateHandler
-from secrets import bot_token
+from secret_data import bot_token
 
 
 class MainHandler(webapp2.RequestHandler):

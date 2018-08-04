@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 
 import datetime
 import time
 import logging as log
 
-from lib.jinja2 import exceptions
-from secrets import groups, drivers
+from secret_data import groups, drivers
 
 
 def today():
@@ -113,12 +113,3 @@ def delete_driver(chat_id):
         for day in groups[direction]:
             if str(chat_id) in groups[direction][day]:
                 del groups[direction][day][str(chat_id)]
-
-
-def convert_unicode(string):
-    if isinstance(string, str):
-        return string
-    elif isinstance(string, unicode):
-        return string.encode("utf-8")
-    else:
-        return str(string)

@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 import actions
 import actions_booking
 import actions_me
-import common
 import money
 
 from telegram import ChatAction
@@ -41,9 +42,9 @@ def cancel_handler(bot, update):
 
 def create_callback_data(*arg):
     """ Create the callback data associated to each button"""
-    return ";".join(common.convert_unicode(i) for i in arg)
+    return ";".join(unicode(i) for i in arg)
 
 
 def separate_callback_data(data):
     """ Separate the callback data"""
-    return [common.convert_unicode(i) for i in data.split(";")]
+    return [unicode(i) for i in data.split(";")]

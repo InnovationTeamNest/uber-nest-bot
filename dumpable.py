@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 
-import secrets
+import secret_data
 import google.appengine.ext.ndb as ndb
 import logging as log
 
@@ -22,7 +23,7 @@ def dump_data():
         list_of_keys = Dumpable.query().fetch(keys_only=True)
         for i in list_of_keys:
             i.delete()
-    LastKey.key = Dumpable(groups=secrets.groups, users=secrets.users, drivers=secrets.drivers).put()
+    LastKey.key = Dumpable(groups=secret_data.groups, users=secret_data.users, drivers=secret_data.drivers).put()
 
 
 """
