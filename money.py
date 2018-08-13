@@ -38,12 +38,10 @@ def edit_money(bot, update):
     if action == "SUBTRACT":
         secret_data.users[user]["Debit"][str(chat_id)] -= secret_data.trip_price
         money = str(float(money) - secret_data.trip_price)
-        message = secret_data.users[user]["Name"] + ": " + money + " EUR"
     elif action == "ZERO":
         money = "0"
-        message = secret_data.users[user]["Name"] + ": 0 EUR"
-    else:
-        message = secret_data.users[user]["Name"] + ": " + money + " EUR"
+
+    message = secret_data.users[user]["Name"] + ": " + money + " EUR"
 
     keyboard = []
 
@@ -52,8 +50,7 @@ def edit_money(bot, update):
                                              callback_data=inline.create_callback_data(
                                                  "EDITMONEY", "SUBTRACT", user, money)))
         keyboard.append(InlineKeyboardButton("Azzera",
-                                             callback_data=inline.create_callback_data(
-                                                 "EDITMONEY", "ZERO", user, 0)))
+                                             callback_data=inline.create_callback_data("EDITMONEY", "ZERO", user, 0)))
     else:
         del secret_data.users[user]["Debit"][str(chat_id)]
 

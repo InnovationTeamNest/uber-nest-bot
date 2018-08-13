@@ -132,11 +132,11 @@ def trips_handler(bot, update):
     elif data == "DELETE":
         direction, day = inline.separate_callback_data(update.callback_query.data)[2:4]
 
-        keyboard = [[
-            InlineKeyboardButton("Sì", callback_data=inline.create_callback_data("TRIPS", "CONFIRMDELETION",
-                                                                                 direction, day)),
-            InlineKeyboardButton("No", callback_data=inline.create_callback_data("CANCEL"))
-        ]]
+        keyboard = [
+            [InlineKeyboardButton("Sì", callback_data=inline.create_callback_data("TRIPS", "CONFIRMDELETION",
+                                                                                  direction, day)),
+             InlineKeyboardButton("No", callback_data=inline.create_callback_data("CANCEL"))]
+        ]
 
         bot.send_message(chat_id=chat_id,
                          text="Sei sicuro di voler cancellare questo viaggio?",
