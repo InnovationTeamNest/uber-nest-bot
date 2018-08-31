@@ -167,33 +167,33 @@ def newtrip_handler(bot, update):
                          reply_markup=InlineKeyboardMarkup(keyboard))
     elif len(data) == 2:
         keyboard = [  # Ordine: ora, giorno, direzione
-            [InlineKeyboardButton(str(i), callback_data=inline.create_callback_data("NEWTRIP", str(i), *data))
+            [InlineKeyboardButton(str(i).zfill(2), callback_data=inline.create_callback_data("NEWTRIP", str(i), *data))
              for i in range(7, 14, 1)],
             [InlineKeyboardButton(str(i), callback_data=inline.create_callback_data("NEWTRIP", str(i), *data))
              for i in range(14, 21, 1)],
             [InlineKeyboardButton("Annulla", callback_data=inline.create_callback_data("CANCEL"))]
         ]
-        bot.send_message(chat_id=chat_id, text="Scegli l'ora di partenza del viaggio",
+        bot.send_message(chat_id=chat_id, text="Scegli l'ora di partenza del viaggio. ",
                          reply_markup=InlineKeyboardMarkup(keyboard))
     elif len(data) == 3:
         keyboard = [  # Ordine: minuti, ora, giorno, direzione
-            [InlineKeyboardButton(str(i), callback_data=inline.create_callback_data("NEWTRIP", str(i), *data))
+            [InlineKeyboardButton(str(i).zfill(2), callback_data=inline.create_callback_data("NEWTRIP", str(i), *data))
              for i in range(0, 30, 5)],
             [InlineKeyboardButton(str(i), callback_data=inline.create_callback_data("NEWTRIP", str(i), *data))
              for i in range(30, 60, 5)],
             [InlineKeyboardButton("Annulla", callback_data=inline.create_callback_data("CANCEL"))]
         ]
-        bot.send_message(chat_id=chat_id, text="Scegli i minuti di partenza del viaggio",
+        bot.send_message(chat_id=chat_id, text="Scegli i minuti di partenza del viaggio. ",
                          reply_markup=InlineKeyboardMarkup(keyboard))
     elif len(data) == 4:
         minute, hour, day, direction = data
         time = hour.zfill(2) + ":" + minute.zfill(2)
 
-        secret_data.groups[direction][str(day)][str(chat_id)] = {"Time": str(time), "Permanent": [], "Temporary": []}
-        bot.send_message(chat_id=chat_id, text="Viaggio aggiunto con successo:" +
-                                               "\n\nOrario: " + str(time) +
-                                               "\nGiorno: " + str(day) +
-                                               "\nDirezione: " + common.direction_to_name(direction))
+        secret_data.groups[direction][unicode(day)][unicode(chat_id)] = {"Time": str(time), "Permanent": [], "Temporary": []}
+        bot.send_message(chat_id=chat_id, text="Viaggio " + common.direction_to_name(direction)
+                                               + " aggiunto con successo:" +
+                                               "\n\nGiorno: " + day +
+                                               "\nOrario: " + str(time))
     else:
         bot.send_message(chat_id=chat_id, text="Spiacente, si è verificato un errore. Riprova più tardi.")
 
