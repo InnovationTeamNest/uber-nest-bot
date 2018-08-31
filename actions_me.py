@@ -227,8 +227,8 @@ def trips_keyboard(update):
     keyboard = [[InlineKeyboardButton("Aggiungi un nuovo viaggio",
                                       callback_data=inline.create_callback_data("TRIPS", "ADD"))]]
 
-    for direction in common.groups:
-        for day in common.groups[direction]:
+    for day in common.days:
+        for direction in common.groups:
             trip = common.get_partenza(user, day, direction)
             if trip is not None:
                 keyboard.append([InlineKeyboardButton(day + ": " + trip,

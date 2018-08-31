@@ -29,11 +29,11 @@ def help(bot, update):
 
     text = "/me - Gestisci il tuo profilo." \
            + "\n/prenota - Gestisci le prenotazioni." if str(update.message.chat_id) in secret_data.users else \
-           "/registra - Aggiungi il tuo nome al database."
+        "/registra - Aggiungi il tuo nome al database."
 
     text = text + "\n\n/oggi - Visualizza le prenotazioni per oggi." \
-                + "\n/domani - Visualizza le prenotazioni per domani." \
-                + "\n/settimana - Visualizza le prenotazioni per la settimana."
+           + "\n/domani - Visualizza le prenotazioni per domani." \
+           + "\n/settimana - Visualizza le prenotazioni per la settimana."
 
     bot.send_message(chat_id=update.message.chat_id, text=text)
 
@@ -75,14 +75,23 @@ def fetch_bookings(bot, chat_id, day):
         for direction in secret_data.groups:
             day_group = secret_data.groups[direction][day]  # Rappresenta l'insieme di trip per coppia direzione/giorno
             if len(day_group) > 0:  # Caso in cui c'è qualcuno che effettivamente farà un viaggio
-                message = "Persone in " + direction.lower() + ": \n\n"
+                header = "Viaggi " + common.direction_to_name(direction) + ": \n\n"
+                messages = []
+
                 for driver in day_group:  # Stringhe separate per ogni autista
-                    people = [secret_data.users[user]["Name"] for driver in day_group for mode in day_group[driver]
-                              if mode != "Time" for user in day_group[driver][mode]]
-                    bot.send_message(chat_id=chat_id,
-                                     text=message + secret_data.users[driver]["Name"] + ":\n" + ", ".join(people))
+                    people = [secret_data.users[user]["Name"] for mode in day_group[driver]
+                              if mode == "Temporary" or mode == "Permanent" for user in day_group[driver][mode]]
+                    # Aggiungo ogni viaggio trovato alla lista
+                    messages.append(secret_data.users[driver]["Name"] + " - " +
+                                    day_group[driver]["Time"] + ":\n" + ", ".join(people))
+
+                bot.send_message(chat_id=chat_id, text=header + "\n".join(messages))
+            else:
+                bot.send_message(chat_id=chat_id,
+                                 text="Nessuna persona in viaggio " + common.direction_to_name(direction) + " oggi.")
+
     else:
-        bot.send_message(chat_id=chat_id, text=day + " UberNEST non sara' attivo.")
+        bot.send_message(chat_id=chat_id, text=day + " UberNEST non sarà attivo.")
 
 
 def registra(bot, update):

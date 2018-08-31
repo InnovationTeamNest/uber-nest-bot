@@ -8,6 +8,10 @@ import logging as log
 from secret_data import groups, drivers
 
 
+days = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"]
+work_days = days[:5]
+
+
 def today():
     return day_to_string(datetime.datetime.today().weekday())
 
@@ -17,38 +21,14 @@ def tomorrow():
 
 
 def day_to_string(number):
-    day = number % 7
-    if day == 0:
-        return "Lunedì"
-    elif day == 1:
-        return "Martedì"
-    elif day == 2:
-        return "Mercoledì"
-    elif day == 3:
-        return "Giovedì"
-    elif day == 4:
-        return "Venerdì"
-    elif day == 5:
-        return "Sabato"
-    elif day == 6:
-        return "Domenica"
+    return days[number % 7]
 
 
 def string_to_day(string):
-    if string == "Lunedì":
-        return 0
-    elif string == "Martedì":
-        return 1
-    elif string == "Mercoledì":
-        return 2
-    elif string == "Giovedì":
-        return 3
-    elif string == "Venerdì":
-        return 4
-    elif string == "Sabato":
-        return 5
-    elif string == "Domenica":
-        return 6
+    try:
+        return days.index(string)
+    except ValueError as ex:
+        return " - "
 
 
 def is_weekday(string):
