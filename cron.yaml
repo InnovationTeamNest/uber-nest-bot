@@ -5,3 +5,6 @@ cron:
 - description: process credit changes
   url: /money
   schedule: every day 02:00
+- description: remind users and drivers about upcoming trips
+  url: /reminders:
+  schedule: every day 01:00

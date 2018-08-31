@@ -39,7 +39,7 @@ def is_dst():
     return time.localtime().tm_isdst
 
 
-def get_partenza(driver, date, direction):
+def get_trip_time(driver, date, direction):
     try:
         output = str(groups[direction][date][driver]["Time"] + " " + direction_to_name(direction))
     except KeyError as ex:
@@ -61,15 +61,15 @@ def search_by_booking(person, include_today=False):
     data = []
 
     for direction in groups:
-        data.extend([[direction, date, driver, mode]
-                     for date in groups[direction]
-                     for driver in groups[direction][date]
-                     for mode in groups[direction][date][driver]
-                     if person in groups[direction][date][driver][mode]])
+        data.extend([[direction, day, driver, mode]
+                     for day in groups[direction]
+                     for driver in groups[direction][day]
+                     for mode in groups[direction][day][driver]
+                     if person in groups[direction][day][driver][mode]])
 
     if not include_today:
         for booking in data:
-            if booking[1] == today():
+            if booking[1] == today():  # Il secondo elemento è il giorno
                 data.remove(booking)
 
     return data

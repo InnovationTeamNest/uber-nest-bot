@@ -6,7 +6,7 @@ import logging as log
 import common
 import inline
 
-from common import tomorrow, get_partenza
+from common import tomorrow, get_trip_time
 from secret_data import groups, drivers, users
 from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
 
@@ -103,7 +103,7 @@ def delete_booking(bot, update):
 
                 keyboard.append([
                     InlineKeyboardButton(common.localize_direction(mode) + " il " + day + " con " +
-                                         users[driver]["Name"] + " - " + get_partenza(driver, day, direction),
+                                         users[driver]["Name"] + " - " + get_trip_time(driver, day, direction),
                                          callback_data=inline.create_callback_data("DELETEBOOKING", *item))])
             keyboard.append(
                 [InlineKeyboardButton("Annulla",
@@ -136,7 +136,7 @@ def booking_keyboard(mode, day):
         for driver in groups[direction][day]:
             try:
                 keyboard.append(
-                    [InlineKeyboardButton(users[driver]["Name"] + " - " + get_partenza(driver, day, direction),
+                    [InlineKeyboardButton(users[driver]["Name"] + " - " + get_trip_time(driver, day, direction),
                                           callback_data=inline.create_callback_data(
                                               "BOOKING", direction, day, driver, mode))])
             except TypeError:

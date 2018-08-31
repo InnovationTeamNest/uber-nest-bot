@@ -229,7 +229,7 @@ def trips_keyboard(update):
 
     for day in common.days:
         for direction in common.groups:
-            trip = common.get_partenza(user, day, direction)
+            trip = common.get_trip_time(user, day, direction)
             if trip is not None:
                 keyboard.append([InlineKeyboardButton(day + ": " + trip,
                                                       callback_data=inline.create_callback_data("TRIPS", "DELETE",

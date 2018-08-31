@@ -17,7 +17,7 @@ def process_debits():  # Questo comando verrà fatto partire alle 02:00 di ogni 
             trips = secret_data.groups[direction][common.day_to_string(today - 1)]
             for driver in trips:
                 for mode in trips[driver]:
-                    if mode != "Time":
+                    if mode == "Temporary" or mode == "Permanent":
                         for user in trips[driver][mode]:
                             try:
                                 secret_data.users[user]["Debit"][driver] += secret_data.trip_price
