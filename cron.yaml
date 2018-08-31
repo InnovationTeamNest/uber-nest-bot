@@ -6,5 +6,5 @@ cron:
   url: /money
   schedule: every day 02:00
 - description: remind users and drivers about upcoming trips
-  url: /reminders:
+  url: /reminders
   schedule: every day 01:00
