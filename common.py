@@ -3,8 +3,8 @@ from __future__ import unicode_literals
 
 import datetime
 import logging as log
-import pytz
 
+from pytz import timezone
 from secret_data import groups, drivers
 
 # Questi dati vengono utilizzati da tutto il programma
@@ -23,6 +23,9 @@ booking_start = 5
 booking_end = 23
 
 trip_price = 0.50
+
+# Il bot va disattivato dall'ultima settimana di dicembre (22/12) al 6/1, e nell'estate
+no_trip_days = [datetime.date(2018, 11, 1), datetime.date(2018, 11, 2)]  # Festa dei Santi e Morti
 
 
 # Questi metodi gestiscono i giorni in formato stringa
@@ -57,7 +60,7 @@ def now_time():
 
 def is_dst():
     """Metodo che controlla che ci sia il DST utilizzando Pytz"""
-    return pytz.timezone("Europe/Rome").localize(datetime.datetime.now()).dst() == datetime.timedelta(0, 3600)
+    return timezone("Europe/Rome").localize(datetime.datetime.now()).dst() == datetime.timedelta(0, 3600)
 
 
 def get_trip_time(driver, date, direction):

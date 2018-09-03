@@ -2,9 +2,9 @@
 from __future__ import unicode_literals
 
 import secret_data
-import inline
 import common
 
+from inline import create_callback_data, separate_callback_data
 from telegram import InlineKeyboardButton, ChatAction, InlineKeyboardMarkup
 
 
@@ -52,7 +52,7 @@ def settimana(bot, update):
     for i in range(0, 5, 1):
         day = common.day_to_string(i)
         keyboard.append(
-            InlineKeyboardButton(day[:2], callback_data=inline.create_callback_data("SHOWBOOKINGS", day)))
+            InlineKeyboardButton(day[:2], callback_data=create_callback_data("SHOWBOOKINGS", day)))
 
     bot.send_message(chat_id=update.message.chat_id, text="Scegli il giorno di cui visualizzare le prenotazioni. ",
                      reply_markup=InlineKeyboardMarkup([keyboard]))
@@ -64,7 +64,7 @@ def show_bookings(bot, update):
     bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
     update.callback_query.message.delete()
 
-    data = inline.separate_callback_data(update.callback_query.data)
+    data = separate_callback_data(update.callback_query.data)
     fetch_bookings(bot, chat_id, data[1])
 
 
