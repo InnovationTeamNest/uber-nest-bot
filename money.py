@@ -20,9 +20,9 @@ def process_debits():  # Questo comando verrà fatto partire alle 02:00 di ogni 
                     if mode == "Temporary" or mode == "Permanent":
                         for user in trips[driver][mode]:
                             try:
-                                secret_data.users[user]["Debit"][driver] += secret_data.trip_price
+                                secret_data.users[user]["Debit"][driver] += common.trip_price
                             except KeyError:
-                                secret_data.users[user]["Debit"][driver] = secret_data.trip_price
+                                secret_data.users[user]["Debit"][driver] = common.trip_price
                             log.debug(user + "'s debit from "
                                       + driver + " = " + str(secret_data.users[user]["Debit"][driver]))
                 trips[driver]["Temporary"] = {}
@@ -36,8 +36,8 @@ def edit_money(bot, update):
     update.callback_query.message.delete()
 
     if action == "SUBTRACT":
-        secret_data.users[user]["Debit"][str(chat_id)] -= secret_data.trip_price
-        money = str(float(money) - secret_data.trip_price)
+        secret_data.users[user]["Debit"][str(chat_id)] -= common.trip_price
+        money = str(float(money) - common.trip_price)
     elif action == "ZERO":
         money = "0"
 
@@ -46,7 +46,7 @@ def edit_money(bot, update):
     keyboard = []
 
     if float(money) > 0:
-        keyboard.append(InlineKeyboardButton("-" + str(secret_data.trip_price) + " EUR",
+        keyboard.append(InlineKeyboardButton("-" + str(common.trip_price) + " EUR",
                                              callback_data=inline.create_callback_data(
                                                  "EDITMONEY", "SUBTRACT", user, money)))
         keyboard.append(InlineKeyboardButton("Azzera",

@@ -44,7 +44,7 @@ def booking_handler(bot, update):
         if mode == "Temporary":
             if common.booking_time():
                 bot.send_message(chat_id=chat_id,
-                                 text="Viaggi disponibili per " + tomorrow().lower(),
+                                 text="Viaggi disponibili per " + tomorrow().lower() + ":",
                                  reply_markup=booking_keyboard(mode, tomorrow()))
             else:
                 bot.send_message(chat_id=chat_id,
@@ -79,7 +79,7 @@ def booking_handler(bot, update):
                 trips[mode].append(str(chat_id))
                 bot.send_message(chat_id=chat_id, text="Prenotazione completata. Dati del viaggio:"
                                                        + "\n\nAutista: " + str(users[driver]["Name"])
-                                                       + "\nGiorno: " + str(day)
+                                                       + "\nGiorno: " + day
                                                        + "\nDirezione: " + common.direction_to_name(direction)
                                                        + "\nModalità: " + common.localize_mode(mode))
             else:
@@ -103,12 +103,11 @@ def delete_booking(bot, update):
                 direction, day, driver, mode = item
                 # Ordine dei dati: DELETEBOOKING, direction, day, driver, mode
                 time = get_trip_time(driver, day, direction)
-                print update.callback_query.message.date.isoformat()
-                if day == common.today() \
-                        and datetime.datetime.strptime(time, "%H:%M").hour > common.now_time().hour + 1:
-                    callback_data = inline.create_callback_data("DELETEBOOKING", *item)
-                else:
+
+                if day == common.today() and datetime.datetime.strptime(time, "%H:%M").hour > common.now_time().hour:
                     callback_data = inline.create_callback_data("DELETEBOOKING", driver)
+                else:
+                    callback_data = inline.create_callback_data("DELETEBOOKING", *item)
                 # Aggiunta del bottone
                 keyboard.append([InlineKeyboardButton(
                         common.localize_mode(mode) + " " + day + " con " + users[driver]["Name"] + " - " + str(time)
@@ -123,7 +122,7 @@ def delete_booking(bot, update):
             bot.send_message(chat_id=chat_id, text="Mi dispiace, ma non hai prenotazioni all'attivo.")
     elif len(data) == 2:  # Caso in cui la cancellazione è stata negata
         bot.send_message(chat_id=chat_id, text="Mi dispiace, ma non puoi più cancellare questa prenotazione. Rivolgiti "
-                                               "a " + users[str(data[1])] + "per sistemare il problema. ")
+                                               "a " + users[str(data[1])]["Name"] + " per sistemare il problema.")
     elif len(data) == 5:  # Caso in cui la prenotazione è stata selezionata
         data[0] = "CONFIRM"  # Ordine dei dati: DELETEBOOKING, CONFIRM, direction, day, driver, mode
         keyboard = [InlineKeyboardButton("Sì", callback_data=inline.create_callback_data("DELETEBOOKING", *data)),
