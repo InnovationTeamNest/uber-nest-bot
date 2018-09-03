@@ -49,8 +49,9 @@ def booking_handler(bot, update):
             else:
                 bot.send_message(chat_id=chat_id,
                                  text="Mi dispiace, è possibile effettuare prenotazioni"
-                                      " tramite il bot solo dalle 6:00 alle 20:00 del giorno"
-                                      " prima. Inoltre, UberNEST è attivo dal Lunedì al Venerdì.")
+                                      " tramite il bot solo dalle " + str(common.booking_start)
+                                      + ":00 alle " + str(common.booking_end) + ":00 del giorno"
+                                      " prima. Inoltre, UberNEST è attivo dal lunedì al venerdì.")
         elif mode == "Permanent":
             keyboard = []
             for i in range(0, 5, 1):

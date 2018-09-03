@@ -1,10 +1,13 @@
 cron:
 - description: set up the webhook to prevent failures
   url: /set_webhook
+  timezone: Europe/Rome
   schedule: every 5 hours
 - description: process credit changes
   url: /money
+  timezone: Europe/Rome
   schedule: every day 02:00
 - description: remind users and drivers about upcoming trips
   url: /reminders
+  timezone: Europe/Rome
   schedule: every day 01:00

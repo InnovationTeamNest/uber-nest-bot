@@ -10,6 +10,8 @@ from secret_data import groups, drivers
 
 days = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"]
 work_days = days[:5]
+booking_start = 5
+booking_end = 23
 
 
 def today():
@@ -76,8 +78,9 @@ def search_by_booking(person, include_today=False):
 
 
 def booking_time():
-    now = (datetime.datetime.now() + datetime.timedelta(hours=1 + is_dst())).time()
-    return (datetime.time(6, 0) <= now <= datetime.time(20, 0)) and is_weekday(tomorrow())
+    #  now = (datetime.datetime.now() + datetime.timedelta(hours=is_dst())).time()
+    now = datetime.datetime.now().time()
+    return (datetime.time(booking_start, 0) <= now <= datetime.time(booking_end, 0)) and is_weekday(tomorrow())
 
 
 def localize_direction(mode):

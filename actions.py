@@ -27,8 +27,8 @@ def start(bot, update):
 def help(bot, update):
     bot.send_message(chat_id=update.message.chat_id, text="Comandi disponibili:")
 
-    text = "/me - Gestisci il tuo profilo." \
-           + "\n/prenota - Gestisci le prenotazioni." if str(update.message.chat_id) in secret_data.users else \
+    text = "/me - Gestisci il tuo profilo.\n/prenota - Gestisci le prenotazioni." \
+        if str(update.message.chat_id) in secret_data.users else \
         "/registra - Aggiungi il tuo nome al database."
 
     text = text + "\n\n/oggi - Visualizza le prenotazioni per oggi." \

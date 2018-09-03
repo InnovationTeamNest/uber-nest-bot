@@ -20,7 +20,7 @@ def remind_driver(bot, chat_id):
     today = datetime.datetime.today().weekday()
     if 0 <= today <= 4:
         bot.send_message(chat_id=chat_id,
-                         text="Sommario dei viaggi per domani:")
+                         text="Sommario dei viaggi per oggi:")
 
         for direction in secret_data.groups:
             if str(chat_id) in secret_data.groups[direction][common.today()]:
@@ -28,7 +28,7 @@ def remind_driver(bot, chat_id):
                 bot.send_message(chat_id=chat_id,
                                  text="Viaggio " + common.direction_to_name(direction) + " - " + trip["Time"] + "\n\n" +
                                       "Permanentemente: " + ",".join(trip["Permanent"]) + "\n" +
-                                      "Solo domani: " + ",".join(trip["Temporary"]))
+                                      "Solo oggi: " + ",".join(trip["Temporary"]))
 
 
 def remind_user(bot, chat_id):
@@ -41,6 +41,6 @@ def remind_user(bot, chat_id):
             direction, day, driver, mode = item
             if day == common.today():
                 bot.send_message(chat_id=chat_id,
-                                 text="REMINDER: Domani hai un viaggio " + common.direction_to_name(direction) +
+                                 text="REMINDER: Oggi hai un viaggio " + common.direction_to_name(direction) +
                                       " alle ore " + common.get_trip_time(driver, day, direction) + " con " +
                                       str(driver))
