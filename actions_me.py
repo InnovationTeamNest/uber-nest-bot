@@ -189,7 +189,9 @@ def newtrip_handler(bot, update):
         minute, hour, day, direction = data
         time = hour.zfill(2) + ":" + minute.zfill(2)
 
-        secret_data.groups[direction][unicode(day)][unicode(chat_id)] = {"Time": str(time), "Permanent": [], "Temporary": []}
+        secret_data.groups[direction][unicode(day)][unicode(chat_id)] = {"Time": str(time),
+                                                                         "Permanent": [],
+                                                                         "Temporary": []}
         bot.send_message(chat_id=chat_id, text="Viaggio " + common.direction_to_name(direction)
                                                + " aggiunto con successo:" +
                                                "\n\nGiorno: " + day +
@@ -229,9 +231,9 @@ def trips_keyboard(update):
 
     for day in common.days:
         for direction in common.groups:
-            trip = common.get_trip_time(user, day, direction)
-            if trip is not None:
-                keyboard.append([InlineKeyboardButton(day + ": " + trip,
+            time = common.get_trip_time(user, day, direction)
+            if time is not None:
+                keyboard.append([InlineKeyboardButton(day + ": " + time + " " + common.direction_to_name(direction),
                                                       callback_data=inline.create_callback_data("TRIPS", "DELETE",
                                                                                                 direction, day))])
 

@@ -16,7 +16,7 @@ def remind():
 
 
 def remind_driver(bot, chat_id):
-    # Questo comando verrà eseguito alle 01:00 di ogni giorno feriale
+    # Questo comando verrà eseguito alle 06:00 di ogni giorno feriale
     today = datetime.datetime.today().weekday()
     if 0 <= today <= 4:
         bot.send_message(chat_id=chat_id,
@@ -33,7 +33,7 @@ def remind_driver(bot, chat_id):
 
 def remind_user(bot, chat_id):
     # Questo comando verrà eseguito alle 01:00 di ogni giorno feriale
-    bookings = common.search_by_booking(str(chat_id), include_today=True)
+    bookings = common.search_by_booking(str(chat_id))
 
     today = datetime.datetime.today().weekday()
     if 0 <= today <= 4:
@@ -42,5 +42,5 @@ def remind_user(bot, chat_id):
             if day == common.today():
                 bot.send_message(chat_id=chat_id,
                                  text="REMINDER: Oggi hai un viaggio " + common.direction_to_name(direction) +
-                                      " alle ore " + common.get_trip_time(driver, day, direction) + " con " +
-                                      str(driver))
+                                      " alle ore " + common.get_trip_time(driver, day, direction) + " " +
+                                      common.direction_to_name(direction) + " con " + str(driver))

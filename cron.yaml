@@ -10,4 +10,4 @@ cron:
 - description: remind users and drivers about upcoming trips
   url: /reminders
   timezone: Europe/Rome
-  schedule: every day 01:00
+  schedule: every day 06:00

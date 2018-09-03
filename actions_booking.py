@@ -49,9 +49,9 @@ def booking_handler(bot, update):
             else:
                 bot.send_message(chat_id=chat_id,
                                  text="Mi dispiace, è possibile effettuare prenotazioni"
-                                      " tramite il bot solo dalle " + str(common.booking_start)
+                                      + " tramite il bot solo dalle " + str(common.booking_start)
                                       + ":00 alle " + str(common.booking_end) + ":00 del giorno"
-                                      " prima. Inoltre, UberNEST è attivo dal lunedì al venerdì.")
+                                      + " prima. Inoltre, UberNEST è attivo dal lunedì al venerdì.")
         elif mode == "Permanent":
             keyboard = []
             for i in range(0, 5, 1):
@@ -81,7 +81,7 @@ def booking_handler(bot, update):
                                                        + "\n\nAutista: " + str(users[driver]["Name"])
                                                        + "\nGiorno: " + str(day)
                                                        + "\nDirezione: " + common.direction_to_name(direction)
-                                                       + "\nModalità: " + common.localize_direction(mode))
+                                                       + "\nModalità: " + common.localize_mode(mode))
             else:
                 bot.send_message(chat_id=chat_id, text="Ti sei già prenotato in questa data con questa persona!")
         else:
@@ -95,34 +95,43 @@ def delete_booking(bot, update):
     bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
     update.callback_query.message.delete()
 
-    if len(data) == 1:
-        bookings = common.search_by_booking(str(chat_id), include_today=False)
+    if len(data) == 1:  # Caso iniziale
+        bookings = common.search_by_booking(str(chat_id))
         if len(bookings) > 0:
             keyboard = []
             for item in bookings:
                 direction, day, driver, mode = item
+                # Ordine dei dati: DELETEBOOKING, direction, day, driver, mode
+                time = get_trip_time(driver, day, direction)
+                print update.callback_query.message.date.isoformat()
+                if day == common.today() \
+                        and datetime.datetime.strptime(time, "%H:%M").hour > common.now_time().hour + 1:
+                    callback_data = inline.create_callback_data("DELETEBOOKING", *item)
+                else:
+                    callback_data = inline.create_callback_data("DELETEBOOKING", driver)
+                # Aggiunta del bottone
+                keyboard.append([InlineKeyboardButton(
+                        common.localize_mode(mode) + " " + day + " con " + users[driver]["Name"] + " - " + str(time)
+                        + " " + common.direction_to_name(direction), callback_data=callback_data)])
 
-                keyboard.append([
-                    InlineKeyboardButton(common.localize_direction(mode) + " il " + day + " con " +
-                                         users[driver]["Name"] + " - " + get_trip_time(driver, day, direction),
-                                         callback_data=inline.create_callback_data("DELETEBOOKING", *item))])
-            keyboard.append(
-                [InlineKeyboardButton("Annulla",
-                                      callback_data=inline.create_callback_data("CANCEL"))])
-            bot.send_message(chat_id=chat_id, text="Clicca su una prenotazione per cancellarla. Ricorda che non è "
-                                                   "possibile cancellare le prenotazioni in data odierna.",
-                             reply_markup=InlineKeyboardMarkup(keyboard))
+            keyboard.append([InlineKeyboardButton("Annulla", callback_data=inline.create_callback_data("CANCEL"))])
+
+            bot.send_message(chat_id=chat_id, text="Clicca su una prenotazione per cancellarla. Si ricorda che "
+                                                   "le prenotazioni del giorno stesso possono essere annullate "
+                                                   "fino a un ora prima.", reply_markup=InlineKeyboardMarkup(keyboard))
         else:
             bot.send_message(chat_id=chat_id, text="Mi dispiace, ma non hai prenotazioni all'attivo.")
-    elif len(data) == 5:
-        data[0] = "CONFIRM"
+    elif len(data) == 2:  # Caso in cui la cancellazione è stata negata
+        bot.send_message(chat_id=chat_id, text="Mi dispiace, ma non puoi più cancellare questa prenotazione. Rivolgiti "
+                                               "a " + users[str(data[1])] + "per sistemare il problema. ")
+    elif len(data) == 5:  # Caso in cui la prenotazione è stata selezionata
+        data[0] = "CONFIRM"  # Ordine dei dati: DELETEBOOKING, CONFIRM, direction, day, driver, mode
         keyboard = [InlineKeyboardButton("Sì", callback_data=inline.create_callback_data("DELETEBOOKING", *data)),
                     InlineKeyboardButton("No", callback_data=inline.create_callback_data("CANCEL"))]
-
         bot.send_message(chat_id=chat_id,
                          text="Sei sicuro di voler cancellare questo viaggio?",
                          reply_markup=InlineKeyboardMarkup([keyboard]))
-    elif len(data) == 6:
+    elif len(data) == 6:  # Caso in cui la prenotazione è stata marchiata come cancellata
         direction, day, driver, mode = data[2:]
         groups[direction][day][driver][mode].remove(str(chat_id))
         bot.send_message(chat_id=chat_id, text="Prenotazione cancellata con successo.")
@@ -137,7 +146,8 @@ def booking_keyboard(mode, day):
         for driver in groups[direction][day]:
             try:
                 keyboard.append(
-                    [InlineKeyboardButton(users[driver]["Name"] + " - " + get_trip_time(driver, day, direction),
+                    [InlineKeyboardButton(users[driver]["Name"] + " - " + get_trip_time(driver, day, direction)
+                                          + " " + common.direction_to_name(direction),
                                           callback_data=inline.create_callback_data(
                                               "BOOKING", direction, day, driver, mode))])
             except TypeError:
