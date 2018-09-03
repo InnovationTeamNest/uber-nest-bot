@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import telegram
+
 import actions
 import actions_booking
 import actions_me
 import money
-
-from telegram import ChatAction
 
 
 def inline_handler(bot, update):
@@ -34,7 +34,7 @@ def inline_handler(bot, update):
 def cancel_handler(bot, update):
     chat_id = update.callback_query.from_user.id
 
-    bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
+    bot.send_chat_action(chat_id=chat_id, action=telegram.ChatAction.TYPING)
     update.callback_query.message.delete()
 
     bot.send_message(chat_id=chat_id, text="Operazione annullata.")

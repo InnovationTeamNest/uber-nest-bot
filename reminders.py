@@ -2,9 +2,11 @@
 from __future__ import unicode_literals
 
 import datetime
+
+import telegram
+
 import common
 import secret_data
-import telegram
 
 
 def remind():

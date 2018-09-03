@@ -4,8 +4,9 @@ from __future__ import unicode_literals
 import datetime
 import logging as log
 
-from pytz import timezone
-from secret_data import groups, drivers
+import pytz
+
+import secret_data
 
 # Questi dati vengono utilizzati da tutto il programma
 days = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"]
@@ -60,13 +61,13 @@ def now_time():
 
 def is_dst():
     """Metodo che controlla che ci sia il DST utilizzando Pytz"""
-    return timezone("Europe/Rome").localize(datetime.datetime.now()).dst() == datetime.timedelta(0, 3600)
+    return pytz.timezone("Europe/Rome").localize(datetime.datetime.now()).dst() == datetime.timedelta(0, 3600)
 
 
 def get_trip_time(driver, date, direction):
     """Restituisce una stringa del tipo "HH:MM" """
     try:
-        output = str(groups[direction][date][driver]["Time"])
+        output = str(secret_data.groups[direction][date][driver]["Time"])
     except KeyError:
         log.debug("Nessuna partenza trovata in data - Oggetto della ricerca: "
                   + direction + ", " + date + ", " + driver)
@@ -95,17 +96,17 @@ def localize_mode(mode):
 
 def search_by_booking(person):
     return [[direction, day, driver, mode]
-            for direction in groups
-            for day in groups[direction]
-            for driver in groups[direction][day]
-            for mode in groups[direction][day][driver]
-            if person in groups[direction][day][driver][mode]]
+            for direction in secret_data.groups
+            for day in secret_data.groups[direction]
+            for driver in secret_data.groups[direction][day]
+            for mode in secret_data.groups[direction][day][driver]
+            if person in secret_data.groups[direction][day][driver][mode]]
 
 
 def delete_driver(chat_id):
-    del drivers[str(chat_id)]
+    del secret_data.drivers[str(chat_id)]
 
-    for direction in groups:
-        for day in groups[direction]:
-            if str(chat_id) in groups[direction][day]:
-                del groups[direction][day][str(chat_id)]
+    for direction in secret_data.groups:
+        for day in secret_data.groups[direction]:
+            if str(chat_id) in secret_data.groups[direction][day]:
+                del secret_data.groups[direction][day][str(chat_id)]

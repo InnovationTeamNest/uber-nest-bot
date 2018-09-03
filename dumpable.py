@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import secret_data
-import google.appengine.ext.ndb as ndb
 import logging as log
+
+import google.appengine.ext.ndb as ndb
+
+import secret_data
 
 
 class Dumpable(ndb.Model):

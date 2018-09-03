@@ -2,16 +2,17 @@
 from __future__ import unicode_literals
 
 import json
+
+import telegram
 import webapp2
+from telegram.ext import Dispatcher, CommandHandler, MessageHandler, CallbackQueryHandler, Filters
+
 import actions
 import actions_booking
 import actions_me
-import telegram
 import dumpable
+import inline
 import secret_data
-
-from inline import inline_handler
-from telegram.ext import Dispatcher, CommandHandler, MessageHandler, CallbackQueryHandler, Filters
 
 un_bot = telegram.Bot(secret_data.bot_token)
 
@@ -53,7 +54,7 @@ def dispatcher_setup():
     dispatcher.add_handler(CommandHandler("me", actions_me.me))
 
     dispatcher.add_handler(MessageHandler(Filters.text & Filters.private, actions.text_filter))
-    dispatcher.add_handler(CallbackQueryHandler(inline_handler))
+    dispatcher.add_handler(CallbackQueryHandler(inline.inline_handler))
 
 
 def webhook(update):

@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import common
-import secret_data
+import datetime
 import logging as log
 
-from datetime import datetime
-from inline import create_callback_data, separate_callback_data
 from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
+
+import common
+import inline
+import secret_data
 
 
 def process_debits():  # Questo comando verrà fatto partire alle 02:00 di ogni giorno
-    today = datetime.today()
+    today = datetime.datetime.today()
     if 1 <= today.weekday() <= 5 and today.date() not in common.no_trip_days:
         for direction in secret_data.groups:
             trips = secret_data.groups[direction][common.day_to_string(today.weekday() - 1)]
@@ -29,7 +30,7 @@ def process_debits():  # Questo comando verrà fatto partire alle 02:00 di ogni 
 
 
 def edit_money(bot, update):
-    action, user, money = separate_callback_data(update.callback_query.data)[1:]
+    action, user, money = inline.separate_callback_data(update.callback_query.data)[1:]
     chat_id = update.callback_query.from_user.id
 
     bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
@@ -47,14 +48,14 @@ def edit_money(bot, update):
 
     if float(money) > 0:
         keyboard.append(InlineKeyboardButton("-" + str(common.trip_price) + " EUR",
-                                             callback_data=create_callback_data(
+                                             callback_data=inline.create_callback_data(
                                                  "EDITMONEY", "SUBTRACT", user, money)))
         keyboard.append(InlineKeyboardButton("Azzera",
-                                             callback_data=create_callback_data("EDITMONEY", "ZERO", user, 0)))
+                                             callback_data=inline.create_callback_data("EDITMONEY", "ZERO", user, 0)))
     else:
         del secret_data.users[user]["Debit"][str(chat_id)]
 
-    keyboard.append(InlineKeyboardButton("Indietro", callback_data=create_callback_data("ME", "MONEY")))
+    keyboard.append(InlineKeyboardButton("Indietro", callback_data=inline.create_callback_data("ME", "MONEY")))
 
     bot.send_message(chat_id=chat_id, text=message, reply_markup=InlineKeyboardMarkup([keyboard]))
 

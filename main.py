@@ -2,12 +2,12 @@
 from __future__ import unicode_literals
 
 import webapp2
-import money
-import dumpable
-import reminders
 
+import dumpable
+import money
+import reminders
+import secret_data
 from webhook import WebHookHandler, UpdateHandler
-from secret_data import bot_token
 
 
 class MainHandler(webapp2.RequestHandler):
@@ -40,5 +40,5 @@ app = webapp2.WSGIApplication([
     ("/money", MoneyHandler),
     ("/reminders", ReminderHandler),
     ("/set_webhook", WebHookHandler),
-    ("/" + bot_token, UpdateHandler)
+    ("/" + secret_data.bot_token, UpdateHandler)
 ], debug=True)
