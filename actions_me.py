@@ -241,7 +241,7 @@ def trips_keyboard(update):
                                                callback_data=inline.create_callback_data("TRIPS", "ADD"))]]
 
     for day in common.work_days:
-        for direction in common.groups:
+        for direction in secret_data.groups:
             time = common.get_trip_time(user, day, direction)
             if time is not None:
                 keyboard.append(
