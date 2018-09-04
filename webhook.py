@@ -22,7 +22,7 @@ class WebHookHandler(webapp2.RequestHandler):
         dispatcher_setup()  # Ogni volta che si carica una nuova versione, bisogna rifare il setup del bot!
         res = un_bot.setWebhook(secret_data.url + secret_data.bot_token)
         if res:
-            self.response.write("Webhook set!")
+            self.response.write("Success!")
         else:
             self.response.write("Webhook setup failed...")
 
