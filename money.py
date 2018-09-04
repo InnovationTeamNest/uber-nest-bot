@@ -11,7 +11,8 @@ import inline
 import secret_data
 
 
-def process_debits():  # Questo comando verrà fatto partire alle 02:00 di ogni giorno
+def process_debits():
+    """Questo comando verrà fatto partire alle 02:00 di ogni giorno"""
     today = datetime.datetime.today()
     if 1 <= today.weekday() <= 5 and today.date() not in common.no_trip_days:
         for direction in secret_data.groups:
@@ -26,7 +27,7 @@ def process_debits():  # Questo comando verrà fatto partire alle 02:00 di ogni 
                                 secret_data.users[user]["Debit"][driver] = common.trip_price
                             log.debug(user + "'s debit from "
                                       + driver + " = " + str(secret_data.users[user]["Debit"][driver]))
-                trips[driver]["Temporary"] = {}
+                trips[driver]["Temporary"] = []
 
 
 def edit_money(bot, update):
