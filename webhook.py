@@ -22,7 +22,7 @@ class WebHookHandler(webapp2.RequestHandler):
         dispatcher_setup()  # Ogni volta che si carica una nuova versione, bisogna rifare il setup del bot!
         res = un_bot.setWebhook(secret_data.url + secret_data.bot_token)
         if res:
-            self.response.write("Webhook set!")
+            self.response.write("Success!")
         else:
             self.response.write("Webhook setup failed...")
 
@@ -48,10 +48,10 @@ def dispatcher_setup():
     dispatcher.add_handler(CommandHandler("oggi", actions.oggi))
     dispatcher.add_handler(CommandHandler("domani", actions.domani))
     dispatcher.add_handler(CommandHandler("settimana", actions.settimana))
-    dispatcher.add_handler(CommandHandler("prenota", actions_booking.prenota))
     dispatcher.add_handler(CommandHandler("registra", actions.registra))
 
     dispatcher.add_handler(CommandHandler("me", actions_me.me))
+    dispatcher.add_handler(CommandHandler("prenota", actions_booking.prenota))
 
     dispatcher.add_handler(MessageHandler(Filters.text & Filters.private, actions.text_filter))
     dispatcher.add_handler(CallbackQueryHandler(inline.inline_handler))
