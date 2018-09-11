@@ -46,3 +46,4 @@ def empty_datastore():
 def print_data():
     data = Dumpable.query().fetch()[0]
     log.debug(data)
+    print secret_data.drivers, secret_data.users, secret_data.groups

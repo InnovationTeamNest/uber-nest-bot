@@ -20,7 +20,6 @@ un_bot = telegram.Bot(secret_data.bot_token)
 
 class WebHookHandler(webapp2.RequestHandler):
     def get(self):
-        log.info("Current data: " + secret_data.users + ", " + secret_data.drivers + ", " + secret_data.groups)
         dispatcher_setup()  # Ogni volta che si carica una nuova versione, bisogna rifare il setup del bot!
         res = un_bot.setWebhook(secret_data.url + secret_data.bot_token)
         if res:

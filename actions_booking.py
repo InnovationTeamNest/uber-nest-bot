@@ -86,7 +86,7 @@ def booking_handler(bot, update):
                                                        + "\nModalità: " + common.localize_mode(mode))
                 bot.send_message(chat_id=driver, text="Hai una nuova prenotazione per " + day + " "
                                                       + common.direction_to_name(direction) + ". " +
-                                                      "Posti rimanenti: " + str(total_slots - occupied_slots))
+                                                      "Posti rimanenti: " + str(total_slots - occupied_slots - 1))
             else:
                 bot.send_message(chat_id=chat_id, text="Ti sei già prenotato in questa data con questa persona!")
         else:
