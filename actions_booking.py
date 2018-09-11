@@ -71,8 +71,10 @@ def booking_handler(bot, update):
         direction, day, driver, mode = data[1:]
 
         trips = secret_data.groups[direction][day][driver]
+        occupied_slots = len(trips["Permanent"]) + len(trips["Temporary"])
+        total_slots = secret_data.drivers[driver]["Slots"]
 
-        if len(trips["Permanent"]) + len(trips["Temporary"]) < secret_data.drivers[driver]["Slots"]:
+        if occupied_slots < total_slots:
             if str(chat_id) == driver:
                 bot.send_message(chat_id=chat_id, text="Sei tu l'autista!")
             elif str(chat_id) not in trips["Temporary"] and str(chat_id) not in trips["Permanent"]:
@@ -82,10 +84,13 @@ def booking_handler(bot, update):
                                                        + "\nGiorno: " + day
                                                        + "\nDirezione: " + common.direction_to_name(direction)
                                                        + "\nModalità: " + common.localize_mode(mode))
+                bot.send_message(chat_id=driver, text="Hai una nuova prenotazione per " + day + " "
+                                                      + common.direction_to_name(direction) + ". " +
+                                                      "Posti rimanenti: " + str(total_slots - occupied_slots))
             else:
                 bot.send_message(chat_id=chat_id, text="Ti sei già prenotato in questa data con questa persona!")
         else:
-            bot.send_message(chat_id=chat_id, text="Posti in questa data esauriti.")
+            bot.send_message(chat_id=chat_id, text="Macchina piena, vai a piedi LOL")
 
 
 def delete_booking(bot, update):

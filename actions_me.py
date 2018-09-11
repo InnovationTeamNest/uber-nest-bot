@@ -244,8 +244,11 @@ def trips_keyboard(update):
         for direction in secret_data.groups:
             time = common.get_trip_time(user, day, direction)
             if time is not None:
+                group = secret_data.groups[direction][day][user]
+                occupied_slots = len(group["Permanent"]) + len(group["Temporary"])
                 keyboard.append(
-                    [telegram.InlineKeyboardButton(day + ": " + time + " " + common.direction_to_name(direction),
+                    [telegram.InlineKeyboardButton(day + ": " + time + " " + common.direction_to_name(direction)
+                                                   + " (" + str(occupied_slots) + ")",
                                                    callback_data=inline.create_callback_data("TRIPS", "DELETE",
                                                                                              direction, day))])
 
