@@ -9,4 +9,3 @@ The Bot's purpose is to effortlessly mantain car sharing tasks within a small co
 * Insert information about implemented functionality
 * Insert information about *secret_data.py* file
 * Port the whole project to Python 3 (Standard GAE Environment)
-* Fix NDB implementation and data import in *dumpable.py*

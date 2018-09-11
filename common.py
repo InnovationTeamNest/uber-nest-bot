@@ -69,7 +69,7 @@ def get_trip_time(driver, date, direction):
     try:
         output = str(secret_data.groups[direction][date][driver]["Time"])
     except KeyError:
-        log.debug("Nessuna partenza trovata in data - Oggetto della ricerca: "
+        log.debug("Nessuna partenza trovata per questa query: "
                   + direction + ", " + date + ", " + driver)
         output = None
     return output

@@ -32,8 +32,8 @@ def help(bot, update):
         "/registra - Aggiungi il tuo nome al database."
 
     text = text + "\n\n/oggi - Visualizza le prenotazioni per oggi." \
-                + "\n/domani - Visualizza le prenotazioni per domani." \
-                + "\n/settimana - Visualizza le prenotazioni per la settimana."
+           + "\n/domani - Visualizza le prenotazioni per domani." \
+           + "\n/settimana - Visualizza le prenotazioni per la settimana."
 
     bot.send_message(chat_id=update.message.chat_id, text=text)
 
