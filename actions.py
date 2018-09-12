@@ -21,7 +21,8 @@ def text_filter(bot, update):
 
 def start(bot, update):
     bot.send_message(chat_id=update.message.chat_id,
-                     text="Benvenuto nel bot di UberNEST. Per iniziare, digita /help per visualizzare i comandi.")
+                     text="Benvenuto nel bot di UberNEST. Per iniziare, digita /registra per registrarti a sistema, "
+                          + "o /help per visualizzare i comandi.")
 
 
 def help(bot, update):
@@ -117,5 +118,8 @@ def response_registra(bot, update):
     secret_data.users[str(update.message.chat_id)] = {"Name": str(user), "Debit": {}}
     bot.send_message(chat_id=update.message.chat_id,
                      text="Il tuo username è stato aggiunto con successo"
-                          " al database. Usa il comando /me per gestire il tuo profilo.")
+                          " al database. Usa i seguenti comandi:\n/me "
+                          "per gestire il tuo profilo, gestire i debiti e "
+                          "i crediti e diventare autista di UberNEST.\n"
+                          "/prenota per effettuare e disdire prenotazioni.")
     ReplyStatus.response_mode = 0

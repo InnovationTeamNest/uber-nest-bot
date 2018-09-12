@@ -16,7 +16,7 @@ class Dumpable(ndb.Model):
 
 
 def dump_data():
-    if empty_dataset():
+    if not empty_dataset():
         list_of_keys = Dumpable.query().fetch(keys_only=True)
         for key in list_of_keys:
             key.delete()
@@ -41,7 +41,7 @@ def empty_datastore():
 
 
 def empty_dataset():
-    return secret_data.groups != {} and secret_data.users != {} and secret_data.drivers != {}
+    return secret_data.groups == {} or secret_data.users == {} or secret_data.drivers == {}
 
 
 def print_data():
