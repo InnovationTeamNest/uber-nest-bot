@@ -33,8 +33,10 @@ def remind_driver(bot, chat_id):
                 trip = secret_data.groups[direction][common.tomorrow()][str(chat_id)]
                 bot.send_message(chat_id=chat_id,
                                  text="Viaggio " + common.direction_to_name(direction) + " - " + trip["Time"] + "\n\n" +
-                                      "Permanentemente: " + ",".join(trip["Permanent"]) + "\n" +
-                                      "Solo domani: " + ",".join(trip["Temporary"]))
+                                      "Permanentemente: " + ",".join(secret_data.users[i]["Name"]
+                                                                     for i in trip["Permanent"]) + "\n" +
+                                      "Solo domani: " + ",".join(secret_data.users[i]["Name"]
+                                                                 for i in trip["Temporary"]))
 
 
 def remind_user(bot, chat_id):
@@ -49,4 +51,4 @@ def remind_user(bot, chat_id):
                 bot.send_message(chat_id=chat_id,
                                  text="REMINDER: Domani hai un viaggio " + common.direction_to_name(direction) +
                                       " alle ore " + common.get_trip_time(driver, day, direction) + " " +
-                                      common.direction_to_name(direction) + " con " + str(driver))
+                                      common.direction_to_name(direction) + " con " + str(secret_data.users[driver]))

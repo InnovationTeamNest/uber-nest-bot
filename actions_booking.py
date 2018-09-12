@@ -84,7 +84,8 @@ def booking_handler(bot, update):
                                                        + "\nGiorno: " + day
                                                        + "\nDirezione: " + common.direction_to_name(direction)
                                                        + "\nModalità: " + common.localize_mode(mode))
-                bot.send_message(chat_id=driver, text="Hai una nuova prenotazione per " + day + " "
+                bot.send_message(chat_id=driver, text="Hai una nuova prenotazione da parte di " + secret_data.users[
+                    str(chat_id)] + " per " + day + " "
                                                       + common.direction_to_name(direction) + ". " +
                                                       "Posti rimanenti: " + str(total_slots - occupied_slots - 1))
             else:
@@ -144,6 +145,9 @@ def delete_booking(bot, update):
         direction, day, driver, mode = data[2:]
         secret_data.groups[direction][day][driver][mode].remove(str(chat_id))
         bot.send_message(chat_id=chat_id, text="Prenotazione cancellata con successo.")
+        bot.send_message(chat_id=driver, text="L'utente " + secret_data.users[str(chat_id)] + " ha cancellato la " +
+                                              " prenotazione per " + day + " " + common.direction_to_name(
+                                               direction) + ".")
 
 
 # Keyboard customizzata per visualizzare le prenotazioni in maniera inline
