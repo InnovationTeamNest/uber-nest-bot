@@ -20,8 +20,8 @@ booking_types_localized = ["Temporanea", "Permanente"]
 
 empty_str = " - "
 
-booking_start = 5
-booking_end = 23
+booking_start = datetime.time(6, 0)
+booking_end = datetime.time(23,59)
 
 trip_price = 0.50
 
@@ -77,7 +77,7 @@ def get_trip_time(driver, date, direction):
 
 def booking_time():
     """Controlla che l'orario attuale sia compreso all'interno degli orari di prenotazioni definiti sopra"""
-    return is_weekday(tomorrow()) and datetime.time(booking_start, 0) <= now_time() <= datetime.time(booking_end, 0)
+    return is_weekday(tomorrow()) and (booking_start <= now_time() <= booking_end)
 
 
 def direction_to_name(direction):

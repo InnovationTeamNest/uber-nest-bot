@@ -132,9 +132,12 @@ def trips_handler(bot, update):
     log.debug("Mode entered: " + data)
     if data == "ADD":
         keyboard = [
-            [telegram.InlineKeyboardButton("per Povo", callback_data=inline.create_callback_data("NEWTRIP", "Salita")),
-             telegram.InlineKeyboardButton("per il NEST",
-                                           callback_data=inline.create_callback_data("NEWTRIP", "Discesa"))],
+            [telegram.InlineKeyboardButton(common.direction_name[0],
+                                           callback_data=inline.create_callback_data("NEWTRIP",
+                                                                                     common.direction_generic[0])),
+             telegram.InlineKeyboardButton(common.direction_name[1],
+                                           callback_data=inline.create_callback_data("NEWTRIP",
+                                                                                     common.direction_generic[1]))],
             [telegram.InlineKeyboardButton("Annulla", callback_data=inline.create_callback_data("CANCEL"))]
         ]
         bot.send_message(chat_id=chat_id, text="Vuoi aggiungere un viaggio verso il NEST o Povo?",

@@ -4,11 +4,20 @@ from __future__ import unicode_literals
 import datetime
 import logging as log
 
+import webapp2
 from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
 
 import common
+import dumpable
 import inline
 import secret_data
+
+
+class MoneyHandler(webapp2.RequestHandler):
+    def get(self):
+        process_debits()
+        dumpable.dump_data()
+        self.response.write("See console for output.")
 
 
 def process_debits():

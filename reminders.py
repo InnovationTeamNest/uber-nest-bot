@@ -4,9 +4,16 @@ from __future__ import unicode_literals
 import datetime
 
 import telegram
+import webapp2
 
 import common
 import secret_data
+
+
+class ReminderHandler(webapp2.RequestHandler):
+    def get(self):
+        remind()
+        self.response.write("See console for output.")
 
 
 def remind():

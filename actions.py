@@ -35,9 +35,16 @@ def help(bot, update):
     text = text + "\n\n/oggi - Visualizza le prenotazioni per oggi." \
                 + "\n/domani - Visualizza le prenotazioni per domani." \
                 + "\n/settimana - Visualizza le prenotazioni per la settimana." \
-                + "\n/lunedi - /martedi - /mercoledi - /giovedi - /venerdi - Visualizza i singoli giorni."
+                + "\n\n/lunedi - /martedi - /mercoledi\n/giovedi - /venerdi -" \
+                + "Visualizza le prenotazioni dei singoli giorni."
 
     bot.send_message(chat_id=update.message.chat_id, text=text)
+
+
+def info(bot, update):
+    bot.send_message(chat_id=update.message.chat_id, text="UberNEST Bot v. 1.2.2 - sviluppata dal"
+                                                          " NEST Innovation Team. Contatta @mfranzil per suggerimenti,"
+                                                          " proposte, bug o quant'altro.")
 
 
 def oggi(bot, update):
@@ -125,7 +132,7 @@ def registra(bot, update):
                               "al gruppo UberNEST, e di aver letto ed accettato "
                               "il regolamento in tutti i suoi punti. Per ulteriori"
                               " informazioni, contatta un membro del direttivo di "
-                              "UberNEST (Filippo Spaggiari, Paolo Teta).")
+                              "UberNEST.")
         bot.send_message(chat_id=update.message.chat_id,
                          text="Inserire nome e cognome, che verranno mostrati"
                               " sia agli autisti sia ai passeggeri. Ogni violazione di"

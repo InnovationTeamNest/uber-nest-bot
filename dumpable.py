@@ -4,8 +4,15 @@ from __future__ import unicode_literals
 import logging as log
 
 import google.appengine.ext.ndb as ndb
+import webapp2
 
 import secret_data
+
+
+class DataHandler(webapp2.RequestHandler):
+    def get(self):
+        print_data()
+        self.response.write("Data output in console.")
 
 
 class Dumpable(ndb.Model):
@@ -16,6 +23,7 @@ class Dumpable(ndb.Model):
 
 
 def dump_data():
+    """Dumps the whole dataset to Cloud Datastore"""
     if not empty_dataset():
         list_of_keys = Dumpable.query().fetch(keys_only=True)
         for key in list_of_keys:
@@ -29,6 +37,7 @@ def dump_data():
 
 
 def get_data():
+    """Gets the data from Cloud Datastore"""
     if not empty_datastore():
         data = Dumpable.query().fetch()[0]
         secret_data.groups = data.groups
@@ -36,15 +45,18 @@ def get_data():
         secret_data.drivers = data.drivers
 
 
+def print_data():
+    """Prints to the Cloud Console Logs the current dataset"""
+    data = Dumpable.query().fetch()[0]
+    print "Stored data: ", data.drivers, data.users, data.groups
+    print "Internal data: ", secret_data.drivers, secret_data.users, secret_data.groups
+
+
 def empty_datastore():
+    """Verifies that the Cloud Datastore is empty"""
     return Dumpable.query().fetch() is None
 
 
 def empty_dataset():
+    """Verifies if the input data from secret_data.py is empty"""
     return secret_data.groups == {} or secret_data.users == {} or secret_data.drivers == {}
-
-
-def print_data():
-    data = Dumpable.query().fetch()[0]
-    print "Stored data: ", data.drivers, data.users, data.groups
-    print "Internal data: ", secret_data.drivers, secret_data.users, secret_data.groups

@@ -61,9 +61,10 @@ def booking_handler(bot, update):
                                  "Annulla", callback_data=inline.create_callback_data("CANCEL"))]]))
         else:
             bot.send_message(chat_id=chat_id,
-                             text="Mi dispiace, per adessoè possibile effettuare prenotazioni"
-                                  + " tramite UberNEST solo dalle " + str(common.booking_start)
-                                  + ":00 alle " + str(common.booking_end) + ":00.")
+                             text="Mi dispiace, è possibile effettuare prenotazioni"
+                                  + " tramite UberNEST solo dalle "
+                                  + common.booking_start.strftime("%H:%M") + " alle "
+                                  + common.booking_end.strftime("%H:%M") + ".")
     elif len(data) == 3:  # Scelta del giorno
         mode, day = data[1:3]
         bot.send_message(chat_id=chat_id, text="Viaggi disponibili per " + day.lower(),
@@ -148,9 +149,9 @@ def delete_booking(bot, update):
         direction, day, driver, mode = data[2:]
         secret_data.groups[direction][day][driver][mode].remove(str(chat_id))
         bot.send_message(chat_id=chat_id, text="Prenotazione cancellata con successo.")
-        bot.send_message(chat_id=driver, text="L'utente " + secret_data.users[str(chat_id)] + " ha cancellato la " +
-                                              " prenotazione per " + day + " " + common.direction_to_name(
-            direction) + ".")
+        bot.send_message(chat_id=driver,
+                         text="L'utente " + secret_data.users[str(chat_id)]["Name"] + " ha cancellato la " +
+                              " prenotazione per " + day + " " + common.direction_to_name(direction) + ".")
 
 
 # Keyboard customizzata per visualizzare le prenotazioni in maniera inline
