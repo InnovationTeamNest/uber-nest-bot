@@ -51,6 +51,13 @@ def dispatcher_setup():
     dispatcher.add_handler(CommandHandler("me", actions_me.me))
     dispatcher.add_handler(CommandHandler("prenota", actions_booking.prenota))
 
+    dispatcher.add_handler(CommandHandler("lunedi", actions.lunedi))
+    dispatcher.add_handler(CommandHandler("martedi", actions.martedi))
+    dispatcher.add_handler(CommandHandler("mercoledi", actions.mercoledi))
+    dispatcher.add_handler(CommandHandler("giovedi", actions.giovedi))
+    dispatcher.add_handler(CommandHandler("venerdi", actions.venerdi))
+
+
     dispatcher.add_handler(MessageHandler(Filters.text & Filters.private, actions.text_filter))
     dispatcher.add_handler(CallbackQueryHandler(inline.inline_handler))
 

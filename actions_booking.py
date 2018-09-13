@@ -14,7 +14,7 @@ import secret_data
 # Comando iniziale che viene chiamato dall'utente
 def prenota(bot, update):
     if str(update.message.chat_id) in secret_data.users:
-        keyboard = [[telegram.InlineKeyboardButton("Prenotare una-tantum (solo per il giorno dopo)",
+        keyboard = [[telegram.InlineKeyboardButton("Prenotare una-tantum",
                                                    callback_data=inline.create_callback_data("BOOKING", "Temporary"))],
                     [telegram.InlineKeyboardButton("Prenotare in maniera permanente",
                                                    callback_data=inline.create_callback_data("BOOKING", "Permanent"))],
@@ -42,32 +42,34 @@ def booking_handler(bot, update):
     if len(data) == 2:  # Caso in cui è stato appena selezionato il bottone dal menu
         mode = data[1]
         if mode == "Temporary":
-            if common.booking_time():
-                bot.send_message(chat_id=chat_id,
-                                 text="Viaggi disponibili per " + common.tomorrow().lower() + ":",
-                                 reply_markup=booking_keyboard(mode, common.tomorrow()))
-            else:
-                bot.send_message(chat_id=chat_id,
-                                 text="Mi dispiace, è possibile effettuare prenotazioni"
-                                      + " tramite il bot solo dalle " + str(common.booking_start)
-                                      + ":00 alle " + str(common.booking_end) + ":00 del giorno"
-                                      + " prima. Inoltre, UberNEST è attivo dal lunedì al venerdì.")
+            bot.send_message(chat_id=chat_id,
+                             text="Si ricorda che le prenotazioni una-tantum vengono automaticamente cancellate ed"
+                                  " addebitate il giorno dopo la prenotazione. E' possibile prenotarsi a un viaggio"
+                                  " già avvenuto, ma verrà addebitato comunque.")
         elif mode == "Permanent":
+            bot.send_message(chat_id=chat_id,
+                             text="Si ricorda che le prenotazioni permanenti verranno addebitate anche per i viaggi"
+                                  " prenotati per la giornata corrente.")
+        if common.booking_time():
             keyboard = []
             for i in range(0, 5, 1):
-                if i != datetime.datetime.today().weekday():
-                    keyboard.append(telegram.InlineKeyboardButton(
-                        common.day_to_string(i)[:2],  # Abbreviazione del giorno
-                        callback_data=inline.create_callback_data("BOOKING", mode, common.day_to_string(i))))
+                keyboard.append(telegram.InlineKeyboardButton(
+                    common.day_to_string(i)[:2],  # Abbreviazione del giorno
+                    callback_data=inline.create_callback_data("BOOKING", mode, common.day_to_string(i))))
             bot.send_message(chat_id=chat_id, text="Scegli la data della prenotazione.",
                              reply_markup=telegram.InlineKeyboardMarkup([keyboard, [telegram.InlineKeyboardButton(
                                  "Annulla", callback_data=inline.create_callback_data("CANCEL"))]]))
-    elif len(data) == 3:  # Caso in cui il trip sarà Permanent
+        else:
+            bot.send_message(chat_id=chat_id,
+                             text="Mi dispiace, è possibile effettuare prenotazioni"
+                                  + " tramite il bot solo dalle " + str(common.booking_start)
+                                  + ":00 alle " + str(common.booking_end) + ":00 del giorno"
+                                  + ". Inoltre, UberNEST è attivo dal lunedì al venerdì.")
+    elif len(data) == 3:  # Scelta del giorno
         mode, day = data[1:3]
-        if mode == "Permanent":
-            bot.send_message(chat_id=chat_id, text="Viaggi disponibili per " + day.lower(),
-                             reply_markup=booking_keyboard(mode, day))
-    else:  # Caso in cui il trip sarà Temporaneo
+        bot.send_message(chat_id=chat_id, text="Viaggi disponibili per " + day.lower(),
+                         reply_markup=booking_keyboard(mode, day))
+    else:  # Scelta del viaggio
         direction, day, driver, mode = data[1:]
 
         trips = secret_data.groups[direction][day][driver]
@@ -147,7 +149,7 @@ def delete_booking(bot, update):
         bot.send_message(chat_id=chat_id, text="Prenotazione cancellata con successo.")
         bot.send_message(chat_id=driver, text="L'utente " + secret_data.users[str(chat_id)] + " ha cancellato la " +
                                               " prenotazione per " + day + " " + common.direction_to_name(
-                                               direction) + ".")
+            direction) + ".")
 
 
 # Keyboard customizzata per visualizzare le prenotazioni in maniera inline

@@ -33,8 +33,8 @@ def help(bot, update):
         "/registra - Aggiungi il tuo nome al database."
 
     text = text + "\n\n/oggi - Visualizza le prenotazioni per oggi." \
-           + "\n/domani - Visualizza le prenotazioni per domani." \
-           + "\n/settimana - Visualizza le prenotazioni per la settimana."
+                + "\n/domani - Visualizza le prenotazioni per domani." \
+                + "\n/settimana - Visualizza le prenotazioni per la settimana."
 
     bot.send_message(chat_id=update.message.chat_id, text=text)
 
@@ -45,6 +45,26 @@ def oggi(bot, update):
 
 def domani(bot, update):
     fetch_bookings(bot, update.message.chat_id, common.tomorrow())
+
+
+def lunedi(bot, update):
+    fetch_bookings(bot, update.message.chat_id, "Lunedì")
+
+
+def martedi(bot, update):
+    fetch_bookings(bot, update.message.chat_id, "Martedì")
+
+
+def mercoledi(bot, update):
+    fetch_bookings(bot, update.message.chat_id, "Mercoledì")
+
+
+def giovedi(bot, update):
+    fetch_bookings(bot, update.message.chat_id, "Giovedì")
+
+
+def venerdi(bot, update):
+    fetch_bookings(bot, update.message.chat_id, "Venerdì")
 
 
 def settimana(bot, update):
