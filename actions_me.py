@@ -52,6 +52,8 @@ def me_handler(bot, update):
                                   " UberNEST per ulteriori informazioni.\n\n"
                                   "Sei sicuro di voler diventare un autista di UberNEST?",
                              reply_markup=telegram.InlineKeyboardMarkup(keyboard))
+    elif data == "MESSAGE":
+        bot.send_message(chat_id=chat_id, text="Questa funzione è temporaneamente disattivata. Riprova più tardi.")
     elif data == "MONEY":
         debits = money.get_debits(str(chat_id))
         if len(debits) != 0:
@@ -105,8 +107,9 @@ def me_handler(bot, update):
                              text="Numero di posti della vettura aggiornato con successo.")
         else:
             bot.send_message(chat_id=chat_id,
-                             text="Sei stato inserito nella lista degli autisti! Usa il menu /me per gestire"
-                                  " il tuo profilo autista.")
+                             text="Sei stato inserito nella lista degli autisti! Usa il menu /me per aggiungere"
+                                  " viaggi, modificare i posti auto, aggiungere un messaggio da mostrare ai tuoi"
+                                  " passeggeri ed altro.")
         secret_data.drivers[str(chat_id)] = {"Slots": slots}
     elif data == "DELETEDRIVER":
         common.delete_driver(chat_id)
@@ -216,10 +219,12 @@ def me_keyboard(update):
     if str(update.message.chat_id) in secret_data.drivers:
         money_string = "Gestire i miei debiti e i miei crediti"
         driver_string = "Smettere di essere un autista di UberNEST"
-        keyboard.append([telegram.InlineKeyboardButton("Gestire i miei viaggi",
+        keyboard.append([telegram.InlineKeyboardButton("Visualizzare e cancellare i miei viaggi",
                                                        callback_data=inline.create_callback_data("ME", "TRIPS"))])
-        keyboard.append([telegram.InlineKeyboardButton("Modificare il numero di posti",
+        keyboard.append([telegram.InlineKeyboardButton("Modificare il numero di posti della mia auto",
                                                        callback_data=inline.create_callback_data("ME", "SLOTSDRIVER"))])
+        keyboard.append([telegram.InlineKeyboardButton("Modificare il messaggio per i passeggeri",
+                                                       callback_data=inline.create_callback_data("ME", "MESSAGE"))])
     else:
         money_string = "Gestire i miei debiti"
         driver_string = "Diventare un autista di UberNEST"

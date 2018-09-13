@@ -21,20 +21,21 @@ def text_filter(bot, update):
 
 def start(bot, update):
     bot.send_message(chat_id=update.message.chat_id,
-                     text="Benvenuto nel bot di UberNEST. Per iniziare, digita /registra per registrarti a sistema, "
-                          + "o /help per visualizzare i comandi.")
+                     text="Benvenuto nel bot di UberNEST. Per iniziare, digita /registra per registrarti a sistema"
+                          " (obbligatorio per effettuare prenotazioni) o /help per visualizzare i comandi.")
 
 
 def help(bot, update):
     bot.send_message(chat_id=update.message.chat_id, text="Comandi disponibili:")
 
-    text = "/me - Gestisci il tuo profilo.\n/prenota - Gestisci le prenotazioni." \
+    text = "/me - Gestisci il tuo profilo.\n/prenota - Gestisci le tue prenotazioni." \
         if str(update.message.chat_id) in secret_data.users else \
-        "/registra - Aggiungi il tuo nome al database."
+        "/registra - Inizia a usare UberNEST registrandoti a sistema."
 
     text = text + "\n\n/oggi - Visualizza le prenotazioni per oggi." \
                 + "\n/domani - Visualizza le prenotazioni per domani." \
-                + "\n/settimana - Visualizza le prenotazioni per la settimana."
+                + "\n/settimana - Visualizza le prenotazioni per la settimana." \
+                + "\n/lunedi - /martedi - /mercoledi - /giovedi - /venerdi - Visualizza i singoli giorni."
 
     bot.send_message(chat_id=update.message.chat_id, text=text)
 
@@ -75,7 +76,7 @@ def settimana(bot, update):
         keyboard.append(
             InlineKeyboardButton(day[:2], callback_data=inline.create_callback_data("SHOWBOOKINGS", day)))
 
-    bot.send_message(chat_id=update.message.chat_id, text="Scegli il giorno di cui visualizzare le prenotazioni. ",
+    bot.send_message(chat_id=update.message.chat_id, text="Scegli il giorno di cui visualizzare le prenotazioni.",
                      reply_markup=InlineKeyboardMarkup([keyboard]))
 
 

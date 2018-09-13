@@ -61,10 +61,9 @@ def booking_handler(bot, update):
                                  "Annulla", callback_data=inline.create_callback_data("CANCEL"))]]))
         else:
             bot.send_message(chat_id=chat_id,
-                             text="Mi dispiace, è possibile effettuare prenotazioni"
-                                  + " tramite il bot solo dalle " + str(common.booking_start)
-                                  + ":00 alle " + str(common.booking_end) + ":00 del giorno"
-                                  + ". Inoltre, UberNEST è attivo dal lunedì al venerdì.")
+                             text="Mi dispiace, per adessoè possibile effettuare prenotazioni"
+                                  + " tramite UberNEST solo dalle " + str(common.booking_start)
+                                  + ":00 alle " + str(common.booking_end) + ":00.")
     elif len(data) == 3:  # Scelta del giorno
         mode, day = data[1:3]
         bot.send_message(chat_id=chat_id, text="Viaggi disponibili per " + day.lower(),
@@ -81,15 +80,17 @@ def booking_handler(bot, update):
                 bot.send_message(chat_id=chat_id, text="Sei tu l'autista!")
             elif str(chat_id) not in trips["Temporary"] and str(chat_id) not in trips["Permanent"]:
                 trips[mode].append(str(chat_id))
-                bot.send_message(chat_id=chat_id, text="Prenotazione completata. Dati del viaggio:"
-                                                       + "\n\nAutista: " + str(secret_data.users[driver]["Name"])
-                                                       + "\nGiorno: " + day
-                                                       + "\nDirezione: " + common.direction_to_name(direction)
-                                                       + "\nModalità: " + common.localize_mode(mode))
-                bot.send_message(chat_id=driver, text="Hai una nuova prenotazione da parte di " + secret_data.users[
-                    str(chat_id)] + " per " + day + " "
-                                                      + common.direction_to_name(direction) + ". " +
-                                                      "Posti rimanenti: " + str(total_slots - occupied_slots - 1))
+                bot.send_message(chat_id=chat_id,
+                                 text="Prenotazione completata. Dati del viaggio:"
+                                      + "\n\nAutista: " + str(secret_data.users[driver]["Name"])
+                                      + "\nGiorno: " + day
+                                      + "\nDirezione: " + common.direction_to_name(direction)
+                                      + "\nModalità: " + common.localize_mode(mode))
+                bot.send_message(chat_id=driver,
+                                 text="Hai una nuova prenotazione da parte di "
+                                      + secret_data.users[str(chat_id)]["Name"]
+                                      + " per " + day + " " + common.direction_to_name(direction)
+                                      + ". Posti rimanenti: " + str(total_slots - occupied_slots - 1))
             else:
                 bot.send_message(chat_id=chat_id, text="Ti sei già prenotato in questa data con questa persona!")
         else:
