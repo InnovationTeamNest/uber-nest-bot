@@ -42,7 +42,7 @@ def help(bot, update):
 
 
 def info(bot, update):
-    bot.send_message(chat_id=update.message.chat_id, text="UberNEST Bot v. 1.2.3 - sviluppata dal"
+    bot.send_message(chat_id=update.message.chat_id, text="UberNEST Bot v. 1.2.3.1 - sviluppata dal"
                                                           " NEST Innovation Team. Contatta @mfranzil per suggerimenti,"
                                                           " proposte, bug o quant'altro.")
 
@@ -78,8 +78,7 @@ def venerdi(bot, update):
 def settimana(bot, update):
     keyboard = []
 
-    for i in range(0, 5, 1):
-        day = common.day_to_string(i)
+    for day in common.work_days:
         keyboard.append(
             InlineKeyboardButton(day[:2], callback_data=inline.create_callback_data("SHOWBOOKINGS", day)))
 
