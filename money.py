@@ -15,6 +15,7 @@ import secret_data
 
 class MoneyHandler(webapp2.RequestHandler):
     def get(self):
+        dumpable.get_data()
         process_debits()
         dumpable.dump_data()
         self.response.write("See console for output.")

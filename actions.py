@@ -35,7 +35,7 @@ def help(bot, update):
     text = text + "\n\n/oggi - Visualizza le prenotazioni per oggi." \
                 + "\n/domani - Visualizza le prenotazioni per domani." \
                 + "\n/settimana - Visualizza le prenotazioni per la settimana." \
-                + "\n\n/lunedi - /martedi - /mercoledi\n/giovedi - /venerdi -" \
+                + "\n\n/lunedi - /martedi - /mercoledi\n/giovedi - /venerdi - " \
                 + "Visualizza le prenotazioni dei singoli giorni."
 
     bot.send_message(chat_id=update.message.chat_id, text=text)

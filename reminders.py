@@ -7,11 +7,13 @@ import telegram
 import webapp2
 
 import common
+import dumpable
 import secret_data
 
 
 class ReminderHandler(webapp2.RequestHandler):
     def get(self):
+        dumpable.get_data()
         remind()
         self.response.write("See console for output.")
 

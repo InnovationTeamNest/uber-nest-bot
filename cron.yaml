@@ -2,7 +2,7 @@ cron:
 - description: set up the webhook to prevent failures
   url: /set_webhook
   timezone: Europe/Rome
-  schedule: every 5 hours
+  schedule: every day 01:00
 - description: process credit changes
   url: /money
   timezone: Europe/Rome

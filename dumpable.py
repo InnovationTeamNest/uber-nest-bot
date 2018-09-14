@@ -11,6 +11,7 @@ import secret_data
 
 class DataHandler(webapp2.RequestHandler):
     def get(self):
+        get_data()
         print_data()
         self.response.write("Data output in console.")
 
@@ -48,8 +49,8 @@ def get_data():
 def print_data():
     """Prints to the Cloud Console Logs the current dataset"""
     data = Dumpable.query().fetch()[0]
-    print "Stored data: ", data.drivers, data.users, data.groups
-    print "Internal data: ", secret_data.drivers, secret_data.users, secret_data.groups
+    log.debug("Stored data: " + str(data.drivers) + str(data.users) + str(data.groups))
+    log.debug("Internal data: " + str(secret_data.drivers) + str(secret_data.users) + str(secret_data.groups))
 
 
 def empty_datastore():
