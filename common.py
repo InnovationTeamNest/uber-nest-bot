@@ -77,7 +77,7 @@ def get_trip_time(driver, date, direction):
 
 def booking_time():
     """Controlla che l'orario attuale sia compreso all'interno degli orari di prenotazioni definiti sopra"""
-    return is_weekday(tomorrow()) and (booking_start <= now_time() <= booking_end)
+    return booking_start <= now_time() <= booking_end
 
 
 def direction_to_name(direction):

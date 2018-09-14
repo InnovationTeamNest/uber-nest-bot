@@ -41,16 +41,16 @@ def booking_handler(bot, update):
 
     if len(data) == 2:  # Caso in cui è stato appena selezionato il bottone dal menu
         mode = data[1]
-        if mode == "Temporary":
-            bot.send_message(chat_id=chat_id,
-                             text="Si ricorda che le prenotazioni una-tantum vengono automaticamente cancellate ed"
-                                  " addebitate il giorno dopo la prenotazione. E' possibile prenotarsi a un viaggio"
-                                  " già avvenuto, ma verrà addebitato comunque.")
-        elif mode == "Permanent":
-            bot.send_message(chat_id=chat_id,
-                             text="Si ricorda che le prenotazioni permanenti verranno addebitate anche per i viaggi"
-                                  " prenotati per la giornata corrente.")
         if common.booking_time():
+            if mode == "Temporary":
+                bot.send_message(chat_id=chat_id,
+                                 text="Si ricorda che le prenotazioni una-tantum vengono automaticamente cancellate ed"
+                                      " addebitate il giorno dopo la prenotazione. E' possibile prenotarsi a un viaggio"
+                                      " già avvenuto, ma verrà addebitato comunque.")
+            elif mode == "Permanent":
+                bot.send_message(chat_id=chat_id,
+                                 text="Si ricorda che le prenotazioni permanenti verranno addebitate anche per i viaggi"
+                                      " prenotati per la giornata corrente.")
             keyboard = []
             for i in range(0, 5, 1):
                 keyboard.append(telegram.InlineKeyboardButton(

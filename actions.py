@@ -42,7 +42,7 @@ def help(bot, update):
 
 
 def info(bot, update):
-    bot.send_message(chat_id=update.message.chat_id, text="UberNEST Bot v. 1.2.2 - sviluppata dal"
+    bot.send_message(chat_id=update.message.chat_id, text="UberNEST Bot v. 1.2.3 - sviluppata dal"
                                                           " NEST Innovation Team. Contatta @mfranzil per suggerimenti,"
                                                           " proposte, bug o quant'altro.")
 
