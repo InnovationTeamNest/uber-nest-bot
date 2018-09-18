@@ -14,7 +14,8 @@ class ReplyStatus:
 
 def text_filter(bot, update):
     if ReplyStatus.response_mode == 0:
-        bot.send_message(chat_id=update.message.chat_id, text="Digita /help per avere informazioni sui comandi.")
+        bot.send_message(chat_id=update.message.chat_id,
+                         text="Digita /help per avere informazioni sui comandi.")
     elif ReplyStatus.response_mode == 1:
         response_registra(bot, update)
 
@@ -33,18 +34,20 @@ def help(bot, update):
         "/registra - Inizia a usare UberNEST registrandoti a sistema."
 
     text = text + "\n\n/oggi - Visualizza le prenotazioni per oggi." \
-                + "\n/domani - Visualizza le prenotazioni per domani." \
-                + "\n/settimana - Visualizza le prenotazioni per la settimana." \
-                + "\n\n/lunedi - /martedi - /mercoledi\n/giovedi - /venerdi - " \
-                + "Visualizza le prenotazioni dei singoli giorni."
+           + "\n/domani - Visualizza le prenotazioni per domani." \
+           + "\n/settimana - Visualizza le prenotazioni per la settimana." \
+           + "\n\n/lunedi - /martedi - /mercoledi\n/giovedi - /venerdi - " \
+           + "Visualizza le prenotazioni dei singoli giorni." \
+           + "\n/info - Visualizza informazioni sulla versione del Bot."
 
     bot.send_message(chat_id=update.message.chat_id, text=text)
 
 
 def info(bot, update):
-    bot.send_message(chat_id=update.message.chat_id, text="UberNEST Bot v. 1.2.3.1 - sviluppata dal"
-                                                          " NEST Innovation Team. Contatta @mfranzil per suggerimenti,"
-                                                          " proposte, bug o quant'altro.")
+    bot.send_message(chat_id=update.message.chat_id,
+                     text="UberNEST Bot v. 1.3 - sviluppata dal"
+                          " NEST Innovation Team. Contatta @mfranzil per suggerimenti,"
+                          " proposte, bug o quant'altro.")
 
 
 def oggi(bot, update):
@@ -82,7 +85,8 @@ def settimana(bot, update):
         keyboard.append(
             InlineKeyboardButton(day[:2], callback_data=inline.create_callback_data("SHOWBOOKINGS", day)))
 
-    bot.send_message(chat_id=update.message.chat_id, text="Scegli il giorno di cui visualizzare le prenotazioni.",
+    bot.send_message(chat_id=update.message.chat_id,
+                     text="Scegli il giorno di cui visualizzare le prenotazioni.",
                      reply_markup=InlineKeyboardMarkup([keyboard]))
 
 
@@ -124,7 +128,8 @@ def fetch_bookings(bot, chat_id, day):
 
 def registra(bot, update):
     if str(update.message.chat_id) in secret_data.users:
-        bot.send_message(chat_id=update.message.chat_id, text="Questo utente risulta già iscritto a sistema!")
+        bot.send_message(chat_id=update.message.chat_id,
+                         text="Questo utente risulta già iscritto a sistema!")
     else:
         bot.send_message(chat_id=update.message.chat_id,
                          text="In seguito all'iscrizione, assicurati di unirti "

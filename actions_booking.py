@@ -53,7 +53,7 @@ def booking_handler(bot, update):
                                       " prenotati per la giornata corrente.")
             keyboard = []
             for day in common.work_days:
-                keyboard.append(InlineKeyboardButton(day[:2], # Abbreviazione del giorno
+                keyboard.append(InlineKeyboardButton(day[:2],  # Abbreviazione del giorno
                                                      callback_data=inline.create_callback_data("BOOKING", mode, day)))
             bot.send_message(chat_id=chat_id, text="Scegli la data della prenotazione.",
                              reply_markup=InlineKeyboardMarkup([keyboard, [InlineKeyboardButton(

@@ -2,9 +2,11 @@
 from __future__ import unicode_literals
 
 import json
+import logging as log
+import time
 
-import telegram
 import webapp2
+from telegram import Bot, Update
 from telegram.ext import Dispatcher, CommandHandler, MessageHandler, CallbackQueryHandler, Filters
 
 import actions
@@ -14,7 +16,8 @@ import dumpable
 import inline
 import secret_data
 
-bot = telegram.Bot(secret_data.bot_token)
+bot = Bot(secret_data.bot_token)
+MAX_ATTEMPTS = 5
 
 
 class WebHookHandler(webapp2.RequestHandler):
@@ -23,14 +26,14 @@ class WebHookHandler(webapp2.RequestHandler):
         res = bot.setWebhook(secret_data.url + secret_data.bot_token)
         if res:
             self.response.write("Success!")
-            bot.send_message(chat_id=secret_data.owner_id, text="Webhook resettato con successo!")
         else:
             self.response.write("Webhook setup failed...")
+            bot.send_message(chat_id=secret_data.owner_id, text="Errore nel reset del Webhook!")
 
 
 class UpdateHandler(webapp2.RequestHandler):
     def post(self):  # Gli update vengono forniti da telegram in Json e vanno interpretati
-        webhook(telegram.Update.de_json(json.loads(self.request.body), bot))
+        webhook(Update.de_json(json.loads(self.request.body), bot), 0)
         dumpable.dump_data()
 
 
@@ -61,5 +64,15 @@ def dispatcher_setup():
     dispatcher.add_handler(CallbackQueryHandler(inline.inline_handler))
 
 
-def webhook(update):
-    dispatcher.process_update(update)
+def webhook(update, counter):
+    try:
+        dispatcher.process_update(update)
+    except Exception as ex:
+        dispatcher_setup()
+        bot.setWebhook(secret_data.url + secret_data.bot_token)
+        if counter < MAX_ATTEMPTS:
+            time.sleep(2 ** counter)
+            webhook(update, counter + 1)
+        else:
+            bot.send_message(chat_id=secret_data.owner_id, text="ERRORE! Impossibile ripristinare lo stato del bot.")
+            log.critical("Failed to initialize Webhook instance" + ex.message)

@@ -17,9 +17,9 @@ class MainHandler(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     ("/", MainHandler),
-    ("/data", DataHandler),                       # dumpable.py
-    ("/money", MoneyHandler),                     # money.py
-    ("/reminders", ReminderHandler),              # reminders.py
-    ("/set_webhook", WebHookHandler),             # webhook.py
+    ("/data", DataHandler),  # dumpable.py
+    ("/money", MoneyHandler),  # money.py
+    ("/reminders", ReminderHandler),  # reminders.py
+    ("/set_webhook", WebHookHandler),  # webhook.py
     ("/" + secret_data.bot_token, UpdateHandler)  # webhook.py
 ], debug=True)

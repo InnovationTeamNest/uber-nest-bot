@@ -21,7 +21,7 @@ booking_types_localized = ["Temporanea", "Permanente"]
 empty_str = " - "
 
 booking_start = datetime.time(6, 0)
-booking_end = datetime.time(23,59)
+booking_end = datetime.time(23, 30)
 
 trip_price = 0.50
 

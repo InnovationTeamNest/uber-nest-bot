@@ -5,12 +5,14 @@ import datetime
 import logging as log
 
 import webapp2
-from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup, Bot
 
 import common
 import dumpable
 import inline
 import secret_data
+
+bot = Bot(secret_data.bot_token)
 
 
 class MoneyHandler(webapp2.RequestHandler):
@@ -35,6 +37,9 @@ def process_debits():
                                 secret_data.users[user]["Debit"][driver] += common.trip_price
                             except KeyError:
                                 secret_data.users[user]["Debit"][driver] = common.trip_price
+                            bot.send_message(chat_id=str(user),
+                                             text="Ti sono stati addebitati " + str(common.trip_price)
+                                                  + " EUR da " + str(driver))
                             log.debug(user + "'s debit from "
                                       + driver + " = " + str(secret_data.users[user]["Debit"][driver]))
                 trips[driver]["Temporary"] = []

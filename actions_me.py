@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 import logging as log
 
 from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.utils.request import BadRequest
 
 import common
 import inline
@@ -22,7 +23,10 @@ def me_handler(bot, update):
     chat_id = update.callback_query.from_user.id
 
     bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
-    update.callback_query.message.delete()
+    try:
+        update.callback_query.message.delete()
+    except BadRequest as ex:
+        log.info("Failed to delete previous message")
 
     log.debug("Mode entered: " + data)
 
@@ -165,7 +169,11 @@ def newtrip_handler(bot, update):
     chat_id = str(update.callback_query.from_user.id)
 
     bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
-    update.callback_query.message.delete()
+    try:
+        update.callback_query.message.delete()
+    except BadRequest as ex:
+        log.info("Failed to delete previous message")
+
     # NOTA BENE: (Python 2.7 non supporta argomenti di posizione dopo *)
     if len(data) == 1:
         keyboard = []
