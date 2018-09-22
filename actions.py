@@ -38,7 +38,7 @@ def help(bot, update):
            + "\n/settimana - Visualizza le prenotazioni per la settimana." \
            + "\n\n/lunedi - /martedi - /mercoledi\n/giovedi - /venerdi - " \
            + "Visualizza le prenotazioni dei singoli giorni." \
-           + "\n/info - Visualizza informazioni sulla versione del Bot."
+           + "\n\n/info - Visualizza informazioni sulla versione del Bot."
 
     bot.send_message(chat_id=update.message.chat_id, text=text)
 
@@ -47,7 +47,10 @@ def info(bot, update):
     bot.send_message(chat_id=update.message.chat_id,
                      text="UberNEST Bot v. 1.3 - sviluppata dal"
                           " NEST Innovation Team. Contatta @mfranzil per suggerimenti,"
-                          " proposte, bug o quant'altro.")
+                          " proposte, bug o per partecipare attivamente allo"
+                          " sviluppo del bot.\n\nUberNEST è una piattaforma creata da"
+                          " Paolo Teta e Filippo Spaggiari nel 2017 come forma di"
+                          " car-sharing per gli studenti di Povo residenti al NEST.")
 
 
 def oggi(bot, update):

@@ -39,7 +39,10 @@ def process_debits():
                                 secret_data.users[user]["Debit"][driver] = common.trip_price
                             bot.send_message(chat_id=str(user),
                                              text="Ti sono stati addebitati " + str(common.trip_price)
-                                                  + " EUR da " + str(driver))
+                                                  + " EUR da " + str(secret_data.users[driver]["Name"]))
+                            bot.send_message(chat_id=str(driver),
+                                             text="Hai ora un credito di " + str(common.trip_price)
+                                                  + " EUR da parte di " + str(secret_data.users[user]["Name"]))
                             log.debug(user + "'s debit from "
                                       + driver + " = " + str(secret_data.users[user]["Debit"][driver]))
                 trips[driver]["Temporary"] = []

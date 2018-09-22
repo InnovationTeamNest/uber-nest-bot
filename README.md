@@ -2,6 +2,8 @@
 
 **Uber NEST Bot** is a Python-driven Telegram bot implementing the [python-telegram-bot](https://github.com/python-telegram-bot/python-telegram-bot) API, and run on a Google App Engine Standard environment.
 
+This is the code powering [@ubernestbot](https://t.me/ubernestbot).
+
 The Bot's purpose is to effortlessly mantain car sharing tasks within a small community (NEST, in this case).
 
 ## Sample secret_data.py file

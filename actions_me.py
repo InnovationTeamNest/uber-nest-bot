@@ -19,23 +19,23 @@ def me(bot, update):
 
 
 def me_handler(bot, update):
-    data = inline.separate_callback_data(update.callback_query.data)[1]
+    mode = inline.separate_callback_data(update.callback_query.data)[1]
     chat_id = update.callback_query.from_user.id
 
     bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
     try:
         update.callback_query.message.delete()
-    except BadRequest as ex:
+    except BadRequest:
         log.info("Failed to delete previous message")
 
-    log.debug("Mode entered: " + data)
+    log.debug("Mode entered: " + mode)
 
-    if data == "TRIPS":
+    if mode == "TRIPS":
         # Visualizza i vari trips dell'utente
         bot.send_message(chat_id=chat_id,
                          text="Viaggi (clicca su un viaggio per rimuoverlo):",
                          reply_markup=trips_keyboard(update))
-    elif data == "DRIVER":
+    elif mode == "DRIVER":
         if str(chat_id) in secret_data.drivers:
             keyboard = [
                 [InlineKeyboardButton("Sì", callback_data=inline.create_callback_data("ME", "DELETEDRIVER")),
@@ -56,9 +56,18 @@ def me_handler(bot, update):
                                   " UberNEST per ulteriori informazioni.\n\n"
                                   "Sei sicuro di voler diventare un autista di UberNEST?",
                              reply_markup=InlineKeyboardMarkup(keyboard))
-    elif data == "MESSAGE":
-        bot.send_message(chat_id=chat_id, text="Questa funzione è temporaneamente disattivata. Riprova più tardi.")
-    elif data == "MONEY":
+    elif mode == "MESSAGE":
+        """
+        bot.send_message(chat_id=chat_id,
+                         text="Scegli un viaggio a cui allegare un messaggio. "
+                              "Questa funzionalità va usata in casi straordinari "
+                              "come cambio d'orario o deviazioni impreviste. La "
+                              "rimozione del messaggio NON è automatica, in caso "
+                              "contrario messaggio permane per le settimane successive.",
+                         reply_markup=message_keyboard(update))
+        """
+        bot.send_message(chat_id=chat_id, text="Funzionalità non ancora arriva.")
+    elif mode == "MONEY":
         debits = money.get_debits(str(chat_id))
         if len(debits) != 0:
             string = ""
@@ -87,16 +96,28 @@ def me_handler(bot, update):
                 bot.send_message(chat_id=chat_id, text=message + "\n\nNessuno ti deve denaro al momento.")
         else:
             bot.send_message(chat_id=chat_id, text=message)
-    elif data == "REMOVAL":
+    elif mode == "REMOVAL":
         keyboard = [
             [InlineKeyboardButton("Sì", callback_data=inline.create_callback_data("ME", "CONFIRMREMOVAL")),
              InlineKeyboardButton("No", callback_data=inline.create_callback_data("CANCEL"))]]
-        bot.send_message(chat_id=chat_id,
-                         text="Sei sicuro di voler confermare la tua rimozione completa dal sistema?"
-                              " L'operazione è reversibile, ma tutte le"
-                              " tue prenotazioni e viaggi verranno cancellati per sempre.",
-                         reply_markup=InlineKeyboardMarkup(keyboard))
-    elif data == "SLOTSDRIVER":  # Supporto sensato da macchine con 2 posti fino a 5
+
+        user_debits = secret_data.users[str(chat_id)]["Debit"]
+        debitors = ""
+        for creditor in user_debits:
+            debitors += secret_data.users[creditor]["Name"] + " - " + str(user_debits[creditor]) + " EUR"
+
+        message_text = "Sei sicuro di voler confermare la tua rimozione completa dal sistema?" \
+                       + " L'operazione è reversibile, ma tutte le" \
+                       + " tue prenotazioni e viaggi verranno cancellati per sempre."
+
+        if debitors != "":
+            message_text += "\n\nATTENZIONE! Hai debiti con le seguenti persone," \
+                            " in caso di cancellazione dal sistema" \
+                            " verranno avvisate dei tuoi debiti non salvati!\n" + debitors
+
+        bot.send_message(chat_id=chat_id, text=message_text, reply_markup=InlineKeyboardMarkup(keyboard))
+
+    elif mode == "SLOTSDRIVER":  # Supporto sensato da macchine con 2 posti fino a 5
         keyboard = [InlineKeyboardButton(str(i),
                                          callback_data=inline.create_callback_data("ME", "CONFIRMDRIVER",
                                                                                    str(i)))
@@ -104,7 +125,7 @@ def me_handler(bot, update):
         bot.send_message(chat_id=chat_id,
                          text="Inserisci il numero di posti disponibili nella tua macchina, autista escluso.",
                          reply_markup=InlineKeyboardMarkup([keyboard]))
-    elif data == "CONFIRMDRIVER":
+    elif mode == "CONFIRMDRIVER":
         slots = int(inline.separate_callback_data(update.callback_query.data)[2])
         if str(chat_id) in secret_data.drivers:
             bot.send_message(chat_id=chat_id,
@@ -115,11 +136,18 @@ def me_handler(bot, update):
                                   " viaggi, modificare i posti auto, aggiungere un messaggio da mostrare ai tuoi"
                                   " passeggeri ed altro.")
         secret_data.drivers[str(chat_id)] = {"Slots": slots}
-    elif data == "DELETEDRIVER":
+    elif mode == "DELETEDRIVER":
         common.delete_driver(chat_id)
         bot.send_message(chat_id=chat_id,
                          text="Sei stato rimosso con successo dall'elenco degli autisti.")
-    elif data == "CONFIRMREMOVAL":
+    elif mode == "CONFIRMREMOVAL":
+        user_debits = secret_data.users[str(chat_id)]["Debit"]
+        for creditor in user_debits:
+            bot.send_message(chat_id=creditor,
+                             message="ATTENZIONE! " + secret_data.users[str(chat_id)]["Name"]
+                                     + " si è cancellato da UberNEST. Ha ancora "
+                                     + str(user_debits[creditor]) + " EUR di debito con te.")
+
         del secret_data.users[str(chat_id)]
         if str(chat_id) in secret_data.drivers:
             common.delete_driver(chat_id)
@@ -127,14 +155,14 @@ def me_handler(bot, update):
 
 
 def trips_handler(bot, update):
-    data = inline.separate_callback_data(update.callback_query.data)[1]
+    mode = inline.separate_callback_data(update.callback_query.data)[1]
     chat_id = str(update.callback_query.from_user.id)
 
     bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
     update.callback_query.message.delete()
 
-    log.debug("Mode entered: " + data)
-    if data == "ADD":
+    log.debug("Mode entered: " + mode)
+    if mode == "ADD":
         keyboard = [
             [InlineKeyboardButton(common.direction_name[0],
                                   callback_data=inline.create_callback_data("NEWTRIP",
@@ -144,9 +172,12 @@ def trips_handler(bot, update):
                                                                             common.direction_generic[1]))],
             [InlineKeyboardButton("Annulla", callback_data=inline.create_callback_data("CANCEL"))]
         ]
-        bot.send_message(chat_id=chat_id, text="Vuoi aggiungere un viaggio verso il NEST o Povo?",
+        bot.send_message(chat_id=chat_id,
+                         text="Vuoi aggiungere un viaggio verso il NEST o Povo? Ricorda che puoi aggiungere"
+                              " un solo viaggio al giorno per direzione. Eventuali viaggi già presenti"
+                              " verranno sovrascritti, passeggeri compresi.",
                          reply_markup=InlineKeyboardMarkup(keyboard))
-    elif data == "DELETE":
+    elif mode == "DELETE":
         direction, day = inline.separate_callback_data(update.callback_query.data)[2:4]
 
         keyboard = [
@@ -158,7 +189,7 @@ def trips_handler(bot, update):
         bot.send_message(chat_id=chat_id,
                          text="Sei sicuro di voler cancellare questo viaggio?",
                          reply_markup=InlineKeyboardMarkup(keyboard))
-    elif data == "CONFIRMDELETION":
+    elif mode == "CONFIRMDELETION":
         direction, day = inline.separate_callback_data(update.callback_query.data)[2:4]
         del secret_data.groups[direction][day][chat_id]
         bot.send_message(chat_id=chat_id, text="Viaggio cancellato con successo.")
@@ -171,7 +202,7 @@ def newtrip_handler(bot, update):
     bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
     try:
         update.callback_query.message.delete()
-    except BadRequest as ex:
+    except BadRequest:
         log.info("Failed to delete previous message")
 
     # NOTA BENE: (Python 2.7 non supporta argomenti di posizione dopo *)
@@ -224,6 +255,16 @@ def newtrip_handler(bot, update):
         bot.send_message(chat_id=chat_id, text="Spiacente, si è verificato un errore. Riprova più tardi.")
 
 
+def message_handler(bot, update):
+    mode = inline.separate_callback_data(update.callback_query.data)[1]
+    chat_id = update.callback_query.from_user.id
+
+    if mode == "EDIT":
+        bot.send_message(chat_id=chat_id,
+                         text="Inserisci il messaggio che verrà mostrato assieme al viaggio."
+                              " Cerca di essere conciso e diretto.")
+
+
 def me_keyboard(update):
     keyboard = []
     if str(update.message.chat_id) in secret_data.drivers:
@@ -265,6 +306,26 @@ def trips_keyboard(update):
                     [InlineKeyboardButton(day + ": " + time + " " + common.direction_to_name(direction)
                                           + " (" + str(occupied_slots) + ")",
                                           callback_data=inline.create_callback_data("TRIPS", "DELETE",
+                                                                                    direction, day))])
+
+    keyboard.append([InlineKeyboardButton("Esci", callback_data=inline.create_callback_data("CANCEL"))])
+    return InlineKeyboardMarkup(keyboard)
+
+
+def message_keyboard(update):
+    user = str(update.callback_query.from_user.id)
+    keyboard = []
+
+    for day in common.work_days:
+        for direction in secret_data.groups:
+            time = common.get_trip_time(user, day, direction)
+            if time is not None:
+                group = secret_data.groups[direction][day][user]
+                occupied_slots = len(group["Permanent"]) + len(group["Temporary"])
+                keyboard.append(
+                    [InlineKeyboardButton(day + ": " + time + " " + common.direction_to_name(direction)
+                                          + " (" + str(occupied_slots) + ")",
+                                          callback_data=inline.create_callback_data("MESSAGE", "EDIT",
                                                                                     direction, day))])
 
     keyboard.append([InlineKeyboardButton("Esci", callback_data=inline.create_callback_data("CANCEL"))])

@@ -61,5 +61,4 @@ def remind_user(bot, chat_id):
                                  text="REMINDER: Domani hai un viaggio "
                                       + common.direction_to_name(direction)
                                       + " alle ore " + common.get_trip_time(driver, day, direction)
-                                      + " " + common.direction_to_name(direction) + " con " +
-                                      str(secret_data.users[driver]["Name"]))
+                                      + " con " + str(secret_data.users[driver]["Name"]))

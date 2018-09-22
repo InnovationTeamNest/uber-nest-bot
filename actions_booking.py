@@ -87,8 +87,8 @@ def booking_handler(bot, update):
                                       + "\nDirezione: " + common.direction_to_name(direction)
                                       + "\nModalità: " + common.localize_mode(mode))
                 bot.send_message(chat_id=driver,
-                                 text="Hai una nuova prenotazione da parte di "
-                                      + secret_data.users[str(chat_id)]["Name"]
+                                 text="Hai una nuova prenotazione " + common.localize_mode(mode).lower()
+                                      + " da parte di " + secret_data.users[str(chat_id)]["Name"]
                                       + " per " + day + " " + common.direction_to_name(direction)
                                       + ". Posti rimanenti: " + str(total_slots - occupied_slots - 1))
             else:
@@ -163,7 +163,8 @@ def booking_keyboard(mode, day):
             try:
                 keyboard.append(
                     [InlineKeyboardButton(
-                        secret_data.users[driver]["Name"] + " - " + common.get_trip_time(driver, day, direction)
+                        secret_data.users[driver]["Name"] + " - "
+                        + common.get_trip_time(driver, day, direction)
                         + " " + common.direction_to_name(direction),
                         callback_data=inline.create_callback_data(
                             "BOOKING", direction, day, driver, mode))])

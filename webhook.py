@@ -41,7 +41,8 @@ def dispatcher_setup():
     global dispatcher
     dispatcher = Dispatcher(bot=bot, update_queue=None, workers=0)
 
-    dumpable.get_data()
+   # dumpable.get_data()
+    dumpable.dump_data()
 
     dispatcher.add_handler(CommandHandler("start", actions.start))
     dispatcher.add_handler(CommandHandler("help", actions.help))

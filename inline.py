@@ -23,6 +23,8 @@ def inline_handler(bot, update):
         actions_me.trips_handler(bot, update)
     elif identifier == "NEWTRIP":
         actions_me.newtrip_handler(bot, update)
+    elif identifier == "MESSAGE":
+        actions_me.message_handler(bot, update)
     elif identifier == "SHOWBOOKINGS":
         actions.show_bookings(bot, update)
     elif identifier == "CANCEL":
