@@ -79,6 +79,20 @@ def edit_money(bot, update):
     bot.send_message(chat_id=chat_id, text=message, reply_markup=InlineKeyboardMarkup([keyboard]))
 
 
+def edit_money_admin(bot, update, args):
+    if str(update.message.chat_id) == secret_data.owner_id:
+        try:
+            debitor, creditor, value = args
+            secret_data.users[str(debitor)]["Debit"][str(creditor)] = value
+            bot.send_message(chat_id=secret_data.owner_id,
+                             text="Modifica in corso: \n"
+                                  + "Debitore: " + secret_data.users[str(debitor)]["Name"]
+                                  + "Creditore: " + secret_data.users[str(creditor)]["Name"]
+                                  + "Debito inserito: " + str(value))
+        except Exception:
+            bot.send_message(chat_id=secret_data.owner_id, text="Sintassi non corretta. Riprova!")
+
+
 def get_credits(input_creditor):
     return [(user, secret_data.users[user]["Debit"][creditor]) for user in secret_data.users
             for creditor in secret_data.users[user]["Debit"] if creditor == input_creditor]

@@ -151,6 +151,8 @@ def registra(bot, update):
 def response_registra(bot, update):
     user = update.message.text
     secret_data.users[str(update.message.chat_id)] = {"Name": str(user), "Debit": {}}
+    bot.send_message(chat_id=secret_data.owner_id,
+                     text="Nuovo utente iscritto: " + str(user))
     bot.send_message(chat_id=update.message.chat_id,
                      text="Il tuo username è stato aggiunto con successo"
                           " al database. Usa i seguenti comandi:\n/me "

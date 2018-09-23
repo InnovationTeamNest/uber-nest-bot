@@ -14,6 +14,7 @@ import actions_booking
 import actions_me
 import dumpable
 import inline
+import money
 import secret_data
 
 bot = Bot(secret_data.bot_token)
@@ -41,8 +42,7 @@ def dispatcher_setup():
     global dispatcher
     dispatcher = Dispatcher(bot=bot, update_queue=None, workers=0)
 
-   # dumpable.get_data()
-    dumpable.dump_data()
+    dumpable.get_data()
 
     dispatcher.add_handler(CommandHandler("start", actions.start))
     dispatcher.add_handler(CommandHandler("help", actions.help))
@@ -52,14 +52,17 @@ def dispatcher_setup():
     dispatcher.add_handler(CommandHandler("settimana", actions.settimana))
     dispatcher.add_handler(CommandHandler("registra", actions.registra))
 
-    dispatcher.add_handler(CommandHandler("me", actions_me.me))
-    dispatcher.add_handler(CommandHandler("prenota", actions_booking.prenota))
-
     dispatcher.add_handler(CommandHandler("lunedi", actions.lunedi))
     dispatcher.add_handler(CommandHandler("martedi", actions.martedi))
     dispatcher.add_handler(CommandHandler("mercoledi", actions.mercoledi))
     dispatcher.add_handler(CommandHandler("giovedi", actions.giovedi))
     dispatcher.add_handler(CommandHandler("venerdi", actions.venerdi))
+
+    dispatcher.add_handler(CommandHandler("me", actions_me.me))
+
+    dispatcher.add_handler(CommandHandler("prenota", actions_booking.prenota))
+
+    dispatcher.add_handler(CommandHandler("budino", money.edit_money_admin, pass_args=True))
 
     dispatcher.add_handler(MessageHandler(Filters.text & Filters.private, actions.text_filter))
     dispatcher.add_handler(CallbackQueryHandler(inline.inline_handler))
