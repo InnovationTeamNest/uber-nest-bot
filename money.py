@@ -85,10 +85,10 @@ def edit_money_admin(bot, update, args):
             debitor, creditor, value = args
             secret_data.users[str(debitor)]["Debit"][str(creditor)] = value
             bot.send_message(chat_id=secret_data.owner_id,
-                             text="Modifica in corso: \n"
-                                  + "Debitore: " + secret_data.users[str(debitor)]["Name"]
-                                  + "Creditore: " + secret_data.users[str(creditor)]["Name"]
-                                  + "Debito inserito: " + str(value))
+                             text="Modifica in corso: "
+                                  + "\n\nDebitore: " + secret_data.users[str(debitor)]["Name"]
+                                  + "\nCreditore: " + secret_data.users[str(creditor)]["Name"]
+                                  + "\nDebito inserito: " + str(value))
         except Exception:
             bot.send_message(chat_id=secret_data.owner_id, text="Sintassi non corretta. Riprova!")
 
