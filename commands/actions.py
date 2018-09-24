@@ -1,23 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import logging as log
+
 from telegram import InlineKeyboardButton, ChatAction, InlineKeyboardMarkup
+from telegram.error import BadRequest
 
-import common
-import inline
 import secret_data
-
-
-class ReplyStatus:
-    response_mode = 0
-
-
-def text_filter(bot, update):
-    if ReplyStatus.response_mode == 0:
-        bot.send_message(chat_id=update.message.chat_id,
-                         text="Digita /help per avere informazioni sui comandi.")
-    elif ReplyStatus.response_mode == 1:
-        response_registra(bot, update)
+from util import common, filters
+from util.filters import ReplyStatus
 
 
 def start(bot, update):
@@ -45,7 +36,7 @@ def help(bot, update):
 
 def info(bot, update):
     bot.send_message(chat_id=update.message.chat_id,
-                     text="UberNEST Bot v. 1.3 - sviluppata dal"
+                     text="UberNEST Bot v. 1.4 - sviluppata dal"
                           " NEST Innovation Team. Contatta @mfranzil per suggerimenti,"
                           " proposte, bug o per partecipare attivamente allo"
                           " sviluppo del bot.\n\nUberNEST è una piattaforma creata da"
@@ -86,7 +77,7 @@ def settimana(bot, update):
 
     for day in common.work_days:
         keyboard.append(
-            InlineKeyboardButton(day[:2], callback_data=inline.create_callback_data("SHOWBOOKINGS", day)))
+            InlineKeyboardButton(day[:2], callback_data=filters.create_callback_data("SHOWBOOKINGS", day)))
 
     bot.send_message(chat_id=update.message.chat_id,
                      text="Scegli il giorno di cui visualizzare le prenotazioni.",
@@ -97,9 +88,13 @@ def show_bookings(bot, update):
     chat_id = update.callback_query.from_user.id
 
     bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
-    update.callback_query.message.delete()
 
-    data = inline.separate_callback_data(update.callback_query.data)
+    try:
+        update.callback_query.message.delete()
+    except BadRequest:
+        log.info("Failed to delete previous message")
+
+    data = filters.separate_callback_data(update.callback_query.data)
     fetch_bookings(bot, chat_id, data[1])
 
 
@@ -150,7 +145,7 @@ def registra(bot, update):
 
 def response_registra(bot, update):
     user = update.message.text
-    secret_data.users[str(update.message.chat_id)] = {"Name": str(user), "Debit": {}}
+    secret_data.users[unicode(update.message.chat_id)] = {"Name": unicode(user), "Debit": {}}
     bot.send_message(chat_id=secret_data.owner_id,
                      text="Nuovo utente iscritto: " + str(user))
     bot.send_message(chat_id=update.message.chat_id,

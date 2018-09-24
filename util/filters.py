@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import logging as log
+
 import telegram
+from telegram.error import BadRequest
 
-import actions
-import actions_booking
-import actions_me
-import money
+from commands import actions, actions_booking, actions_me, actions_money
 
+
+# Questi comandi vengono usati dalla modalità inline per redirezionare correttamente i comandi.
+# Il metodo cancel_handler viene usato come jolly nel caso in cui si voglia troncare la catena di query.
+# Infine, create e separate_callback_data vengono usate per creare le stringhe d'identificazione.
 
 def inline_handler(bot, update):
     # Nelle callback query, il primo elemento è sempre l'identificatore
@@ -27,17 +31,22 @@ def inline_handler(bot, update):
         actions_me.message_handler(bot, update)
     elif identifier == "SHOWBOOKINGS":
         actions.show_bookings(bot, update)
-    elif identifier == "CANCEL":
-        cancel_handler(bot, update)
+    elif identifier == "MONEY":
+        actions_money.check_money(bot, update)
     elif identifier == "EDITMONEY":
-        money.edit_money(bot, update)
+        actions_money.edit_money(bot, update)
+    elif identifier == "CANCEL":  # Caso base usato da molti comandi
+        cancel_handler(bot, update)
 
 
 def cancel_handler(bot, update):
     chat_id = update.callback_query.from_user.id
 
     bot.send_chat_action(chat_id=chat_id, action=telegram.ChatAction.TYPING)
-    update.callback_query.message.delete()
+    try:
+        update.callback_query.message.delete()
+    except BadRequest:
+        log.info("Failed to delete previous message")
 
     bot.send_message(chat_id=chat_id, text="Operazione annullata.")
 
@@ -50,3 +59,17 @@ def create_callback_data(*arg):
 def separate_callback_data(data):
     """ Separate the callback data"""
     return [unicode(i) for i in data.split(";")]
+
+
+# Questa classe e questo metodo vengono usate nel caso risposte testuali da parte dell'utente.
+
+class ReplyStatus:
+    response_mode = 0
+
+
+def text_filter(bot, update):
+    if ReplyStatus.response_mode == 0:
+        bot.send_message(chat_id=update.message.chat_id,
+                         text="Digita /help per avere informazioni sui comandi.")
+    elif ReplyStatus.response_mode == 1:
+        actions.response_registra(bot, update)

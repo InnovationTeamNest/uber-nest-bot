@@ -4,9 +4,9 @@ from __future__ import unicode_literals
 import webapp2
 
 import secret_data
-from dumpable import DataHandler
-from money import MoneyHandler
-from reminders import ReminderHandler
+from services.dumpable import DataHandler
+from services.money import MoneyHandler
+from services.reminders import ReminderHandler
 from webhook import WebHookHandler, UpdateHandler
 
 

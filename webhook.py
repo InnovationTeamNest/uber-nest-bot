@@ -9,13 +9,10 @@ import webapp2
 from telegram import Bot, Update
 from telegram.ext import Dispatcher, CommandHandler, MessageHandler, CallbackQueryHandler, Filters
 
-import actions
-import actions_booking
-import actions_me
-import dumpable
-import inline
-import money
 import secret_data
+from commands import actions, actions_booking, actions_me, actions_money
+from services import dumpable
+from util import filters
 
 bot = Bot(secret_data.bot_token)
 MAX_ATTEMPTS = 5
@@ -62,10 +59,10 @@ def dispatcher_setup():
 
     dispatcher.add_handler(CommandHandler("prenota", actions_booking.prenota))
 
-    dispatcher.add_handler(CommandHandler("budino", money.edit_money_admin, pass_args=True))
+    dispatcher.add_handler(CommandHandler("budino", actions_money.edit_money_admin, pass_args=True))
 
-    dispatcher.add_handler(MessageHandler(Filters.text & Filters.private, actions.text_filter))
-    dispatcher.add_handler(CallbackQueryHandler(inline.inline_handler))
+    dispatcher.add_handler(MessageHandler(Filters.text & Filters.private, filters.text_filter))
+    dispatcher.add_handler(CallbackQueryHandler(filters.inline_handler))
 
 
 def webhook(update, counter):

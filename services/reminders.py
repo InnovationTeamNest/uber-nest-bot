@@ -6,9 +6,9 @@ import datetime
 import telegram
 import webapp2
 
-import common
 import dumpable
 import secret_data
+from util import common
 
 
 class ReminderHandler(webapp2.RequestHandler):
