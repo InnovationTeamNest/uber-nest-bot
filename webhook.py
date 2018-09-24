@@ -10,7 +10,6 @@ from telegram import Bot, Update
 from telegram.ext import Dispatcher, CommandHandler, MessageHandler, CallbackQueryHandler, Filters
 
 import secret_data
-from commands import actions, actions_booking, actions_me, actions_money
 from services import dumpable
 from util import filters
 
@@ -38,6 +37,7 @@ class UpdateHandler(webapp2.RequestHandler):
 def dispatcher_setup():
     global dispatcher
     dispatcher = Dispatcher(bot=bot, update_queue=None, workers=0)
+    from commands import actions, actions_booking, actions_me, actions_money
 
     dumpable.get_data()
 

@@ -7,8 +7,8 @@ from telegram import InlineKeyboardButton, ChatAction, InlineKeyboardMarkup
 from telegram.error import BadRequest
 
 import secret_data
-from util import common, filters
-from util.filters import ReplyStatus
+from util import common
+from util.filters import ReplyStatus, create_callback_data, separate_callback_data
 
 
 def start(bot, update):
@@ -77,7 +77,7 @@ def settimana(bot, update):
 
     for day in common.work_days:
         keyboard.append(
-            InlineKeyboardButton(day[:2], callback_data=filters.create_callback_data("SHOWBOOKINGS", day)))
+            InlineKeyboardButton(day[:2], callback_data=create_callback_data("SHOWBOOKINGS", day)))
 
     bot.send_message(chat_id=update.message.chat_id,
                      text="Scegli il giorno di cui visualizzare le prenotazioni.",
@@ -94,7 +94,7 @@ def show_bookings(bot, update):
     except BadRequest:
         log.info("Failed to delete previous message")
 
-    data = filters.separate_callback_data(update.callback_query.data)
+    data = separate_callback_data(update.callback_query.data)
     fetch_bookings(bot, chat_id, data[1])
 
 

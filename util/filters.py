@@ -6,14 +6,15 @@ import logging as log
 import telegram
 from telegram.error import BadRequest
 
-from commands import actions, actions_booking, actions_me, actions_money
-
 
 # Questi comandi vengono usati dalla modalità inline per redirezionare correttamente i comandi.
 # Il metodo cancel_handler viene usato come jolly nel caso in cui si voglia troncare la catena di query.
 # Infine, create e separate_callback_data vengono usate per creare le stringhe d'identificazione.
 
+
 def inline_handler(bot, update):
+    from commands import actions, actions_booking, actions_me, actions_money
+
     # Nelle callback query, il primo elemento è sempre l'identificatore
     identifier = separate_callback_data(update.callback_query.data)[0]
 
@@ -27,8 +28,6 @@ def inline_handler(bot, update):
         actions_me.trips_handler(bot, update)
     elif identifier == "NEWTRIP":
         actions_me.newtrip_handler(bot, update)
-    elif identifier == "MESSAGE":
-        actions_me.message_handler(bot, update)
     elif identifier == "SHOWBOOKINGS":
         actions.show_bookings(bot, update)
     elif identifier == "MONEY":
@@ -72,4 +71,5 @@ def text_filter(bot, update):
         bot.send_message(chat_id=update.message.chat_id,
                          text="Digita /help per avere informazioni sui comandi.")
     elif ReplyStatus.response_mode == 1:
+        from commands import actions
         actions.response_registra(bot, update)

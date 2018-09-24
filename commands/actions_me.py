@@ -56,17 +56,6 @@ def me_handler(bot, update):
                                   " UberNEST per ulteriori informazioni.\n\n"
                                   "Sei sicuro di voler diventare un autista di UberNEST?",
                              reply_markup=InlineKeyboardMarkup(keyboard))
-    elif mode == "MESSAGE":
-        """
-        bot.send_message(chat_id=chat_id,
-                         text="Scegli un viaggio a cui allegare un messaggio. "
-                              "Questa funzionalità va usata in casi straordinari "
-                              "come cambio d'orario o deviazioni impreviste. La "
-                              "rimozione del messaggio NON è automatica, in caso "
-                              "contrario messaggio permane per le settimane successive.",
-                         reply_markup=message_keyboard(update))
-        """
-        bot.send_message(chat_id=chat_id, text="Funzionalità non ancora arriva.")
     elif mode == "REMOVAL":
         keyboard = [
             [InlineKeyboardButton("Sì", callback_data=create_callback_data("ME", "CONFIRMREMOVAL")),

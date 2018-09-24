@@ -56,26 +56,6 @@ def trips_keyboard(update):
     return InlineKeyboardMarkup(keyboard)
 
 
-def message_keyboard(update):
-    user = str(update.callback_query.from_user.id)
-    keyboard = []
-
-    for day in common.work_days:
-        for direction in secret_data.groups:
-            time = common.get_trip_time(user, day, direction)
-            if time is not None:
-                group = secret_data.groups[direction][day][user]
-                occupied_slots = len(group["Permanent"]) + len(group["Temporary"])
-                keyboard.append(
-                    [InlineKeyboardButton(day + ": " + time + " " + common.direction_to_name(direction)
-                                          + " (" + str(occupied_slots) + ")",
-                                          callback_data=filters.create_callback_data("MESSAGE", "EDIT",
-                                                                                     direction, day))])
-
-    keyboard.append([InlineKeyboardButton("Esci", callback_data=filters.create_callback_data("CANCEL"))])
-    return InlineKeyboardMarkup(keyboard)
-
-
 # Keyboard customizzata per visualizzare le prenotazioni in maniera inline
 # Day è un oggetto di tipo stringa
 
