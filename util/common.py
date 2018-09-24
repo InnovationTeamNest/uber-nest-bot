@@ -64,13 +64,13 @@ def is_dst():
     return pytz.timezone("Europe/Rome").localize(datetime.datetime.now()).dst() == datetime.timedelta(0, 3600)
 
 
-def get_trip_time(driver, date, direction):
+def get_trip_time(driver, day, direction):
     """Restituisce una stringa del tipo "HH:MM" """
     try:
-        output = str(secret_data.groups[direction][date][driver]["Time"])
+        output = str(secret_data.groups[direction][day][driver]["Time"])
     except KeyError:
         log.debug("Nessuna partenza trovata per questa query: "
-                  + direction + ", " + date + ", " + driver)
+                  + direction + ", " + day + ", " + driver)
         output = None
     return output
 

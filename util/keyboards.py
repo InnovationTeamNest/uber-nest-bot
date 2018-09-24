@@ -18,8 +18,6 @@ def me_keyboard(update):
                                               callback_data=filters.create_callback_data("ME", "TRIPS"))])
         keyboard.append([InlineKeyboardButton("Modificare il numero di posti della mia auto",
                                               callback_data=filters.create_callback_data("ME", "SLOTSDRIVER"))])
-        keyboard.append([InlineKeyboardButton("Modificare il messaggio per i passeggeri",
-                                              callback_data=filters.create_callback_data("ME", "MESSAGE"))])
     else:
         money_string = "Gestire i miei debiti"
         driver_string = "Diventare un autista di UberNEST"
@@ -49,7 +47,7 @@ def trips_keyboard(update):
                 keyboard.append(
                     [InlineKeyboardButton(day + ": " + time + " " + common.direction_to_name(direction)
                                           + " (" + str(occupied_slots) + ")",
-                                          callback_data=filters.create_callback_data("TRIPS", "DELETE",
+                                          callback_data=filters.create_callback_data("TRIPS", "EDIT",
                                                                                      direction, day))])
 
     keyboard.append([InlineKeyboardButton("Esci", callback_data=filters.create_callback_data("CANCEL"))])

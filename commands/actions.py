@@ -146,12 +146,12 @@ def registra(bot, update):
 def response_registra(bot, update):
     user = update.message.text
     secret_data.users[unicode(update.message.chat_id)] = {"Name": unicode(user), "Debit": {}}
-    bot.send_message(chat_id=secret_data.owner_id,
-                     text="Nuovo utente iscritto: " + str(user))
     bot.send_message(chat_id=update.message.chat_id,
                      text="Il tuo username è stato aggiunto con successo"
                           " al database. Usa i seguenti comandi:\n/me "
                           "per gestire il tuo profilo, gestire i debiti e "
                           "i crediti e diventare autista di UberNEST.\n"
                           "/prenota per effettuare e disdire prenotazioni.")
+    bot.send_message(chat_id=secret_data.owner_id,
+                     text="Nuovo utente iscritto: " + str(user.encode('utf8')))
     ReplyStatus.response_mode = 0
