@@ -8,7 +8,8 @@ from telegram.error import BadRequest
 
 import secret_data
 from services import money as mn
-from util import common, filters
+from util import common
+from util.filters import create_callback_data as ccd, separate_callback_data
 
 
 def check_money(bot, update):
@@ -31,9 +32,9 @@ def check_money(bot, update):
             for debitor in credits:
                 keyboard.append([InlineKeyboardButton(
                     secret_data.users[str(debitor[0])]["Name"] + " - " + str(debitor[1]) + " EUR",
-                    callback_data=filters.create_callback_data("EDITMONEY", "NONE", *debitor))])
-            keyboard.append(
-                [InlineKeyboardButton("Esci", callback_data=filters.create_callback_data("CANCEL"))])
+                    callback_data=ccd("EDIT_MONEY", "NONE", *debitor))])
+            keyboard.append([InlineKeyboardButton("Indietro", callback_data=ccd("ME_MENU"))])
+            keyboard.append([InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))])
             bot.send_message(chat_id=chat_id,
                              text=message + "\n\nAl momento possiedi queste persone hanno debiti con te. Clicca "
                                             "su uno per modificarne o azzerarne il debito:",
@@ -45,7 +46,7 @@ def check_money(bot, update):
 
 
 def edit_money(bot, update):
-    action, user, money = filters.separate_callback_data(update.callback_query.data)[1:]
+    action, user, money = separate_callback_data(update.callback_query.data)[1:]
     chat_id = update.callback_query.from_user.id
 
     bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
@@ -67,15 +68,15 @@ def edit_money(bot, update):
 
     if float(money) > 0:
         keyboard.append(InlineKeyboardButton("-" + str(common.trip_price) + " EUR",
-                                             callback_data=filters.create_callback_data(
-                                                 "EDITMONEY", "SUBTRACT", user, money)))
+                                             callback_data=ccd("EDIT_MONEY", "SUBTRACT", user, money)))
         keyboard.append(InlineKeyboardButton("Azzera",
-                                             callback_data=filters.create_callback_data("EDITMONEY", "ZERO", user, 0)))
+                                             callback_data=ccd("EDIT_MONEY", "ZERO", user, 0)))
     else:
         del secret_data.users[user]["Debit"][str(chat_id)]
 
-    keyboard.append(InlineKeyboardButton("Indietro", callback_data=filters.create_callback_data("ME", "MONEY")))
-
+    keyboard.append([InlineKeyboardButton("Indietro", callback_data=ccd("ME", "MONEY")),
+                     InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))])
+    
     bot.send_message(chat_id=chat_id, text=message, reply_markup=InlineKeyboardMarkup([keyboard]))
 
 
@@ -83,7 +84,7 @@ def edit_money_admin(bot, update, args):
     if str(update.message.chat_id) == secret_data.owner_id:
         try:
             debitor, creditor, value = args
-            secret_data.users[str(debitor)]["Debit"][str(creditor)] = value
+            secret_data.users[str(debitor)]["Debit"][str(creditor)] = float(value)
             bot.send_message(chat_id=secret_data.owner_id,
                              text="Modifica in corso: "
                                   + "\n\nDebitore: " + secret_data.users[str(debitor)]["Name"]

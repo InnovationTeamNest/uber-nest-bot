@@ -16,20 +16,26 @@ from util.keyboards import booking_keyboard
 # Comando iniziale che viene chiamato dall'utente
 
 def prenota(bot, update):
-    if str(update.message.chat_id) in secret_data.users:
-        keyboard = [[InlineKeyboardButton("Prenotare una-tantum",
-                                          callback_data=ccd("BOOKING", "Temporary"))],
+    if update.callback_query:
+        chat_id = update.callback_query.from_user.id
+        try:
+            update.callback_query.message.delete()
+        except BadRequest:
+            log.info("Failed to delete previous message")
+    else:
+        chat_id = update.message.chat_id
+
+    if str(chat_id) in secret_data.users:
+        keyboard = [[InlineKeyboardButton("Prenotare una-tantum", callback_data=ccd("BOOKING", "Temporary"))],
                     [InlineKeyboardButton("Prenotare in maniera permanente",
                                           callback_data=ccd("BOOKING", "Permanent"))],
-                    [InlineKeyboardButton("Visualizza e disdici una prenotazione",
-                                          callback_data=ccd("DELETEBOOKING"))],
-                    [InlineKeyboardButton("Esci dal menu",
-                                          callback_data=ccd("CANCEL"))]]
-        bot.send_message(chat_id=update.message.chat_id,
+                    [InlineKeyboardButton("Gestire le mie prenotazioni", callback_data=ccd("DELETE_BOOKING"))],
+                    [InlineKeyboardButton("Uscire", callback_data=ccd("EXIT"))]]
+        bot.send_message(chat_id=chat_id,
                          text="Cosa vuoi fare?",
                          reply_markup=InlineKeyboardMarkup(keyboard))
     else:
-        bot.send_message(chat_id=update.message.chat_id,
+        bot.send_message(chat_id=chat_id,
                          text="Per effettuare una prenotazione, registrati con /registra.")
 
 
@@ -48,22 +54,28 @@ def booking_handler(bot, update):
     if len(data) == 2:  # Caso in cui è stato appena selezionato il bottone dal menu
         mode = data[1]
         if common.booking_time():
+            text = ""
             if mode == "Temporary":
-                bot.send_message(chat_id=chat_id,
-                                 text="Si ricorda che le prenotazioni una-tantum vengono automaticamente cancellate ed"
-                                      " addebitate il giorno dopo la prenotazione. E' possibile prenotarsi a un viaggio"
-                                      " già avvenuto, ma verrà addebitato comunque.")
+                text = text + "Si ricorda che le prenotazioni una-tantum vengono automaticamente cancellate ed" \
+                       + " addebitate il giorno dopo la prenotazione. E' possibile prenotarsi a un viaggio" \
+                       + " già avvenuto, ma verrà addebitato comunque."
             elif mode == "Permanent":
-                bot.send_message(chat_id=chat_id,
-                                 text="Si ricorda che le prenotazioni permanenti verranno addebitate anche per i viaggi"
-                                      " prenotati per la giornata corrente.")
+                text = text + "Si ricorda che le prenotazioni permanenti verranno addebitate anche per i viaggi" \
+                       + " prenotati per la giornata corrente."
+
             keyboard = []
             for day in common.work_days:
                 keyboard.append(InlineKeyboardButton(day[:2],  # Abbreviazione del giorno
                                                      callback_data=ccd("BOOKING", mode, day)))
-            bot.send_message(chat_id=chat_id, text="Scegli la data della prenotazione.",
-                             reply_markup=InlineKeyboardMarkup([keyboard, [InlineKeyboardButton(
-                                 "Annulla", callback_data=ccd("CANCEL"))]]))
+
+            keyboard = [
+                keyboard,
+                [InlineKeyboardButton("Indietro", callback_data=ccd("BOOKING_MENU"))],
+                [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+            ]
+
+            bot.send_message(chat_id=chat_id, text=text + "\n\nScegli la data della prenotazione.",
+                             reply_markup=InlineKeyboardMarkup(keyboard))
         else:
             bot.send_message(chat_id=chat_id,
                              text="Mi dispiace, è possibile effettuare prenotazioni"
@@ -72,7 +84,7 @@ def booking_handler(bot, update):
                                   + common.booking_end.strftime("%H:%M") + ".")
     elif len(data) == 3:  # Scelta del giorno
         mode, day = data[1:3]
-        bot.send_message(chat_id=chat_id, text="Viaggi disponibili per " + day.lower(),
+        bot.send_message(chat_id=chat_id, text="Viaggi disponibili per " + day.lower() + ":",
                          reply_markup=booking_keyboard(mode, day))
     else:  # Scelta del viaggio
         direction, day, driver, mode = data[1:]
@@ -113,8 +125,6 @@ def delete_booking(bot, update):
     except BadRequest:
         log.info("Failed to delete previous message")
 
-    bot.send_message(chat_id=chat_id, text="Caricamento delle prenotazioni in corso...")
-
     if len(data) == 1:  # Caso iniziale
         bookings = common.search_by_booking(str(chat_id))
         if len(bookings) > 0:
@@ -125,39 +135,55 @@ def delete_booking(bot, update):
                 time = common.get_trip_time(driver, day, direction)
 
                 if day == common.today() and datetime.datetime.strptime(time, "%H:%M").hour > common.now_time().hour:
-                    callback_data = ccd("DELETEBOOKING", driver)
+                    callback_data = ccd("DELETE_BOOKING", driver)
                 else:
-                    callback_data = ccd("DELETEBOOKING", *item)
+                    callback_data = ccd("DELETE_BOOKING", *item)
                 # Aggiunta del bottone
                 keyboard.append([InlineKeyboardButton(
                     common.localize_mode(mode) + " " + day + " con " + secret_data.users[driver]["Name"] + " - " + str(
                         time)
                     + " " + common.direction_to_name(direction), callback_data=callback_data)])
 
-            keyboard.append(
-                [InlineKeyboardButton("Annulla", callback_data=ccd("CANCEL"))])
+            keyboard.append([InlineKeyboardButton("Indietro", callback_data=ccd("BOOKING_MENU"))])
+            keyboard.append([InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))])
 
             bot.send_message(chat_id=chat_id, text="Clicca su una prenotazione per modificarla o cancellarla.",
                              reply_markup=InlineKeyboardMarkup(keyboard))
         else:
-            bot.send_message(chat_id=chat_id, text="Mi dispiace, ma non hai prenotazioni all'attivo.")
+            keyboard = [
+                [InlineKeyboardButton("Indietro", callback_data=ccd("BOOKING_MENU"))],
+                [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+            ]
+            bot.send_message(chat_id=chat_id, text="Mi dispiace, ma non hai prenotazioni all'attivo.",
+                             reply_markup=InlineKeyboardMarkup(keyboard))
     elif len(data) == 2:  # Caso in cui la cancellazione è stata negata
+        keyboard = [
+            [InlineKeyboardButton("Indietro", callback_data=ccd("BOOKING_MENU"))],
+            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+        ]
         bot.send_message(chat_id=chat_id,
                          text="Mi dispiace, ma ormai è tardi per cancellare questa "
                               + "prenotazione. Rivolgiti direttamente a "
-                              + secret_data.users[str(data[1])]["Name"])
+                              + secret_data.users[str(data[1])]["Name"],
+                             reply_markup=InlineKeyboardMarkup(keyboard))
     elif len(data) == 5:  # Caso in cui la prenotazione è stata selezionata
         data[0] = "CONFIRM"  # Ordine dei dati: DELETEBOOKING, CONFIRM, direction, day, driver, mode
         keyboard = [
-            InlineKeyboardButton("Sì", callback_data=ccd("DELETEBOOKING", *data)),
-            InlineKeyboardButton("No", callback_data=ccd("CANCEL"))]
+            InlineKeyboardButton("Sì", callback_data=ccd("DELETE_BOOKING", *data)),
+            InlineKeyboardButton("No", callback_data=ccd("BOOKING_MENU"))
+        ]
         bot.send_message(chat_id=chat_id,
                          text="Sei sicuro di voler cancellare questo viaggio?",
                          reply_markup=InlineKeyboardMarkup([keyboard]))
     elif len(data) == 6:  # Caso in cui la prenotazione è stata marchiata come cancellata
         direction, day, driver, mode = data[2:]
         secret_data.groups[direction][day][driver][mode].remove(str(chat_id))
-        bot.send_message(chat_id=chat_id, text="Prenotazione cancellata con successo.")
+        keyboard = [
+            [InlineKeyboardButton("Indietro", callback_data=ccd("BOOKING_MENU"))],
+            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+        ]
+        bot.send_message(chat_id=chat_id, text="Prenotazione cancellata con successo.",
+                         reply_markup=InlineKeyboardMarkup(keyboard))
         bot.send_message(chat_id=driver,
                          text="L'utente " + secret_data.users[str(chat_id)]["Name"]
                               + " ha cancellato la prenotazione per " + day + " "

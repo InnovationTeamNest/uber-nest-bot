@@ -18,9 +18,15 @@ def inline_handler(bot, update):
     # Nelle callback query, il primo elemento è sempre l'identificatore
     identifier = separate_callback_data(update.callback_query.data)[0]
 
-    if identifier == "BOOKING":
+    if identifier == "EXIT":  # Caso base usato da molti comandi
+        cancel_handler(bot, update)
+    elif identifier == "ME_MENU":
+        actions_me.me(bot, update)
+    elif identifier == "BOOKING_MENU":
+        actions_booking.prenota(bot, update)
+    elif identifier == "BOOKING":
         actions_booking.booking_handler(bot, update)
-    elif identifier == "DELETEBOOKING":
+    elif identifier == "DELETE_BOOKING":
         actions_booking.delete_booking(bot, update)
     elif identifier == "ME":
         actions_me.me_handler(bot, update)
@@ -34,8 +40,6 @@ def inline_handler(bot, update):
         actions_money.check_money(bot, update)
     elif identifier == "EDITMONEY":
         actions_money.edit_money(bot, update)
-    elif identifier == "CANCEL":  # Caso base usato da molti comandi
-        cancel_handler(bot, update)
 
 
 def cancel_handler(bot, update):
