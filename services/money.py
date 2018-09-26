@@ -48,10 +48,12 @@ def process_debits():
 
 
 def get_credits(input_creditor):
+    """Restituisce un array di tuple contenente, dato un creditore, gli ID dei debitori e il valore."""
     return [(user, secret_data.users[user]["Debit"][creditor]) for user in secret_data.users
             for creditor in secret_data.users[user]["Debit"] if creditor == input_creditor]
 
 
 def get_debits(input_debitor):
+    """Restituisce un array di tuple contenente, dato un debitore, gli ID dei creditore e il valore."""
     return [(creditor, secret_data.users[input_debitor]["Debit"][creditor])
             for creditor in secret_data.users[input_debitor]["Debit"]]

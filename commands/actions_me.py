@@ -186,8 +186,7 @@ def trips_handler(bot, update):
         direction, day, hour = separate_callback_data(update.callback_query.data)[2:5]
 
         keyboard = [
-            [InlineKeyboardButton(str(i).zfill(2),
-                                  callback_data=ccd("TRIPS", "CONFIRM_EDIT_TRIP", direction, day, hour, i))
+            [InlineKeyboardButton(str(i).zfill(2), callback_data=ccd("TRIPS", "CONFIRM_EDIT_TRIP", direction, day, hour, i))
              for i in range(0, 30, 5)],
             [InlineKeyboardButton(str(i), callback_data=ccd("TRIPS", "CONFIRM_EDIT_TRIP", direction, day, hour, i))
              for i in range(30, 60, 5)],

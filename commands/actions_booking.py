@@ -165,7 +165,7 @@ def delete_booking(bot, update):
                          text="Mi dispiace, ma ormai è tardi per cancellare questa "
                               + "prenotazione. Rivolgiti direttamente a "
                               + secret_data.users[str(data[1])]["Name"],
-                             reply_markup=InlineKeyboardMarkup(keyboard))
+                         reply_markup=InlineKeyboardMarkup(keyboard))
     elif len(data) == 5:  # Caso in cui la prenotazione è stata selezionata
         data[0] = "CONFIRM"  # Ordine dei dati: DELETEBOOKING, CONFIRM, direction, day, driver, mode
         keyboard = [

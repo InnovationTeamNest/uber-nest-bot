@@ -44,7 +44,7 @@ def trips_keyboard(chat_id):
                                           + " (" + str(occupied_slots) + ")",
                                           callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))])
 
-    keyboard.append([InlineKeyboardButton("Indietro",callback_data=ccd("ME_MENU"))])
+    keyboard.append([InlineKeyboardButton("Indietro", callback_data=ccd("ME_MENU"))])
     keyboard.append([InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))])
     return InlineKeyboardMarkup(keyboard)
 
@@ -68,6 +68,6 @@ def booking_keyboard(mode, day):
             except TypeError:
                 log.debug("No bookings found")
 
-    keyboard.append([InlineKeyboardButton("Indietro",callback_data=ccd("BOOKING", mode))])
+    keyboard.append([InlineKeyboardButton("Indietro", callback_data=ccd("BOOKING", mode))])
     keyboard.append([InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))])
     return InlineKeyboardMarkup(keyboard)

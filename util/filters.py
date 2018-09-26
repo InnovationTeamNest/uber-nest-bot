@@ -38,8 +38,10 @@ def inline_handler(bot, update):
         actions.show_bookings(bot, update)
     elif identifier == "MONEY":
         actions_money.check_money(bot, update)
-    elif identifier == "EDITMONEY":
+    elif identifier == "EDIT_MONEY":
         actions_money.edit_money(bot, update)
+    elif identifier == "NEW_DEBITOR":
+        actions_money.new_debitor(bot, update)
 
 
 def cancel_handler(bot, update):
