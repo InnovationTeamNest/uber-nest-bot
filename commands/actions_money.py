@@ -25,8 +25,8 @@ def check_money(bot, update):
     debits = mn.get_debits(chat_id)
     if len(debits) != 0:
         string = ""
-        for creditor in debits:
-            string += secret_data.users[str(creditor[0])]["Name"] + " - " + str(creditor[1]) + " EUR\n"
+        for name, value in debits:
+            string += secret_data.users[name]["Name"] + " - " + str(value) + " EUR\n"
         message = "Al momento possiedi debiti verso le seguenti persone: \n" \
                   + string + "\nContattali per saldare i debiti."
     else:
@@ -42,10 +42,9 @@ def check_money(bot, update):
 
         credits = mn.get_credits(chat_id)
         if len(credits) > 0:
-            for debitor in credits:
-                name, value = debitor
+            for name, value in credits:
                 keyboard.insert(0, [InlineKeyboardButton(secret_data.users[name]["Name"] + " - " + str(value) + " EUR",
-                                                         callback_data=ccd("EDIT_MONEY", "NONE", *debitor))])
+                                                         callback_data=ccd("EDIT_MONEY", "NONE", name, value))])
             bot.send_message(chat_id=chat_id,
                              text=message + "\n\nAl momento possiedi queste persone hanno debiti con te. Clicca "
                                             "su uno per modificarne il debito:",

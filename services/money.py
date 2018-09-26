@@ -22,6 +22,14 @@ class MoneyHandler(webapp2.RequestHandler):
         self.response.write("See console for output.")
 
 
+class WeeklyReportHandler(webapp2.RequestHandler):
+    def get(self):
+        dumpable.get_data()
+        weekly_report()
+        dumpable.dump_data()
+        self.response.write("See console for output.")
+
+
 def process_debits():
     """Questo comando verrà fatto partire alle 02:00 di ogni giorno"""
     today = datetime.datetime.today()
@@ -45,6 +53,27 @@ def process_debits():
                             log.debug(user + "'s debit from "
                                       + driver + " = " + str(secret_data.users[user]["Debit"][driver]))
                 trips[driver]["Temporary"] = []
+
+
+def weekly_report():
+    """Questo comando viene fatto partire ogni sabato alle 10.00"""
+    for user in secret_data.users:
+        # Invio dei debiti per tutti gli utenti
+        debits = get_debits(user)
+        if debits:
+            string = "Riepilogo settimanale dei debiti:\n"
+            for name, value in debits:
+                string = string + "\n" + secret_data.users[name]["Name"] + " - " + str(value) + " EUR"
+            bot.send_message(chat_id=user, message=string)
+
+        # Invio dei crediti per ogni singolo autista
+        if user in secret_data.drivers:
+            credits = get_credits(user)
+            if credits:
+                string = "Riepilogo settimanale dei crediti:\n"
+                for name, value in credits:
+                    string = string + "\n" + secret_data.users[name]["Name"] + " - " + str(value) + " EUR"
+                bot.send_message(chat_id=user, message=string)
 
 
 def get_credits(input_creditor):
