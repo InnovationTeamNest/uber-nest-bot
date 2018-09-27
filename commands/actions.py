@@ -100,28 +100,37 @@ def show_bookings(bot, update):
 
 def fetch_bookings(bot, chat_id, day):
     if common.is_weekday(day):
-        bot.send_message(chat_id=chat_id, text="Lista delle prenotazioni per " + day.lower() + ": ")
+        text = "Lista dei viaggi di " + day.lower() + ":\n"
 
         for direction in secret_data.groups:
             day_group = secret_data.groups[direction][day]  # Rappresenta l'insieme di trip per coppia direzione/giorno
             if len(day_group) > 0:  # Caso in cui c'è qualcuno che effettivamente farà un viaggio
-                header = "Viaggi " + common.direction_to_name(direction) + ": \n\n"
-                messages = []
+                text = text + "\n" + common.direction_to_name(direction) + ":\n\n"
 
                 for driver in day_group:  # Stringhe separate per ogni autista
                     people = [secret_data.users[user]["Name"] for mode in day_group[driver]
                               if mode == "Temporary" or mode == "Permanent" for user in day_group[driver][mode]]
                     # Aggiungo ogni viaggio trovato alla lista
-                    messages.append(secret_data.users[driver]["Name"] + " - " +
-                                    day_group[driver]["Time"] + ":\n" + ", ".join(people))
-
-                bot.send_message(chat_id=chat_id, text=header + "\n".join(messages))
+                    text = text + "🚗 " + secret_data.users[driver]["Name"] + " - 🕒 " \
+                           + day_group[driver]["Time"] + ":\n👥 " + ", ".join(people) + "\n\n"
             else:
-                bot.send_message(chat_id=chat_id,
-                                 text="Nessuna persona in viaggio " + common.direction_to_name(direction) + " oggi.")
+                text = text + "\n\nNessuna persona in viaggio " + common.direction_to_name(direction) + " oggi."
+
+        if str(chat_id) in secret_data.users:
+            # Permetto l'uso della tastiera solo ai registrati
+            keyboard = [
+                [InlineKeyboardButton("Prenota una tantum",
+                                      callback_data=create_callback_data("BOOKING", "Temporary", day))],
+                [InlineKeyboardButton("Prenota permanentemente",
+                                      callback_data=create_callback_data("BOOKING", "Permanent", day))]
+            ]
+            bot.send_message(chat_id=chat_id, text=text,
+                             reply_markup=InlineKeyboardMarkup(keyboard))
+        else:
+            bot.send_message(chat_id=chat_id, text=text)
 
     else:
-        bot.send_message(chat_id=chat_id, text=day + " UberNEST non sarà attivo.")
+        bot.send_message(chat_id=chat_id, text=day + " UberNEST non è attivo.")
 
 
 def registra(bot, update):
