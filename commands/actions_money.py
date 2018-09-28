@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import logging as log
+import math
 
 from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.error import BadRequest
@@ -9,6 +10,7 @@ from telegram.error import BadRequest
 import secret_data
 from services import money as mn
 from util import common
+from util.common import PAGE_SIZE
 from util.filters import create_callback_data as ccd, separate_callback_data
 
 
@@ -35,7 +37,7 @@ def check_money(bot, update):
     # Poi creo un bottone separato per ogni credito
     if chat_id in secret_data.drivers:
         keyboard = [
-            [InlineKeyboardButton("Aggiungi un nuovo debitore", callback_data=ccd("NEW_DEBITOR"))],
+            [InlineKeyboardButton("Aggiungi un nuovo debitore", callback_data=ccd("NEW_DEBITOR", 0))],
             [InlineKeyboardButton("Indietro", callback_data=ccd("ME_MENU"))],
             [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
         ]
@@ -124,6 +126,7 @@ def edit_money(bot, update):
 
 def new_debitor(bot, update):
     chat_id = str(update.callback_query.from_user.id)
+    page = int(separate_callback_data(update.callback_query.data)[1])
 
     bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
 
@@ -133,11 +136,27 @@ def new_debitor(bot, update):
         log.info("Failed to delete previous message")
 
     keyboard = []
-    for user in secret_data.users:
-        if not secret_data.users[user]["Debit"] and user != chat_id:
-            keyboard.append([InlineKeyboardButton(secret_data.users[user]["Name"],
-                                                  callback_data=ccd("EDIT_MONEY", "NONE", user, "0.0"))])
+    users = sorted([(secret_data.users[user]["Name"], user)
+                    for user in secret_data.users if user != chat_id and not secret_data.users[user]["Debit"]])
+    # Resituisce una lista di tuple del tipo (Nome, ID)
 
+    for index in range(PAGE_SIZE * page, PAGE_SIZE * (page + 1), 1):
+        try:
+            keyboard.append([InlineKeyboardButton(users[index][0],
+                                                  callback_data=ccd("EDIT_MONEY", "NONE", users[index][1], "0.0"))])
+        except IndexError:
+            break
+
+    # Aggiungo un bottone per ogni pagina, in quanto la lista è troppo grande
+    page_buttons = []
+    for index in range(0, int(math.ceil(len(users) / PAGE_SIZE)), 1):
+        if index == page:
+            text = "☑"
+        else:
+            text = str(index + 1)
+        page_buttons.append(InlineKeyboardButton(text,
+                                                 callback_data=ccd("NEW_DEBITOR", index)))
+    keyboard.append(page_buttons)
     keyboard.append([InlineKeyboardButton("Indietro", callback_data=ccd("MONEY"))])
     keyboard.append([InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))])
 

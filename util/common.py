@@ -8,6 +8,8 @@ import pytz
 
 import secret_data
 
+PAGE_SIZE = 5
+
 # Questi dati vengono utilizzati da tutto il programma
 days = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"]
 work_days = days[:5]
