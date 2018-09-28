@@ -13,7 +13,7 @@ from telegram.error import BadRequest
 
 
 def inline_handler(bot, update):
-    from commands import actions, actions_booking, actions_me, actions_money
+    from commands import actions, actions_booking, actions_me, actions_money, actions_trips
 
     # Nelle callback query, il primo elemento è sempre l'identificatore
     identifier = separate_callback_data(update.callback_query.data)[0]
@@ -31,7 +31,7 @@ def inline_handler(bot, update):
     elif identifier == "ME":
         actions_me.me_handler(bot, update)
     elif identifier == "TRIPS":
-        actions_me.trips_handler(bot, update)
+        actions_trips.trips_handler(bot, update)
     elif identifier == "NEWTRIP":
         actions_me.newtrip_handler(bot, update)
     elif identifier == "SHOWBOOKINGS":

@@ -93,27 +93,26 @@ def booking_handler(bot, update):
         occupied_slots = len(trip["Permanent"]) + len(trip["Temporary"])
         total_slots = secret_data.drivers[driver]["Slots"]
 
-        if occupied_slots < total_slots:
-            if str(chat_id) == driver:
-                bot.send_message(chat_id=chat_id, text="Sei tu l'autista!")
-            elif str(chat_id) not in trip["Temporary"] and str(chat_id) not in trip["Permanent"]:
-                trip[mode].append(str(chat_id))
-                bot.send_message(chat_id=chat_id,
-                                 text="Prenotazione completata. Dati del viaggio:"
-                                      + "\n\n🚗: " + str(secret_data.users[driver]["Name"])
-                                      + "\n🗓: " + day
-                                      + "\n🕓: " + trip["Time"]
-                                      + "\n➡: " + common.direction_to_name(direction)
-                                      + "\n🔁: " + common.localize_mode(mode))
-                bot.send_message(chat_id=driver,
-                                 text="Hai una nuova prenotazione " + common.localize_mode(mode).lower()
-                                      + " da parte di " + secret_data.users[str(chat_id)]["Name"]
-                                      + " per " + day + " " + common.direction_to_name(direction)
-                                      + ". Posti rimanenti: " + str(total_slots - occupied_slots - 1))
-            else:
-                bot.send_message(chat_id=chat_id, text="Ti sei già prenotato in questa data con questa persona!")
-        else:
+        if str(chat_id) == driver:
+            bot.send_message(chat_id=chat_id, text="Sei tu l'autista!")
+        elif occupied_slots >= total_slots:
             bot.send_message(chat_id=chat_id, text="Macchina piena, vai a piedi LOL")
+        elif str(chat_id) in trip["Temporary"] or str(chat_id) in trip["Permanent"]:
+            bot.send_message(chat_id=chat_id, text="Ti sei già prenotato in questa data con questa persona!")
+        else:
+            trip[mode].append(str(chat_id))
+            bot.send_message(chat_id=chat_id,
+                             text="Prenotazione completata. Dati del viaggio:"
+                                  + "\n\n🚗: " + str(secret_data.users[driver]["Name"])
+                                  + "\n🗓: " + day
+                                  + "\n🕓: " + trip["Time"]
+                                  + "\n➡: " + common.direction_to_name(direction)
+                                  + "\n🔁: " + common.localize_mode(mode))
+            bot.send_message(chat_id=driver,
+                             text="Hai una nuova prenotazione " + common.localize_mode(mode).lower()
+                                  + " da parte di " + secret_data.users[str(chat_id)]["Name"]
+                                  + " per " + day + " " + common.direction_to_name(direction)
+                                  + ". Posti rimanenti: " + str(total_slots - occupied_slots - 1))
 
 
 def delete_booking(bot, update):
