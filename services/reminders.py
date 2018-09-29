@@ -58,7 +58,9 @@ def remind_user(bot, chat_id):
             direction, day, driver, mode = item
             if day == common.tomorrow():
                 bot.send_message(chat_id=chat_id,
-                                 text="REMINDER: Domani hai un viaggio "
-                                      + common.direction_to_name(direction)
-                                      + " alle ore " + common.get_trip_time(driver, day, direction)
-                                      + " con " + str(secret_data.users[driver]["Name"]))
+                                 text="REMINDER: Domani hai un viaggio: "
+                                      + "\n\n🚗: " + str(secret_data.users[driver]["Name"])
+                                      + "\n🗓: " + day
+                                      + "\n🕓: " + common.get_trip_time(driver, day, direction)
+                                      + "\n➡: " + common.direction_to_name(direction)
+                                      + "\n🔁: " + common.localize_mode(mode))

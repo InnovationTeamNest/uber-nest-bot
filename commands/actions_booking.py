@@ -26,9 +26,9 @@ def prenota(bot, update):
         chat_id = update.message.chat_id
 
     if str(chat_id) in secret_data.users:
-        keyboard = [[InlineKeyboardButton("Prenotare una-tantum", callback_data=ccd("BOOKING", "Temporary"))],
+        keyboard = [[InlineKeyboardButton("Prenotare una-tantum", callback_data=ccd("BOOKING", "NEW", "Temporary"))],
                     [InlineKeyboardButton("Prenotare in maniera permanente",
-                                          callback_data=ccd("BOOKING", "Permanent"))],
+                                          callback_data=ccd("BOOKING", "NEW", "Permanent"))],
                     [InlineKeyboardButton("Gestire le mie prenotazioni", callback_data=ccd("DELETE_BOOKING"))],
                     [InlineKeyboardButton("Uscire", callback_data=ccd("EXIT"))]]
         bot.send_message(chat_id=chat_id,
@@ -39,8 +39,9 @@ def prenota(bot, update):
                          text="Per effettuare una prenotazione, registrati con /registra.")
 
 
-# Funzione chiamata in seguito alla risposta dell'utente
 def booking_handler(bot, update):
+    data = separate_callback_data(update.callback_query.data)
+    action = data[1]
     chat_id = update.callback_query.from_user.id
 
     bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
@@ -49,12 +50,11 @@ def booking_handler(bot, update):
     except BadRequest:
         log.info("Failed to delete previous message")
 
-    data = separate_callback_data(update.callback_query.data)
-
-    if len(data) == 2:  # Caso in cui è stato appena selezionato il bottone dal menu
-        mode = data[1]
+    if action == "NEW":  # Dati in entrata ("BOOKING", "NEW", mode)
         if common.booking_time():
             text = ""
+            mode = data[2]
+
             if mode == "Temporary":
                 text = text + "Si ricorda che le prenotazioni una-tantum vengono automaticamente cancellate ed" \
                        + " addebitate il giorno dopo la prenotazione. E' possibile prenotarsi a un viaggio" \
@@ -66,7 +66,7 @@ def booking_handler(bot, update):
             keyboard = []
             for day in common.work_days:
                 keyboard.append(InlineKeyboardButton(day[:2],  # Abbreviazione del giorno
-                                                     callback_data=ccd("BOOKING", mode, day)))
+                                                     callback_data=ccd("BOOKING", "DAY", mode, day)))
 
             keyboard = [
                 keyboard,
@@ -82,23 +82,35 @@ def booking_handler(bot, update):
                                   + " tramite UberNEST solo dalle "
                                   + common.booking_start.strftime("%H:%M") + " alle "
                                   + common.booking_end.strftime("%H:%M") + ".")
-    elif len(data) == 3:  # Scelta del giorno
-        mode, day = data[1:3]
+    elif action == "DAY":  # Dati in entrata ("BOOKING", "DAY", mode, day)
+        mode, day = data[2:4]
         bot.send_message(chat_id=chat_id, text="Viaggi disponibili per " + day.lower() + ":",
-                         reply_markup=booking_keyboard(mode, day))
-    else:  # Scelta del viaggio
-        direction, day, driver, mode = data[1:]
+                         reply_markup=booking_keyboard(mode, day, """Payload:""" "BOOKING", "NEW", mode))
+    elif action == "DAY_CUSTOM":
+        mode, day = data[2:4]
+        bot.send_message(chat_id=chat_id, text="Viaggi disponibili per " + day.lower() + ":",
+                         reply_markup=booking_keyboard(mode, day, """Payload:""" "SHOWBOOKINGS", day))
+    elif action == "CONFIRM":  # Dati in entrata ("BOOKING", "CONFIRM", direction, day, driver, mode)
+        direction, day, driver, mode = data[2:]
+
+        keyboard = [
+            [InlineKeyboardButton("Indietro", callback_data=ccd("BOOKING", "DAY", mode, day))],
+            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+        ]
 
         trip = secret_data.groups[direction][day][driver]
         occupied_slots = len(trip["Permanent"]) + len(trip["Temporary"])
         total_slots = secret_data.drivers[driver]["Slots"]
 
         if str(chat_id) == driver:
-            bot.send_message(chat_id=chat_id, text="Sei tu l'autista!")
+            bot.send_message(chat_id=chat_id, text="Sei tu l'autista!",
+                             reply_markup=InlineKeyboardMarkup(keyboard))
         elif occupied_slots >= total_slots:
-            bot.send_message(chat_id=chat_id, text="Macchina piena, vai a piedi LOL")
+            bot.send_message(chat_id=chat_id, text="Macchina piena, vai a piedi LOL",
+                             reply_markup=InlineKeyboardMarkup(keyboard))
         elif str(chat_id) in trip["Temporary"] or str(chat_id) in trip["Permanent"]:
-            bot.send_message(chat_id=chat_id, text="Ti sei già prenotato in questa data con questa persona!")
+            bot.send_message(chat_id=chat_id, text="Ti sei già prenotato in questa data con questa persona!",
+                             reply_markup=InlineKeyboardMarkup(keyboard))
         else:
             trip[mode].append(str(chat_id))
             bot.send_message(chat_id=chat_id,
@@ -107,7 +119,8 @@ def booking_handler(bot, update):
                                   + "\n🗓: " + day
                                   + "\n🕓: " + trip["Time"]
                                   + "\n➡: " + common.direction_to_name(direction)
-                                  + "\n🔁: " + common.localize_mode(mode))
+                                  + "\n🔁: " + common.localize_mode(mode),
+                             reply_markup=InlineKeyboardMarkup(keyboard))
             bot.send_message(chat_id=driver,
                              text="Hai una nuova prenotazione " + common.localize_mode(mode).lower()
                                   + " da parte di " + secret_data.users[str(chat_id)]["Name"]
@@ -140,8 +153,8 @@ def delete_booking(bot, update):
                     callback_data = ccd("DELETE_BOOKING", *item)
                 # Aggiunta del bottone
                 keyboard.append([InlineKeyboardButton(
-                    common.localize_mode(mode) + " " + day + " con " + secret_data.users[driver]["Name"] + " - " + str(
-                        time)
+                    common.localize_mode(mode) + " " + day
+                    + " con " + secret_data.users[driver]["Name"] + " - " + str(time)
                     + " " + common.direction_to_name(direction), callback_data=callback_data)])
 
             keyboard.append([InlineKeyboardButton("Indietro", callback_data=ccd("BOOKING_MENU"))])

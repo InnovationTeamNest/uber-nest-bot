@@ -120,9 +120,9 @@ def fetch_bookings(bot, chat_id, day):
             # Permetto l'uso della tastiera solo ai registrati
             keyboard = [
                 [InlineKeyboardButton("Prenota una tantum",
-                                      callback_data=create_callback_data("BOOKING", "Temporary", day))],
+                                      callback_data=create_callback_data("BOOKING", "DAY_CUSTOM", "Temporary", day))],
                 [InlineKeyboardButton("Prenota permanentemente",
-                                      callback_data=create_callback_data("BOOKING", "Permanent", day))]
+                                      callback_data=create_callback_data("BOOKING", "DAY_CUSTOM", "Permanent", day))]
             ]
             bot.send_message(chat_id=chat_id, text=text,
                              reply_markup=InlineKeyboardMarkup(keyboard))

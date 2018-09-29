@@ -28,7 +28,7 @@ def me(bot, update):
 
 
 def me_handler(bot, update):
-    mode = separate_callback_data(update.callback_query.data)[1]
+    action = separate_callback_data(update.callback_query.data)[1]
     chat_id = update.callback_query.from_user.id
 
     bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
@@ -37,14 +37,14 @@ def me_handler(bot, update):
     except BadRequest:
         log.info("Failed to delete previous message")
 
-    log.debug("Mode entered: " + mode)
+    log.debug("Mode entered: " + action)
 
-    if mode == "TRIPS":
+    if action == "TRIPS":
         # Visualizza i vari trips dell'utente
         bot.send_message(chat_id=chat_id,
                          text="Viaggi (clicca su un viaggio per modificarlo):",
                          reply_markup=trips_keyboard(str(chat_id)))
-    elif mode == "DRIVER":
+    elif action == "DRIVER":
         if str(chat_id) in secret_data.drivers:
             keyboard = [
                 [InlineKeyboardButton("Sì", callback_data=ccd("ME", "CONFIRM_DRIVER_REMOVAL")),
@@ -65,7 +65,7 @@ def me_handler(bot, update):
                                   " UberNEST per ulteriori informazioni.\n\n"
                                   "Sei sicuro di voler diventare un autista di UberNEST?",
                              reply_markup=InlineKeyboardMarkup(keyboard))
-    elif mode == "USER_REMOVAL":
+    elif action == "USER_REMOVAL":
         keyboard = [
             [InlineKeyboardButton("Sì", callback_data=ccd("ME", "CONFIRM_USER_REMOVAL")),
              InlineKeyboardButton("No", callback_data=ccd("ME_MENU"))]]
@@ -85,7 +85,7 @@ def me_handler(bot, update):
                             " verranno avvisate dei tuoi debiti non salvati!\n" + debitors
 
         bot.send_message(chat_id=chat_id, text=message_text, reply_markup=InlineKeyboardMarkup(keyboard))
-    elif mode == "EDIT_DRIVER_SLOTS":
+    elif action == "EDIT_DRIVER_SLOTS":
         # Inserisco 5 bottoni per i posti con la list comprehension
         keyboard = [[InlineKeyboardButton(str(i), callback_data=ccd("ME", "CONFIRM_DRIVER", str(i)))
                      for i in range(1, 6, 1)],
@@ -94,7 +94,7 @@ def me_handler(bot, update):
         bot.send_message(chat_id=chat_id,
                          text="Inserisci il numero di posti disponibili nella tua macchina, autista escluso.",
                          reply_markup=InlineKeyboardMarkup(keyboard))
-    elif mode == "CONFIRM_DRIVER":
+    elif action == "CONFIRM_DRIVER":
         slots = int(separate_callback_data(update.callback_query.data)[2])
         if str(chat_id) in secret_data.drivers:
             bot.send_message(chat_id=chat_id,
@@ -105,15 +105,15 @@ def me_handler(bot, update):
                              text="Sei stato inserito nella lista degli autisti! Usa il menu /me per aggiungere"
                                   " viaggi, modificare i posti auto, aggiungere un messaggio da mostrare ai tuoi"
                                   " passeggeri ed altro.")
-    elif mode == "CONFIRM_DRIVER_REMOVAL":
+    elif action == "CONFIRM_DRIVER_REMOVAL":
         common.delete_driver(chat_id)
         bot.send_message(chat_id=chat_id,
                          text="Sei stato rimosso con successo dall'elenco degli autisti.")
-    elif mode == "CONFIRM_USER_REMOVAL":
+    elif action == "CONFIRM_USER_REMOVAL":
         user_debits = secret_data.users[str(chat_id)]["Debit"]
         for creditor in user_debits:
             bot.send_message(chat_id=creditor,
-                             message="ATTENZIONE! " + secret_data.users[str(chat_id)]["Name"]
+                             text="ATTENZIONE! " + secret_data.users[str(chat_id)]["Name"]
                                      + " si è cancellato da UberNEST. Ha ancora "
                                      + str(user_debits[creditor]) + " EUR di debito con te.")
 

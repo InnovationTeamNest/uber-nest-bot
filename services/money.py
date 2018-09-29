@@ -46,7 +46,7 @@ def process_debits():
                                 secret_data.users[user]["Debit"][driver] = common.trip_price
                             bot.send_message(chat_id=str(user),
                                              text="Ti sono stati addebitati " + str(common.trip_price)
-                                                  + " EUR da " + str(secret_data.users[driver]["Name"]))
+                                                  + " EUR da " + str(secret_data.users[driver]["Name"]) + ". ")
                             bot.send_message(chat_id=str(driver),
                                              text="Hai ora un credito di " + str(common.trip_price)
                                                   + " EUR da parte di " + str(secret_data.users[user]["Name"]))
@@ -64,7 +64,7 @@ def weekly_report():
             string = "Riepilogo settimanale dei debiti:\n"
             for name, value in debits:
                 string = string + "\n" + secret_data.users[name]["Name"] + " - " + str(value) + " EUR"
-            bot.send_message(chat_id=user, message=string)
+            bot.send_message(chat_id=user, text=string)
 
         # Invio dei crediti per ogni singolo autista
         if user in secret_data.drivers:
@@ -73,7 +73,7 @@ def weekly_report():
                 string = "Riepilogo settimanale dei crediti:\n"
                 for name, value in credits:
                     string = string + "\n" + secret_data.users[name]["Name"] + " - " + str(value) + " EUR"
-                bot.send_message(chat_id=user, message=string)
+                bot.send_message(chat_id=user, text=string)
 
 
 def get_credits(input_creditor):

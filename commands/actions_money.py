@@ -93,13 +93,10 @@ def edit_money(bot, update):
                          text=secret_data.users[chat_id]["Name"]
                               + " ti ha addebitato " + str(common.trip_price) + " EUR con "
                               + ". Debito corrente: " + money + " EUR.")
-
     elif action == "ZERO":
         money = "0"
         bot.send_message(chat_id=user,
                          text=secret_data.users[chat_id]["Name"] + " ha azzerato il debito con te.")
-
-    message = secret_data.users[user]["Name"] + ": " + money + " EUR"
 
     keyboard = [InlineKeyboardButton("+" + str(common.trip_price) + " EUR",
                                      callback_data=ccd("EDIT_MONEY", "ADD", user, money))]
@@ -121,7 +118,8 @@ def edit_money(bot, update):
         [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
     ]
 
-    bot.send_message(chat_id=chat_id, text=message, reply_markup=InlineKeyboardMarkup(keyboard))
+    bot.send_message(chat_id=chat_id, text=secret_data.users[user]["Name"] + ": " + money + " EUR",
+                     reply_markup=InlineKeyboardMarkup(keyboard))
 
 
 def new_debitor(bot, update):
@@ -154,8 +152,7 @@ def new_debitor(bot, update):
             text = "☑"
         else:
             text = str(index + 1)
-        page_buttons.append(InlineKeyboardButton(text,
-                                                 callback_data=ccd("NEW_DEBITOR", index)))
+        page_buttons.append(InlineKeyboardButton(text, callback_data=ccd("NEW_DEBITOR", index)))
     keyboard.append(page_buttons)
     keyboard.append([InlineKeyboardButton("Indietro", callback_data=ccd("MONEY"))])
     keyboard.append([InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))])
