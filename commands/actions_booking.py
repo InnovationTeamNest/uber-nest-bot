@@ -85,11 +85,11 @@ def booking_handler(bot, update):
     elif action == "DAY":  # Dati in entrata ("BOOKING", "DAY", mode, day)
         mode, day = data[2:4]
         bot.send_message(chat_id=chat_id, text="Viaggi disponibili per " + day.lower() + ":",
-                         reply_markup=booking_keyboard(mode, day, """Payload:""" "BOOKING", "NEW", mode))
+                         reply_markup=booking_keyboard(mode, day, from_booking=True))
     elif action == "DAY_CUSTOM":
         mode, day = data[2:4]
         bot.send_message(chat_id=chat_id, text="Viaggi disponibili per " + day.lower() + ":",
-                         reply_markup=booking_keyboard(mode, day, """Payload:""" "SHOWBOOKINGS", day))
+                         reply_markup=booking_keyboard(mode, day, from_booking=False))
     elif action == "CONFIRM":  # Dati in entrata ("BOOKING", "CONFIRM", direction, day, driver, mode)
         direction, day, driver, mode = data[2:]
 

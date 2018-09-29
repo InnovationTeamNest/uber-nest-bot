@@ -14,4 +14,4 @@ cron:
 - description: remind users about weekly debits and credits
   url: /weekly_report
   timezone: Europe/Rome
-  schedule: every saturday 10:00
+  schedule: every saturday 12:00

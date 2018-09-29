@@ -52,20 +52,23 @@ def trips_keyboard(chat_id):
 # Keyboard customizzata per visualizzare le prenotazioni in maniera inline
 # Day è un oggetto di tipo stringa
 
-def booking_keyboard(mode, day, *payload):
+def booking_keyboard(mode, day, from_booking=True):
     keyboard = []
 
     for direction in secret_data.groups:
         for driver in secret_data.groups[direction][day]:
             try:
                 keyboard.append(
-                    [InlineKeyboardButton(secret_data.users[driver]["Name"] + " - "
+                    [InlineKeyboardButton("🚗 " + secret_data.users[driver]["Name"] + " - 🕓 "
                                           + common.get_trip_time(driver, day, direction)
-                                          + " " + common.direction_to_name(direction),
+                                          + "\n➡ " + common.direction_to_name(direction),
                                           callback_data=ccd("BOOKING", "CONFIRM", direction, day, driver, mode))])
             except TypeError:
                 log.debug("No bookings found")
 
-    keyboard.append([InlineKeyboardButton("Indietro", callback_data=ccd(*payload))])
+    if from_booking:
+        keyboard.append([InlineKeyboardButton("Indietro", callback_data=ccd("BOOKING", "NEW", mode))])
+    else:
+        keyboard.append([InlineKeyboardButton("Indietro", callback_data=ccd("SHOWBOOKINGS", day))])
     keyboard.append([InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))])
     return InlineKeyboardMarkup(keyboard)
