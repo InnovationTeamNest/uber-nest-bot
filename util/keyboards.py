@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import logging as log
-
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 import secret_data
@@ -34,15 +32,18 @@ def trips_keyboard(chat_id):
                                       callback_data=ccd("TRIPS", "NEW_TRIP"))]]
 
     for day in common.work_days:
-        for direction in secret_data.groups:
-            time = common.get_trip_time(chat_id, day, direction)
-            if time is not None:
+        for direction in common.direction_generic:
+            try:
                 group = secret_data.groups[direction][day][chat_id]
                 occupied_slots = len(group["Permanent"]) + len(group["Temporary"])
                 keyboard.append(
-                    [InlineKeyboardButton(day + ": " + time + " " + common.direction_to_name(direction)
-                                          + " (" + str(occupied_slots) + ")",
-                                          callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))])
+                    [InlineKeyboardButton(
+                        day + ": " + group["Time"] + " "
+                        + common.direction_to_name(direction)
+                        + " (" + str(occupied_slots) + ")",
+                        callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))])
+            except KeyError:
+                continue
 
     keyboard.append([InlineKeyboardButton("Indietro", callback_data=ccd("ME_MENU"))])
     keyboard.append([InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))])
@@ -52,23 +53,28 @@ def trips_keyboard(chat_id):
 # Keyboard customizzata per visualizzare le prenotazioni in maniera inline
 # Day è un oggetto di tipo stringa
 
-def booking_keyboard(mode, day, from_booking=True):
+def booking_keyboard(mode, day, from_booking):
     keyboard = []
 
-    for direction in secret_data.groups:
-        for driver in secret_data.groups[direction][day]:
-            try:
-                keyboard.append(
-                    [InlineKeyboardButton("🚗 " + secret_data.users[driver]["Name"] + " - 🕓 "
-                                          + common.get_trip_time(driver, day, direction)
-                                          + "\n➡ " + common.direction_to_name(direction),
-                                          callback_data=ccd("BOOKING", "CONFIRM", direction, day, driver, mode))])
-            except TypeError:
-                log.debug("No bookings found")
+    bookings = sorted(
+        [
+            (secret_data.groups[direction][day][driver]["Time"], secret_data.users[driver]["Name"], direction, driver)
+            for direction in secret_data.groups
+            for driver in secret_data.groups[direction][day]
+        ]
+    )
+    # Restituisce una tupla del tipo (ora, guidatore, direzione, chat_id) riordinata
+
+    for item in bookings:
+        time, name, direction, driver = item
+        keyboard.append([InlineKeyboardButton("🚗 " + name + " - 🕓 " + time
+                                              + "\n➡ " + common.direction_to_name(direction),
+                                              callback_data=ccd("BOOKING", "CONFIRM", direction, day, driver, mode))])
 
     if from_booking:
         keyboard.append([InlineKeyboardButton("Indietro", callback_data=ccd("BOOKING", "NEW", mode))])
     else:
-        keyboard.append([InlineKeyboardButton("Indietro", callback_data=ccd("SHOWBOOKINGS", day))])
+        keyboard.append([InlineKeyboardButton("Indietro", callback_data=ccd("SHOW_BOOKINGS", day))])
     keyboard.append([InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))])
+
     return InlineKeyboardMarkup(keyboard)

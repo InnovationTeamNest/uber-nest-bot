@@ -2,29 +2,36 @@
 from __future__ import unicode_literals
 
 import datetime
-import logging as log
 
 import pytz
 
 import secret_data
 
-PAGE_SIZE = 5
+PAGE_SIZE = 5  # Numero di bottoni per pagina (in caso di visualizzazione di utenti multipli)
+MAX_ATTEMPTS = 5  # Tentativi massimi di processo del webhook
 
-# Questi dati vengono utilizzati da tutto il programma
+# Localizzazione italiana dei nomi dei giorni della settimana
 days = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"]
+
+# Sottoinsieme di days contenente i giorni lavorativi - cambiare se si vuole includere il sabato
 work_days = days[:5]
 
+# Localizzazione italiana delle direzioni specifiche e generiche
 direction_name = ["per Povo", "per il NEST"]
 direction_generic = ["Salita", "Discesa"]
 
+# Localizzazione dei metodi di prenotazioni come nel dataset e in italiano
 booking_types = ["Temporary", "Permanent"]
 booking_types_localized = ["Temporanea", "Permanente"]
 
+# Stringa vuota usata in caso di risultati non presenti
 empty_str = " - "
 
+# Inizio e fine del tempo ammesso di prenotazione
 booking_start = datetime.time(6, 0)
 booking_end = datetime.time(23, 30)
 
+# Costo di ogni viaggio
 trip_price = 0.50
 
 # Il bot va disattivato dall'ultima settimana di dicembre (22/12) al 6/1, e nell'estate
@@ -66,8 +73,10 @@ def is_dst():
     return pytz.timezone("Europe/Rome").localize(datetime.datetime.now()).dst() == datetime.timedelta(0, 3600)
 
 
+"""
+@Deprecated
 def get_trip_time(driver, day, direction):
-    """Restituisce una stringa del tipo "HH:MM" """
+    "Restituisce una stringa del tipo "HH:MM"
     try:
         output = str(secret_data.groups[direction][day][driver]["Time"])
     except KeyError:
@@ -75,6 +84,7 @@ def get_trip_time(driver, day, direction):
                   + direction + ", " + day + ", " + driver)
         output = None
     return output
+"""
 
 
 def booking_time():
@@ -97,18 +107,32 @@ def localize_mode(mode):
 
 
 def search_by_booking(person):
-    return [[direction, day, driver, mode]
-            for direction in secret_data.groups
-            for day in secret_data.groups[direction]
+    """Ritorna tutte le prenotazioni di una certa persona"""
+    return [(direction, day, driver, mode, secret_data.groups[direction][day][driver]["Time"])
+            for direction in direction_generic
+            for day in work_days
             for driver in secret_data.groups[direction][day]
             for mode in secret_data.groups[direction][day][driver]
             if person in secret_data.groups[direction][day][driver][mode]]
 
 
 def delete_driver(chat_id):
+    """Metodo per cancellare tutti i dati di un autista"""
     del secret_data.drivers[str(chat_id)]
 
     for direction in secret_data.groups:
         for day in secret_data.groups[direction]:
             if str(chat_id) in secret_data.groups[direction][day]:
                 del secret_data.groups[direction][day][str(chat_id)]
+
+
+def get_credits(input_creditor):
+    """Restituisce un array di tuple contenente, dato un creditore, gli ID dei debitori e il valore."""
+    return [(user, secret_data.users[user]["Debit"][creditor]) for user in secret_data.users
+            for creditor in secret_data.users[user]["Debit"] if creditor == input_creditor]
+
+
+def get_debits(input_debitor):
+    """Restituisce un array di tuple contenente, dato un debitore, gli ID dei creditore e il valore."""
+    return [(creditor, secret_data.users[input_debitor]["Debit"][creditor])
+            for creditor in secret_data.users[input_debitor]["Debit"]]

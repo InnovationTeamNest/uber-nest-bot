@@ -10,6 +10,8 @@ import secret_data
 
 
 class DataHandler(webapp2.RequestHandler):
+    """Stampa in console il dataset corrente salvato su secret_data e sul Datastore."""
+
     def get(self):
         get_data()
         print_data()
@@ -17,10 +19,10 @@ class DataHandler(webapp2.RequestHandler):
 
 
 class Dumpable(ndb.Model):
+    """Classe usata da Datastore per fare il backup dei dati."""
     groups = ndb.JsonProperty()
     users = ndb.JsonProperty()
     drivers = ndb.JsonProperty()
-    # datetime = ndb.DateTimeProperty()
 
 
 def dump_data():

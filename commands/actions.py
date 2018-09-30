@@ -77,7 +77,7 @@ def settimana(bot, update):
 
     for day in common.work_days:
         keyboard.append(
-            InlineKeyboardButton(day[:2], callback_data=create_callback_data("SHOWBOOKINGS", day)))
+            InlineKeyboardButton(day[:2], callback_data=create_callback_data("SHOW_BOOKINGS", day)))
 
     bot.send_message(chat_id=update.message.chat_id,
                      text="Scegli il giorno di cui visualizzare le prenotazioni.",

@@ -12,9 +12,9 @@ from telegram.ext import Dispatcher, CommandHandler, MessageHandler, CallbackQue
 import secret_data
 from services import dumpable
 from util import filters
+from util.common import MAX_ATTEMPTS
 
 bot = Bot(secret_data.bot_token)
-MAX_ATTEMPTS = 5
 
 
 class WebHookHandler(webapp2.RequestHandler):

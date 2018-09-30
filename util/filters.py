@@ -8,7 +8,7 @@ from telegram.error import BadRequest
 
 
 # Questi comandi vengono usati dalla modalità inline per redirezionare correttamente i comandi.
-# Il metodo cancel_handler viene usato come jolly nel caso in cui si voglia troncare la catena di query.
+# Il metodo cancel_handler viene usato nel caso in cui si voglia troncare la catena di query.
 # Infine, create e separate_callback_data vengono usate per creare le stringhe d'identificazione.
 
 
@@ -18,24 +18,30 @@ def inline_handler(bot, update):
     # Nelle callback query, il primo elemento è sempre l'identificatore
     identifier = separate_callback_data(update.callback_query.data)[0]
 
-    if identifier == "EXIT":  # Caso base usato da molti comandi
+    # Caso base usato da molti comandi
+    if identifier == "EXIT":
         cancel_handler(bot, update)
+    # Azione alternativa per /me
     elif identifier == "ME_MENU":
         actions_me.me(bot, update)
+    # Azione alternativa per /prenota
     elif identifier == "BOOKING_MENU":
         actions_booking.prenota(bot, update)
+    # Azioni in partenza da /prenota
     elif identifier == "BOOKING":
         actions_booking.booking_handler(bot, update)
     elif identifier == "DELETE_BOOKING":
         actions_booking.delete_booking(bot, update)
+    # Azione in partenza da /prenota e da /settimana /lunedi etc
+    elif identifier == "SHOW_BOOKINGS":
+        actions.show_bookings(bot, update)
+    # Azioni in partenza da /me
     elif identifier == "ME":
         actions_me.me_handler(bot, update)
     elif identifier == "TRIPS":
         actions_trips.trips_handler(bot, update)
     elif identifier == "NEWTRIP":
         actions_me.newtrip_handler(bot, update)
-    elif identifier == "SHOWBOOKINGS":
-        actions.show_bookings(bot, update)
     elif identifier == "MONEY":
         actions_money.check_money(bot, update)
     elif identifier == "EDIT_MONEY":
@@ -57,7 +63,7 @@ def cancel_handler(bot, update):
 
 
 def create_callback_data(*arg):
-    """ Create the callback data associated to each button"""
+    """Create the callback data associated to each button"""
     return ";".join(unicode(i) for i in arg)
 
 
@@ -73,6 +79,7 @@ class ReplyStatus:
 
 
 def text_filter(bot, update):
+    """Per aggiungere un nuovo metodo di risposta testuale, mettere qui l'eventuale redirect"""
     if ReplyStatus.response_mode == 0:
         bot.send_message(chat_id=update.message.chat_id,
                          text="Digita /help per avere informazioni sui comandi.")

@@ -114,8 +114,8 @@ def me_handler(bot, update):
         for creditor in user_debits:
             bot.send_message(chat_id=creditor,
                              text="ATTENZIONE! " + secret_data.users[str(chat_id)]["Name"]
-                                     + " si è cancellato da UberNEST. Ha ancora "
-                                     + str(user_debits[creditor]) + " EUR di debito con te.")
+                                  + " si è cancellato da UberNEST. Ha ancora "
+                                  + str(user_debits[creditor]) + " EUR di debito con te.")
 
         del secret_data.users[str(chat_id)]
         if str(chat_id) in secret_data.drivers:

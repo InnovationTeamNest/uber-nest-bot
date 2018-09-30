@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 
 import datetime
-import logging as log
 
 import webapp2
 from telegram import Bot
@@ -22,16 +21,12 @@ class MoneyHandler(webapp2.RequestHandler):
         self.response.write("See console for output.")
 
 
-class WeeklyReportHandler(webapp2.RequestHandler):
-    def get(self):
-        dumpable.get_data()
-        weekly_report()
-        dumpable.dump_data()
-        self.response.write("See console for output.")
-
-
 def process_debits():
-    """Questo comando verrà fatto partire alle 02:00 di ogni giorno"""
+    """Questo comando verrà fatto partire alle 02:00 di ogni giorno.
+    Questo comando scorre tutta la lista di utenti controllando i viaggi effettuati in giornata
+    e addebitandogli il prezzo impostato in common.trip_price. Se il viaggio è temporaneo, vengono
+    anche rimossi.
+    """
     today = datetime.datetime.today()
     if 1 <= today.weekday() <= 5 and today.date() not in common.no_trip_days:
         for direction in secret_data.groups:
@@ -46,20 +41,29 @@ def process_debits():
                                 secret_data.users[user]["Debit"][driver] = common.trip_price
                             bot.send_message(chat_id=str(user),
                                              text="Ti sono stati addebitati " + str(common.trip_price)
-                                                  + " EUR da " + str(secret_data.users[driver]["Name"]) + ". ")
+                                                  + " EUR da " + str(secret_data.users[driver]["Name"]) + ".")
                             bot.send_message(chat_id=str(driver),
                                              text="Hai ora un credito di " + str(common.trip_price)
-                                                  + " EUR da parte di " + str(secret_data.users[user]["Name"]))
-                            log.debug(user + "'s debit from "
-                                      + driver + " = " + str(secret_data.users[user]["Debit"][driver]))
+                                                  + " EUR da parte di " + str(secret_data.users[user]["Name"]) + ".")
                 trips[driver]["Temporary"] = []
 
 
+class WeeklyReportHandler(webapp2.RequestHandler):
+    def get(self):
+        dumpable.get_data()
+        weekly_report()
+        dumpable.dump_data()
+        self.response.write("See console for output.")
+
+
 def weekly_report():
-    """Questo comando viene fatto partire ogni sabato alle 10.00"""
+    """Questo comando viene fatto partire ogni sabato alle 12.00. Scorre tutta la lista di utenti e gli invia
+    un messaggio con il riepilogo di soldi che devono dare. Se l'utente è anche un autista, riceverà anche
+    un messaggio con i crediti.
+    """
     for user in secret_data.users:
         # Invio dei debiti per tutti gli utenti
-        debits = get_debits(user)
+        debits = common.get_debits(user)
         if debits:
             string = "Riepilogo settimanale dei debiti:\n"
             for name, value in debits:
@@ -68,21 +72,9 @@ def weekly_report():
 
         # Invio dei crediti per ogni singolo autista
         if user in secret_data.drivers:
-            credits = get_credits(user)
+            credits = common.get_credits(user)
             if credits:
                 string = "Riepilogo settimanale dei crediti:\n"
                 for name, value in credits:
                     string = string + "\n" + secret_data.users[name]["Name"] + " - " + str(value) + " EUR"
                 bot.send_message(chat_id=user, text=string)
-
-
-def get_credits(input_creditor):
-    """Restituisce un array di tuple contenente, dato un creditore, gli ID dei debitori e il valore."""
-    return [(user, secret_data.users[user]["Debit"][creditor]) for user in secret_data.users
-            for creditor in secret_data.users[user]["Debit"] if creditor == input_creditor]
-
-
-def get_debits(input_debitor):
-    """Restituisce un array di tuple contenente, dato un debitore, gli ID dei creditore e il valore."""
-    return [(creditor, secret_data.users[input_debitor]["Debit"][creditor])
-            for creditor in secret_data.users[input_debitor]["Debit"]]

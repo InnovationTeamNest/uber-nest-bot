@@ -8,7 +8,7 @@ from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.error import BadRequest
 
 import secret_data
-from services import money as mn
+import util.common
 from util import common
 from util.common import PAGE_SIZE
 from util.filters import create_callback_data as ccd, separate_callback_data
@@ -24,7 +24,7 @@ def check_money(bot, update):
         log.info("Failed to delete previous message")
 
     # Prima raccolgo sottoforma di stringa i debiti
-    debits = mn.get_debits(chat_id)
+    debits = util.common.get_debits(chat_id)
     if len(debits) != 0:
         string = ""
         for name, value in debits:
@@ -42,7 +42,7 @@ def check_money(bot, update):
             [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
         ]
 
-        credits = mn.get_credits(chat_id)
+        credits = util.common.get_credits(chat_id)
         if len(credits) > 0:
             for name, value in credits:
                 keyboard.insert(0, [InlineKeyboardButton(secret_data.users[name]["Name"] + " - " + str(value) + " EUR",
