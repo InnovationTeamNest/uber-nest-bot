@@ -221,9 +221,11 @@ def trips_handler(bot, update):
         direction, day, user, mode = data[2:6]
 
         keyboard = [
-            [InlineKeyboardButton("Sì",
-                                  callback_data=ccd("TRIPS", "CONFIRM_REMOVE_PASSENGER", direction, day, user, mode)),
-             InlineKeyboardButton("No", caallback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))]
+            [
+                InlineKeyboardButton("Sì", callback_data=ccd("TRIPS", "CONFIRM_REMOVE_PASSENGER", direction, day, user,
+                                                             mode)),
+                InlineKeyboardButton("No", callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))
+            ]
         ]
 
         bot.send_message(chat_id=chat_id,
