@@ -30,7 +30,7 @@ def inline_handler(bot, update):
     # Azioni in partenza da /prenota
     elif identifier == "BOOKING":
         actions_booking.booking_handler(bot, update)
-    elif identifier == "DELETE_BOOKING":
+    elif identifier == "DEL_BOOK":
         actions_booking.delete_booking(bot, update)
     # Azione in partenza da /prenota e da /settimana /lunedi etc
     elif identifier == "SHOW_BOOKINGS":
