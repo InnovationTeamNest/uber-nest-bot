@@ -255,7 +255,7 @@ def trips_handler(bot, update):
         bot.send_message(chat_id=user,
                          text=secret_data.users[chat_id]["Name"] + " ti ha rimosso dal viaggio di "
                               + day + " alle " + secret_data.groups[direction][day][chat_id]["Time"]
-                              + " " + common.direction_to_name(direction))
+                              + " " + common.direction_to_name(direction) + ".")
     # Comando chiamato quando si clicca su "Rimuovi viaggio" nella vista viaggio
     elif action == "REMOVE_TRIP":
         direction, day = data[2:4]
@@ -274,7 +274,7 @@ def trips_handler(bot, update):
         del secret_data.groups[direction][day][chat_id]
 
         keyboard = [
-            [InlineKeyboardButton("Indietro", callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))],
+            [InlineKeyboardButton("Indietro", callback_data=ccd("ME", "TRIPS"))],
             [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
         ]
 
