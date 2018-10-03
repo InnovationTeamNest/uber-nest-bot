@@ -20,9 +20,10 @@ def start(bot, update):
 def help(bot, update):
     bot.send_message(chat_id=update.message.chat_id, text="Comandi disponibili:")
 
-    text = "/me - Gestisci il tuo profilo.\n/prenota - Gestisci le tue prenotazioni." \
-        if str(update.message.chat_id) in secret_data.users else \
-        "/registra - Inizia a usare UberNEST registrandoti a sistema."
+    if str(update.message.chat_id) in secret_data.users:
+        text = "/me - Gestisci il tuo profilo.\n/prenota - Gestisci le tue prenotazioni."
+    else:
+        text = "/registra - Inizia a usare UberNEST registrandoti a sistema."
 
     text = text + "\n\n/oggi - Visualizza le prenotazioni per oggi." \
            + "\n/domani - Visualizza le prenotazioni per domani." \
@@ -36,7 +37,7 @@ def help(bot, update):
 
 def info(bot, update):
     bot.send_message(chat_id=update.message.chat_id,
-                     text="UberNEST Bot v. 1.5 - sviluppata dal"
+                     text="UberNEST Bot v. 1.6 - sviluppata dal"
                           " NEST Innovation Team. Contatta @mfranzil per suggerimenti,"
                           " proposte, bug o per partecipare attivamente allo"
                           " sviluppo del bot.\n\nUberNEST è una piattaforma creata da"
@@ -108,11 +109,15 @@ def fetch_bookings(bot, chat_id, day):
                 text = text + "\n" + common.direction_to_name(direction) + ":\n\n"
 
                 for driver in day_group:  # Stringhe separate per ogni autista
-                    people = [secret_data.users[user]["Name"] for mode in day_group[driver]
-                              if mode == "Temporary" or mode == "Permanent" for user in day_group[driver][mode]]
+                    people = [secret_data.users[user]["Name"]
+                              for mode in day_group[driver]
+                              if mode == "Temporary" or mode == "Permanent"
+                              for user in day_group[driver][mode]]
+
                     # Aggiungo ogni viaggio trovato alla lista
-                    text = text + "🚗 " + secret_data.users[driver]["Name"] + " - 🕒 " \
-                           + day_group[driver]["Time"] + ":\n👥 " + ", ".join(people) + "\n\n"
+                    text = text + "🚗 " + secret_data.users[driver]["Name"] \
+                           + " - 🕒 " + day_group[driver]["Time"] \
+                           + ":\n👥 " + ", ".join(people) + "\n\n"
             else:
                 text = text + "\n\nNessuna persona in viaggio " + common.direction_to_name(direction) + " oggi."
 
@@ -122,7 +127,8 @@ def fetch_bookings(bot, chat_id, day):
                 [InlineKeyboardButton("Prenota una tantum",
                                       callback_data=create_callback_data("BOOKING", "DAY_CUSTOM", "Temporary", day))],
                 [InlineKeyboardButton("Prenota permanentemente",
-                                      callback_data=create_callback_data("BOOKING", "DAY_CUSTOM", "Permanent", day))]
+                                      callback_data=create_callback_data("BOOKING", "DAY_CUSTOM", "Permanent", day))],
+                [InlineKeyboardButton("Esci", callback_data=create_callback_data("EXIT"))]
             ]
             bot.send_message(chat_id=chat_id, text=text,
                              reply_markup=InlineKeyboardMarkup(keyboard))

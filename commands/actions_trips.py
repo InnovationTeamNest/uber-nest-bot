@@ -22,6 +22,7 @@ CO_ADD_PA = CONFIRM_ADD_PASS
 ADD_PASS_MO = ADD_PASS_MODE
 ADD_PASS = ADD_PASSENGER
 EDIT_PASS = EDIT_PASSENGERS
+REMOVE_PASS = REMOVE_PASS
 
 CO_EDIT_TRIP = CONFIRM_EDIT_TRIP
 
@@ -130,10 +131,10 @@ def trips_handler(bot, update):
 
         keyboard = [
             [InlineKeyboardButton(secret_data.users[user]["Name"] + " - Permanente",
-                                  callback_data=ccd("TRIPS", "REMOVE_PASSENGER", direction, day, user, "Permanent"))
+                                  callback_data=ccd("TRIPS", "REMOVE_PASS", direction, day, user, "Permanent"))
              for user in permanent_users],
             [InlineKeyboardButton(secret_data.users[user]["Name"] + " - Temporaneo",
-                                  callback_data=ccd("TRIPS", "REMOVE_PASSENGER", direction, day, user, "Temporary"))
+                                  callback_data=ccd("TRIPS", "REMOVE_PASS", direction, day, user, "Temporary"))
              for user in temporary_users],
             [InlineKeyboardButton("Nuovo passeggero",
                                   callback_data=ccd("TRIPS", "ADD_PASS", direction, day, "0"))],
@@ -232,7 +233,7 @@ def trips_handler(bot, update):
                                   + "\n➡: " + common.direction_to_name(direction)
                                   + "\n🔁: " + common.localize_mode(mode))
     # Comando chiamato in seguito a pressione del bottone contenente un utente di un viaggio
-    elif action == "REMOVE_PASSENGER":
+    elif action == "REMOVE_PASS":
         direction, day, user, mode = data[2:6]
 
         keyboard = [

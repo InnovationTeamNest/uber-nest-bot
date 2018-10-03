@@ -11,6 +11,14 @@ import util.common as common
 from util.filters import create_callback_data as ccd, separate_callback_data
 from util.keyboards import booking_keyboard
 
+"""
+Informazioni sulla notazione usata (limitazione delle API a 64 byte per chiamata)
+
+CONF_DEL = CONFIRM_DELETION
+SUCC_DEL = SUCCESSFUL_DELETION
+
+"""
+
 
 # Comando iniziale che viene chiamato dall'utente
 
