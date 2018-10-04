@@ -46,6 +46,9 @@ def process_debits():
                                              text="Hai ora un credito di " + str(common.trip_price)
                                                   + " EUR da parte di " + str(secret_data.users[user]["Name"]) + ".")
                 trips[driver]["Temporary"] = []
+                # Cancello l'eventuale ritrovo del giorno
+                if trips[driver]["Location"]:
+                    del trips[driver]["Location"]
 
 
 class WeeklyReportHandler(webapp2.RequestHandler):

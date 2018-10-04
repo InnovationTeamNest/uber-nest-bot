@@ -122,14 +122,17 @@ def booking_handler(bot, update):
                              reply_markup=InlineKeyboardMarkup(keyboard))
         else:
             trip[mode].append(str(chat_id))
-            bot.send_message(chat_id=chat_id,
-                             text="Prenotazione completata. Dati del viaggio:"
-                                  + "\n\n🚗: " + str(secret_data.users[driver]["Name"])
-                                  + "\n🗓: " + day
-                                  + "\n🕓: " + trip["Time"]
-                                  + "\n➡: " + common.direction_to_name(direction)
-                                  + "\n🔁: " + common.localize_mode(mode),
-                             reply_markup=InlineKeyboardMarkup(keyboard))
+            message_text = "Prenotazione completata. Dati del viaggio:" \
+                           + "\n\n🚗: " + str(secret_data.users[driver]["Name"]) \
+                           + "\n🗓: " + day \
+                           + "\n🕓: " + trip["Time"] \
+                           + "\n➡: " + common.direction_to_name(direction) \
+                           + "\n🔁: " + common.localize_mode(mode) \
+            # Eventuale aggiunta del luogo di ritrovo
+            if trip["Location"]:
+                message_text += "\n📍: " + trip["Location"]
+
+            bot.send_message(chat_id=chat_id, text=message_text, reply_markup=InlineKeyboardMarkup(keyboard))
             bot.send_message(chat_id=driver,
                              text="Hai una nuova prenotazione " + common.localize_mode(mode).lower()
                                   + " da parte di " + secret_data.users[str(chat_id)]["Name"]

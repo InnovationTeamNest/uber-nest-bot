@@ -37,6 +37,10 @@ trip_price = 0.50
 # Il bot va disattivato dall'ultima settimana di dicembre (22/12) al 6/1, e nell'estate
 no_trip_days = [datetime.date(2018, 11, 1), datetime.date(2018, 11, 2)]  # Festa dei Santi e Morti
 
+# Posizioni di parcheggio possibili
+locations = ["Povo 2", "Povo 1 (cima scale)", "Povo 1 (fronte entrata)",
+             "Povo 0", "Vietnam", "Mesiano (fuori)", "Mesiano (fronte entrata)"]
+
 
 # Questi metodi gestiscono i giorni in formato stringa
 def today():

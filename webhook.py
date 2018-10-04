@@ -37,7 +37,7 @@ class UpdateHandler(webapp2.RequestHandler):
 def dispatcher_setup():
     global dispatcher
     dispatcher = Dispatcher(bot=bot, update_queue=None, workers=0)
-    from commands import actions, actions_booking, actions_me, actions_money
+    from commands import actions, actions_booking, actions_me, actions_money, actions_parking
 
     dumpable.get_data()
 
@@ -58,6 +58,8 @@ def dispatcher_setup():
     dispatcher.add_handler(CommandHandler("me", actions_me.me))
 
     dispatcher.add_handler(CommandHandler("prenota", actions_booking.prenota))
+
+    dispatcher.add_handler(CommandHandler("parcheggio", actions_parking.parcheggio))
 
     dispatcher.add_handler(CommandHandler("budino", actions_money.edit_money_admin, pass_args=True))
 

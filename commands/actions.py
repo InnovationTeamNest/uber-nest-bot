@@ -21,7 +21,9 @@ def help(bot, update):
     bot.send_message(chat_id=update.message.chat_id, text="Comandi disponibili:")
 
     if str(update.message.chat_id) in secret_data.users:
-        text = "/me - Gestisci il tuo profilo.\n/prenota - Gestisci le tue prenotazioni."
+        text = "/me - Gestisci il tuo profilo." \
+               "\n/prenota - Gestisci le tue prenotazioni." \
+               "\n/parcheggio - Registra il tuo parcheggio di oggi."
     else:
         text = "/registra - Inizia a usare UberNEST registrandoti a sistema."
 
