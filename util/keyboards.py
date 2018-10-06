@@ -14,39 +14,36 @@ def me_keyboard(chat_id):
         money_string = "Gestire i miei debiti e crediti"
         driver_string = "Smettere di essere un autista"
         keyboard.append([InlineKeyboardButton("Gestire i miei viaggi", callback_data=ccd("ME", "TRIPS"))])
-        keyboard.append([InlineKeyboardButton("Modificare il numero di posti",
-                                              callback_data=ccd("ME", "EDIT_DRIVER_SLOTS"))])
+        keyboard.append([InlineKeyboardButton("Modificare il numero di posti", callback_data=ccd("ME", "ED_DR_SL"))])
     else:
         money_string = "Gestire i miei debiti"
         driver_string = "Diventare un autista"
 
     keyboard.append([InlineKeyboardButton(money_string, callback_data=ccd("MONEY"))])
     keyboard.append([InlineKeyboardButton(driver_string, callback_data=ccd("ME", "DRIVER"))])
-    keyboard.append([InlineKeyboardButton("Cancellarmi da UberNEST", callback_data=ccd("ME", "USER_REMOVAL"))])
+    keyboard.append([InlineKeyboardButton("Cancellarmi da UberNEST", callback_data=ccd("ME", "US_RE"))])
     keyboard.append([InlineKeyboardButton("Uscire", callback_data=ccd("EXIT"))])
+
     return InlineKeyboardMarkup(keyboard)
 
 
 def trips_keyboard(chat_id):
-    keyboard = [[InlineKeyboardButton("Aggiungi un nuovo viaggio",
-                                      callback_data=ccd("TRIPS", "NEW_TRIP"))]]
+    keyboard = [[InlineKeyboardButton("Aggiungi un nuovo viaggio", callback_data=ccd("TRIPS", "NEW_TRIP"))]]
 
     for day in common.work_days:
-        for direction in common.direction_generic:
+        for direction in "Salita", "Discesa":
             try:
                 group = secret_data.groups[direction][day][chat_id]
                 occupied_slots = len(group["Permanent"]) + len(group["Temporary"])
                 keyboard.append(
-                    [InlineKeyboardButton(
-                        day + ": " + group["Time"] + " "
-                        + common.direction_to_name(direction)
-                        + " (" + str(occupied_slots) + ")",
-                        callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))])
+                    [InlineKeyboardButton(day + ": " + group["Time"] + " " + common.direction_to_name(direction)
+                        + " (" + str(occupied_slots) + ")", callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))])
             except KeyError:
                 continue
 
     keyboard.append([InlineKeyboardButton("Indietro", callback_data=ccd("ME_MENU"))])
     keyboard.append([InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))])
+
     return InlineKeyboardMarkup(keyboard)
 
 
@@ -67,9 +64,9 @@ def booking_keyboard(mode, day, from_booking):
 
     for item in bookings:
         time, name, direction, driver = item
-        keyboard.append([InlineKeyboardButton("🚗 " + name + " - 🕓 " + time
-                                              + "\n➡ " + common.direction_to_name(direction),
-                                              callback_data=ccd("BOOKING", "CONFIRM", direction, day, driver, mode))])
+        keyboard.append(
+            [InlineKeyboardButton("🚗 " + name + " - 🕓 " + time + "\n➡ " + common.direction_to_name(direction),
+                                  callback_data=ccd("BOOKING", "CONFIRM", direction, day, driver, mode))])
 
     if from_booking:
         keyboard.append([InlineKeyboardButton("Indietro", callback_data=ccd("BOOKING", "NEW", mode))])

@@ -9,13 +9,6 @@ import secret_data
 from util import common
 from util.filters import create_callback_data as ccd, separate_callback_data
 
-"""
-Informazioni sulla notazione usata (limitazione delle API a 64 byte per chiamata)
-
-
-
-"""
-
 
 def parcheggio(bot, update):
     if update.callback_query:
@@ -31,9 +24,8 @@ def parcheggio(bot, update):
         data = None
         action = "CHOOSE"
 
-
+    # Controllo per evitare che i non autisti usino il comando
     if chat_id not in secret_data.drivers:
-        # Controllo per evitare che i non autisti usino il comando
         return
 
     keyboard = [
@@ -56,7 +48,7 @@ def parcheggio(bot, update):
             bot.send_message(chat_id=chat_id, text="Mi dispiace, è possibile selezionare il luogo"
                                                    " di parcheggio nei giorni in cui UberNEST è attivo.",
                              reply_markup=InlineKeyboardMarkup(keyboard))
-    elif action == "SET" and data is not None:
+    elif action == "SET":
         location = data[2]
         day_group = secret_data.groups["Discesa"][common.today()][chat_id]
         day_group["Location"] = location

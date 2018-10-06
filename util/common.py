@@ -16,16 +16,16 @@ days = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "
 # Sottoinsieme di days contenente i giorni lavorativi - cambiare se si vuole includere il sabato
 work_days = days[:5]
 
+# @Deprecated
 # Localizzazione italiana delle direzioni specifiche e generiche
-direction_name = ["per Povo", "per il NEST"]
-direction_generic = ["Salita", "Discesa"]
+# direction_name = ["per Povo", "per il NEST"]
+# direction_generic = ["Salita", "Discesa"]
 
-# Localizzazione dei metodi di prenotazioni come nel dataset e in italiano
-booking_types = ["Temporary", "Permanent"]
-booking_types_localized = ["Temporanea", "Permanente"]
-
+# # Localizzazione dei metodi di prenotazioni come nel dataset e in italiano
+# booking_types = ["Temporary", "Permanent"]
+# booking_types_localized = ["Temporanea", "Permanente"]
 # Stringa vuota usata in caso di risultati non presenti
-empty_str = " - "
+# empty_str = " - "
 
 # Inizio e fine del tempo ammesso di prenotazione
 booking_start = datetime.time(6, 0)
@@ -59,7 +59,7 @@ def string_to_day(string):
     try:
         return days.index(string)
     except ValueError:
-        return empty_str
+        return " - "
 
 
 def is_weekday(string):
@@ -77,18 +77,16 @@ def is_dst():
     return pytz.timezone("Europe/Rome").localize(datetime.datetime.now()).dst() == datetime.timedelta(0, 3600)
 
 
-"""
-@Deprecated
-def get_trip_time(driver, day, direction):
-    "Restituisce una stringa del tipo "HH:MM"
-    try:
-        output = str(secret_data.groups[direction][day][driver]["Time"])
-    except KeyError:
-        log.debug("Nessuna partenza trovata per questa query: "
-                  + direction + ", " + day + ", " + driver)
-        output = None
-    return output
-"""
+# @Deprecated
+# def get_trip_time(driver, day, direction):
+#     "Restituisce una stringa del tipo "HH:MM"
+#     try:
+#         output = str(secret_data.groups[direction][day][driver]["Time"])
+#     except KeyError:
+#         log.debug("Nessuna partenza trovata per questa query: "
+#                   + direction + ", " + day + ", " + driver)
+#         output = None
+#     return output
 
 
 def booking_time():
@@ -97,23 +95,27 @@ def booking_time():
 
 
 def direction_to_name(direction):
-    try:
-        return direction_name[direction_generic.index(direction)]
-    except ValueError:
-        return empty_str
+    if direction == "Salita":
+        return "per Povo"
+    elif direction == "Discesa":
+        return "per il NEST"
+    else:
+        return " - "
 
 
 def localize_mode(mode):
-    try:
-        return booking_types_localized[booking_types.index(mode)]
-    except ValueError:
-        return empty_str
+    if mode == "Temporary":
+        return "Temporanea"
+    elif mode == "Permanent":
+        return "Permanent"
+    else:
+        return " - "
 
 
 def search_by_booking(person):
     """Ritorna tutte le prenotazioni di una certa persona"""
     return [(direction, day, driver, mode, secret_data.groups[direction][day][driver]["Time"])
-            for direction in direction_generic
+            for direction in "Salita", "Discesa"
             for day in work_days
             for driver in secret_data.groups[direction][day]
             for mode in secret_data.groups[direction][day][driver]

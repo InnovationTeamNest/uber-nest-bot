@@ -12,21 +12,18 @@ import secret_data
 from util import common
 from util.filters import separate_callback_data, create_callback_data as ccd
 
-"""
-Informazioni sulla notazione usata (limitazione delle API a 64 byte per chiamata)
-
-CO_RE_PA = CONFIRM_REMOVE_PASSENGER
-CO_RE_TR = CONFIRM_REMOVE_TRIP
-CO_ADD_PA = CONFIRM_ADD_PASS
-
-ADD_PASS_MO = ADD_PASS_MODE
-ADD_PASS = ADD_PASSENGER
-EDIT_PASS = EDIT_PASSENGERS
-REMOVE_PASS = REMOVE_PASS
-
-CO_EDIT_TRIP = CONFIRM_EDIT_TRIP
-
-"""
+# Informazioni sulla notazione usata (limitazione delle API a 64 byte per chiamata)
+#
+# CO_RE_PA = CONFIRM_REMOVE_PASSENGER
+# CO_RE_TR = CONFIRM_REMOVE_TRIP
+# CO_ADD_PA = CONFIRM_ADD_PASS
+#
+# ADD_PASS_MO = ADD_PASS_MODE
+# ADD_PASS = ADD_PASSENGER
+# EDIT_PASS = EDIT_PASSENGERS
+# REMOVE_PASS = REMOVE_PASS
+#
+# CO_EDIT_TRIP = CONFIRM_EDIT_TRIP
 
 
 def trips_handler(bot, update):
@@ -44,8 +41,8 @@ def trips_handler(bot, update):
     log.debug("Mode entered: " + action)
     if action == "NEW_TRIP":  # Chiamata sul bottone "Nuovo viaggio"
         keyboard = [
-            [InlineKeyboardButton(common.direction_name[i], callback_data=ccd("NEWTRIP", common.direction_generic[i]))
-             for i in range(0, len(common.direction_name), 1)],
+            [InlineKeyboardButton("per Povo", callback_data=ccd("NEWTRIP", "Salita")),
+             InlineKeyboardButton("per il NEST", callback_data=ccd("NEWTRIP", "Discesa"))],
             [InlineKeyboardButton("Indietro", callback_data=ccd("ME", "TRIPS"))],
             [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
         ]
@@ -59,12 +56,11 @@ def trips_handler(bot, update):
         trip = secret_data.groups[direction][day][chat_id]
 
         keyboard = [
-            [InlineKeyboardButton("Modifica l'ora", callback_data=ccd("TRIPS", "EDIT_TRIP_HOUR", direction, day))],
-            [InlineKeyboardButton("Modifica i passeggeri",
-                                  callback_data=ccd("TRIPS", "EDIT_PASS", direction, day))],
-            [InlineKeyboardButton("Cancella il viaggio", callback_data=ccd("TRIPS", "REMOVE_TRIP", direction, day))],
-            [InlineKeyboardButton("Indietro", callback_data=ccd("ME", "TRIPS"))],
-            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+            [InlineKeyboardButton("Modificare l'ora", callback_data=ccd("TRIPS", "EDIT_TRIP_HOUR", direction, day))],
+            [InlineKeyboardButton("Modificare i passeggeri", callback_data=ccd("TRIPS", "EDIT_PASS", direction, day))],
+            [InlineKeyboardButton("Cancellare il viaggio", callback_data=ccd("TRIPS", "REMOVE_TRIP", direction, day))],
+            [InlineKeyboardButton("Tornare indietro", callback_data=ccd("ME", "TRIPS"))],
+            [InlineKeyboardButton("Uscire", callback_data=ccd("EXIT"))]
         ]
         bot.send_message(chat_id=chat_id,
                          text="Viaggio selezionato: \n"
@@ -157,9 +153,8 @@ def trips_handler(bot, update):
 
         for index in range(common.PAGE_SIZE * page, common.PAGE_SIZE * (page + 1), 1):
             try:
-                keyboard.append([InlineKeyboardButton(users[index][0],
-                                                      callback_data=ccd("TRIPS", "ADD_PASS_MO", direction, day,
-                                                                        users[index][1]))])
+                keyboard.append([InlineKeyboardButton(
+                    users[index][0], callback_data=ccd("TRIPS", "ADD_PASS_MO", direction, day, users[index][1]))])
             except IndexError:
                 break
 
@@ -170,15 +165,13 @@ def trips_handler(bot, update):
                 text = "☑"
             else:
                 text = str(index + 1)
-            page_buttons.append(InlineKeyboardButton(text,
-                                                     callback_data=ccd("TRIPS", "ADD_PASS", direction, day,
-                                                                       index)))
+            page_buttons.append(InlineKeyboardButton(
+                text, callback_data=ccd("TRIPS", "ADD_PASS", direction, day, index)))
         keyboard.append(page_buttons)
 
         keyboard.append([InlineKeyboardButton("Indietro", callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))])
         keyboard.append([InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))])
-        bot.send_message(chat_id=chat_id,
-                         text="Seleziona un passeggero da aggiungere al tuo viaggio.",
+        bot.send_message(chat_id=chat_id, text="Seleziona un passeggero da aggiungere al tuo viaggio.",
                          reply_markup=InlineKeyboardMarkup(keyboard))
     # Comando chiamato una volta premuto il bottone della persona da prenotare
     elif action == "ADD_PASS_MO":
@@ -193,8 +186,7 @@ def trips_handler(bot, update):
             [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
         ]
 
-        bot.send_message(chat_id=chat_id,
-                         text="Scegli la modalità di prenotazione.",
+        bot.send_message(chat_id=chat_id, text="Scegli la modalità di prenotazione.",
                          reply_markup=InlineKeyboardMarkup(keyboard))
     # Comando chiamato una volta premuto il bottone della persona da prenotare e scelta la modalità
     elif action == "CO_ADD_PA":
@@ -217,31 +209,34 @@ def trips_handler(bot, update):
                              reply_markup=InlineKeyboardMarkup(keyboard))
         else:
             trip[mode].append(str(user))
-            bot.send_message(chat_id=chat_id,
-                             text="Prenotazione completata. Dati del viaggio:"
-                                  + "\n\n👤: " + str(secret_data.users[user]["Name"])
-                                  + "\n🗓: " + day
-                                  + "\n🕓: " + trip["Time"]
-                                  + "\n➡: " + common.direction_to_name(direction)
-                                  + "\n🔁: " + common.localize_mode(mode),
-                             reply_markup=InlineKeyboardMarkup(keyboard))
-            bot.send_message(chat_id=user,
-                             text=str(secret_data.users[chat_id]["Name"])
-                                  + " ha effettuato una nuova prenotazione a tuo nome nel suo viaggio: "
-                                  + "\n🗓: " + day
-                                  + "\n🕓: " + trip["Time"]
-                                  + "\n➡: " + common.direction_to_name(direction)
-                                  + "\n🔁: " + common.localize_mode(mode))
+
+            driver_text = "Prenotazione completata. Dati del viaggio:" \
+                          + "\n\n👤: " + str(secret_data.users[user]["Name"]) \
+                          + "\n🗓: " + day \
+                          + "\n🕓: " + trip["Time"] \
+                          + "\n➡: " + common.direction_to_name(direction) \
+                          + "\n🔁: " + common.localize_mode(mode)
+
+            user_text = str(secret_data.users[chat_id]["Name"]) \
+                        + " ha effettuato una nuova prenotazione a tuo nome nel suo viaggio: " \
+                        + "\n🗓: " + day \
+                        + "\n🕓: " + trip["Time"] \
+                        + "\n➡: " + common.direction_to_name(direction) \
+                        + "\n🔁: " + common.localize_mode(mode)
+
+            if trip["Location"]:
+                driver_text += "\n📍: " + trip["Location"]
+                user_text += "\n📍: " + trip["Location"]
+
+            bot.send_message(chat_id=chat_id, text=driver_text, reply_markup=InlineKeyboardMarkup(keyboard))
+            bot.send_message(chat_id=user, text=user_text)
     # Comando chiamato in seguito a pressione del bottone contenente un utente di un viaggio
     elif action == "REMOVE_PASS":
         direction, day, user, mode = data[2:6]
 
         keyboard = [
-            [
-                InlineKeyboardButton("Sì", callback_data=ccd("TRIPS", "CO_RE_PA",
-                                                             direction, day, user, mode)),
-                InlineKeyboardButton("No", callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))
-            ]
+            [InlineKeyboardButton("Sì", callback_data=ccd("TRIPS", "CO_RE_PA", direction, day, user, mode)),
+             InlineKeyboardButton("No", callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))]
         ]
 
         bot.send_message(chat_id=chat_id,

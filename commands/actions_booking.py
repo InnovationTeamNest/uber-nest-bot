@@ -11,13 +11,11 @@ import util.common as common
 from util.filters import create_callback_data as ccd, separate_callback_data
 from util.keyboards import booking_keyboard
 
-"""
-Informazioni sulla notazione usata (limitazione delle API a 64 byte per chiamata)
 
-CONF_DEL = CONFIRM_DELETION
-SUCC_DEL = SUCCESSFUL_DELETION
-
-"""
+# Informazioni sulla notazione usata (limitazione delle API a 64 byte per chiamata)
+#
+# CONF_DEL = CONFIRM_DELETION
+# SUCC_DEL = SUCCESSFUL_DELETION
 
 
 # Comando iniziale che viene chiamato dall'utente
@@ -122,22 +120,28 @@ def booking_handler(bot, update):
                              reply_markup=InlineKeyboardMarkup(keyboard))
         else:
             trip[mode].append(str(chat_id))
-            message_text = "Prenotazione completata. Dati del viaggio:" \
-                           + "\n\n🚗: " + str(secret_data.users[driver]["Name"]) \
-                           + "\n🗓: " + day \
-                           + "\n🕓: " + trip["Time"] \
-                           + "\n➡: " + common.direction_to_name(direction) \
-                           + "\n🔁: " + common.localize_mode(mode) \
+            user_text = "Prenotazione completata. Dati del viaggio:" \
+                        + "\n\n🚗: " + str(secret_data.users[driver]["Name"]) \
+                        + "\n🗓: " + day \
+                        + "\n🕓: " + trip["Time"] \
+                        + "\n➡: " + common.direction_to_name(direction) \
+                        + "\n🔁: " + common.localize_mode(mode)
+
+            driver_text = "Hai una nuova prenotazione: " \
+                          + "\n\n👤: " + str(secret_data.users[chat_id]["Name"]) \
+                          + " (" + str(total_slots - occupied_slots - 1) + " posti rimanenti)" \
+                          + "\n🗓: " + day \
+                          + "\n🕓: " + trip["Time"] \
+                          + "\n➡: " + common.direction_to_name(direction) \
+                          + "\n🔁: " + common.localize_mode(mode)
+
             # Eventuale aggiunta del luogo di ritrovo
             if trip["Location"]:
-                message_text += "\n📍: " + trip["Location"]
+                user_text += "\n📍: " + trip["Location"]
+                driver_text += "\n📍: " + trip["Location"]
 
-            bot.send_message(chat_id=chat_id, text=message_text, reply_markup=InlineKeyboardMarkup(keyboard))
-            bot.send_message(chat_id=driver,
-                             text="Hai una nuova prenotazione " + common.localize_mode(mode).lower()
-                                  + " da parte di " + secret_data.users[str(chat_id)]["Name"]
-                                  + " per " + day + " " + common.direction_to_name(direction)
-                                  + ". Posti rimanenti: " + str(total_slots - occupied_slots - 1))
+            bot.send_message(chat_id=chat_id, text=user_text, reply_markup=InlineKeyboardMarkup(keyboard))
+            bot.send_message(chat_id=driver, text=driver_text)
 
 
 def delete_booking(bot, update):
