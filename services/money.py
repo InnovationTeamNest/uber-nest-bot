@@ -16,12 +16,12 @@ bot = Bot(secret_data.bot_token)
 class MoneyHandler(webapp2.RequestHandler):
     def get(self):
         dumpable.get_data()
-        process_debits()
+        process_day()
         dumpable.dump_data()
         self.response.write("See console for output.")
 
 
-def process_debits():
+def process_day():
     """Questo comando verrà fatto partire alle 02:00 di ogni giorno.
     Questo comando scorre tutta la lista di utenti controllando i viaggi effettuati in giornata
     e addebitandogli il prezzo impostato in common.trip_price. Se il viaggio è temporaneo, vengono
@@ -32,19 +32,22 @@ def process_debits():
         for direction in secret_data.groups:
             trips = secret_data.groups[direction][common.day_to_string(today.weekday() - 1)]
             for driver in trips:
-                for mode in trips[driver]:
-                    if mode == "Temporary" or mode == "Permanent":
-                        for user in trips[driver][mode]:
-                            try:
-                                secret_data.users[user]["Debit"][driver] += common.trip_price
-                            except KeyError:
-                                secret_data.users[user]["Debit"][driver] = common.trip_price
-                            bot.send_message(chat_id=str(user),
-                                             text="Ti sono stati addebitati " + str(common.trip_price)
-                                                  + " EUR da " + str(secret_data.users[driver]["Name"]) + ".")
-                            bot.send_message(chat_id=str(driver),
-                                             text="Hai ora un credito di " + str(common.trip_price)
-                                                  + " EUR da parte di " + str(secret_data.users[user]["Name"]) + ".")
+                if "Suspended" in trips[driver] and trips[driver]["Suspended"]:
+                    trips[driver]["Suspended"] = False  # Rimuovo la sospensione del viaggio
+                else:
+                    for mode in trips[driver]:
+                        if mode == "Temporary" or mode == "Permanent":
+                            for user in trips[driver][mode]:
+                                try:
+                                    secret_data.users[user]["Debit"][driver] += common.trip_price
+                                except KeyError:
+                                    secret_data.users[user]["Debit"][driver] = common.trip_price
+                                bot.send_message(chat_id=str(user),
+                                                 text="Ti sono stati addebitati " + str(common.trip_price)
+                                                      + " EUR da " + str(secret_data.users[driver]["Name"]) + ".")
+                                bot.send_message(chat_id=str(driver),
+                                                 text="Hai ora un credito di " + str(common.trip_price)
+                                                      + " EUR da parte di " + str(secret_data.users[user]["Name"]) + ".")
                 trips[driver]["Temporary"] = []
 
                 # Cancello l'eventuale ritrovo del giorno

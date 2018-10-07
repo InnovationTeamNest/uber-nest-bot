@@ -38,11 +38,14 @@ def inline_handler(bot, update):
     # Azione in partenza da /prenota e da /settimana /lunedi etc
     elif identifier == "SHOW_BOOKINGS":
         actions.show_bookings(bot, update)
+    # Azioni in partenza da /me -> trips
+    elif identifier == "TRIPS":
+        actions_trips.trips_handler(bot, update)
+    elif identifier == "ADD_PASS":
+        actions_trips.add_passenger(bot, update)
     # Azioni in partenza da /me
     elif identifier == "ME":
         actions_me.me_handler(bot, update)
-    elif identifier == "TRIPS":
-        actions_trips.trips_handler(bot, update)
     elif identifier == "NEWTRIP":
         actions_me.newtrip_handler(bot, update)
     elif identifier == "MONEY":

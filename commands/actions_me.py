@@ -15,6 +15,8 @@ from util.keyboards import me_keyboard, trips_keyboard
 
 # Informazioni sulla notazione usata (limitazione delle API a 64 byte per chiamata)
 #
+# TRIPS -> entrypoint per action_trips.py
+# DRIVER -> rimozione o aggiunta del driver
 # US_RE = USER_REMOVAL
 # ED_DR_SL = EDIT_DRIVER_SLOTS
 # CO_DR = CONFIRM_DRIVER
@@ -48,12 +50,11 @@ def me_handler(bot, update):
 
     log.debug("Mode entered: " + action)
 
-    if action == "TRIPS":
-        # Visualizza i vari trips dell'utente
+    if action == "TRIPS":  # Visualizza i vari trips dell'utente
         bot.send_message(chat_id=chat_id,
                          text="Viaggi (clicca su un viaggio per modificarlo):",
                          reply_markup=trips_keyboard(str(chat_id)))
-    elif action == "DRIVER":
+    elif action == "DRIVER":  # Aggiunta o rimozione della modalità guidatore
         if str(chat_id) in secret_data.drivers:
             keyboard = [
                 [InlineKeyboardButton("Sì", callback_data=ccd("ME", "CO_DR_RE")),
@@ -74,7 +75,7 @@ def me_handler(bot, update):
                                   " UberNEST per ulteriori informazioni.\n\n"
                                   "Sei sicuro di voler diventare un autista di UberNEST?",
                              reply_markup=InlineKeyboardMarkup(keyboard))
-    elif action == "US_RE":
+    elif action == "US_RE":  
         keyboard = [
             [InlineKeyboardButton("Sì", callback_data=ccd("ME", "CO_US_RE")),
              InlineKeyboardButton("No", callback_data=ccd("ME_MENU"))]]

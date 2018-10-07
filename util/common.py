@@ -142,3 +142,30 @@ def get_debits(input_debitor):
     """Restituisce un array di tuple contenente, dato un debitore, gli ID dei creditore e il valore."""
     return [(creditor, secret_data.users[input_debitor]["Debit"][creditor])
             for creditor in secret_data.users[input_debitor]["Debit"]]
+
+
+def alert_suspension(bot, direction, day, driver):
+    trip = secret_data.groups[direction][day][driver]
+
+    permanent_users = trip["Permanent"]
+    temporary_users = trip["Temporary"]
+
+    if "Suspended" in trip and trip["Suspended"]:
+        for user in permanent_users:
+            bot.send_message(chat_id=user,
+                             text="Attenzione! " + secret_data.users[driver]
+                                  + " ha sospeso il viaggio di " + day
+                                  + " " + direction_to_name(direction)
+                                  + ". Non verrai addebitato per questa volta.")
+        for user in temporary_users:
+            bot.send_message(chat_id=user,
+                             text="Attenzione! " + secret_data.users[driver]
+                                  + " ha sospeso il viaggio di " + day
+                                  + " " + direction_to_name(direction)
+                                  + ". La tua prenotazione scalerà alla settimana successiva.")
+    else:
+        for user in (permanent_users + temporary_users):
+            bot.send_message(chat_id=user,
+                             text="Attenzione! " + secret_data.users[driver]
+                                  + " ha annullato la sospensione del viaggio di " + day
+                                  + " " + direction_to_name(direction) + ".")

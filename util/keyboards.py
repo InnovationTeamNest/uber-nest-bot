@@ -34,10 +34,16 @@ def trips_keyboard(chat_id):
         for direction in "Salita", "Discesa":
             try:
                 group = secret_data.groups[direction][day][chat_id]
-                occupied_slots = len(group["Permanent"]) + len(group["Temporary"])
+
+                if "Suspended" in group and group["Suspended"]:
+                    counter = "SOSP."
+                else:
+                    counter = len(group["Permanent"]) + len(group["Temporary"])
+
                 keyboard.append(
                     [InlineKeyboardButton(day + ": " + group["Time"] + " " + common.direction_to_name(direction)
-                        + " (" + str(occupied_slots) + ")", callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))])
+                                          + " (" + str(counter) + ")",
+                                          callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))])
             except KeyError:
                 continue
 
@@ -55,18 +61,23 @@ def booking_keyboard(mode, day, from_booking):
 
     bookings = sorted(
         [
-            (secret_data.groups[direction][day][driver]["Time"], secret_data.users[driver]["Name"], direction, driver)
+            # Restituisce una tupla del tipo (ora, guidatore, direzione, chat_id) riordinata
+            (secret_data.groups[direction][day][driver]["Time"],
+             secret_data.users[driver]["Name"], direction, driver)
+
             for direction in secret_data.groups
             for driver in secret_data.groups[direction][day]
         ]
     )
-    # Restituisce una tupla del tipo (ora, guidatore, direzione, chat_id) riordinata
 
     for item in bookings:
         time, name, direction, driver = item
-        keyboard.append(
-            [InlineKeyboardButton("🚗 " + name + " - 🕓 " + time + "\n➡ " + common.direction_to_name(direction),
-                                  callback_data=ccd("BOOKING", "CONFIRM", direction, day, driver, mode))])
+
+        if "Suspended" not in secret_data.groups[direction][day][driver] \
+                or not secret_data.groups[direction][day][driver]["Suspended"]:
+            keyboard.append(
+                [InlineKeyboardButton("🚗 " + name + " - 🕓 " + time + "\n➡ " + common.direction_to_name(direction),
+                                      callback_data=ccd("BOOKING", "CONFIRM", direction, day, driver, mode))])
 
     if from_booking:
         keyboard.append([InlineKeyboardButton("Indietro", callback_data=ccd("BOOKING", "NEW", mode))])

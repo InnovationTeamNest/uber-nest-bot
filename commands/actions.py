@@ -111,15 +111,16 @@ def fetch_bookings(bot, chat_id, day):
                 text = text + "\n" + common.direction_to_name(direction) + ":\n\n"
 
                 for driver in day_group:  # Stringhe separate per ogni autista
-                    people = [secret_data.users[user]["Name"]
-                              for mode in day_group[driver]
-                              if mode == "Temporary" or mode == "Permanent"
-                              for user in day_group[driver][mode]]
+                    if "Suspended" not in day_group[driver] or not day_group[driver]["Suspended"]:
+                        people = [secret_data.users[user]["Name"]
+                                  for mode in day_group[driver]
+                                  if mode == "Temporary" or mode == "Permanent"
+                                  for user in day_group[driver][mode]]
 
-                    # Aggiungo ogni viaggio trovato alla lista
-                    text = text + "🚗 " + secret_data.users[driver]["Name"] \
-                           + " - 🕒 " + day_group[driver]["Time"] \
-                           + ":\n👥 " + ", ".join(people) + "\n\n"
+                        # Aggiungo ogni viaggio trovato alla lista
+                        text = text + "🚗 " + secret_data.users[driver]["Name"] \
+                               + " - 🕒 " + day_group[driver]["Time"] \
+                               + ":\n👥 " + ", ".join(people) + "\n\n"
             else:
                 text = text + "\n\nNessuna persona in viaggio " + common.direction_to_name(direction) + " oggi."
 
