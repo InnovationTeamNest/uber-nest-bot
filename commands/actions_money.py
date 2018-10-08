@@ -68,7 +68,7 @@ def edit_money(bot, update):
     bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
 
     try:
-        money = secret_data.users[user]["Debit"][chat_id]
+        money = str(secret_data.users[user]["Debit"][chat_id])
     except KeyError:
         secret_data.users[user]["Debit"][chat_id] = 0
         money = "0.0"
@@ -154,9 +154,9 @@ def new_debitor(bot, update):
 
     for index in range(PAGE_SIZE * page, PAGE_SIZE * (page + 1), 1):
         try:
-            name, chat_id = users[index]
+            name, id = users[index]
             keyboard.append(
-                [InlineKeyboardButton(name, callback_data=ccd("EDIT_MONEY", "VIEW", chat_id))]
+                [InlineKeyboardButton(name, callback_data=ccd("EDIT_MONEY", "VIEW", id))]
             )
         except IndexError:
             break

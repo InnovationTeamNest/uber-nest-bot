@@ -192,22 +192,19 @@ def trips_handler(bot, update):
         permanent_users = secret_data.groups[direction][day][chat_id]["Permanent"]
         temporary_users = secret_data.groups[direction][day][chat_id]["Temporary"]
 
-        keyboard = [
-            [  # Lista delle persone prenotate divise per Permanente e Temporanea
-                [InlineKeyboardButton(
-                    secret_data.users[user]["Name"] + " - Permanente",
-                    callback_data=ccd("TRIPS", "REMOVE_PASS", direction, day, user, "Permanent")
-                )] for user in permanent_users
-            ] + [
-                [InlineKeyboardButton(
-                    secret_data.users[user]["Name"] + " - Temporaneo",
-                    callback_data=ccd("TRIPS", "REMOVE_PASS", direction, day, user, "Temporary")
-                )] for user in temporary_users
-            ],
-            [InlineKeyboardButton("Nuovo passeggero", callback_data=ccd("ADD_PASS", "SELECT", direction, day, "0"))],
-            [InlineKeyboardButton("Indietro", callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))],
-            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
-        ]
+        # Lista delle persone prenotate divise per Permanente e Temporanea
+        keyboard = [[InlineKeyboardButton(
+            secret_data.users[user]["Name"] + " - Permanente",
+            callback_data=ccd("TRIPS", "REMOVE_PASS", direction, day, user, "Permanent"))] for user in permanent_users] \
+                   + [[InlineKeyboardButton(
+            secret_data.users[user]["Name"] + " - Temporaneo",
+            callback_data=ccd("TRIPS", "REMOVE_PASS", direction, day, user, "Temporary"))] for user in temporary_users] \
+                   + [InlineKeyboardButton(
+            "Nuovo passeggero", callback_data=ccd("ADD_PASS", "SELECT", direction, day, "0"))] \
+                   + [InlineKeyboardButton(
+            "Indietro", callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))] \
+                   + [InlineKeyboardButton(
+            "Esci", callback_data=ccd("EXIT"))]
 
         bot.send_message(chat_id=chat_id, text="Clicca su un passeggero per rimuoverlo"
                                                + " dal tuo viaggio, oppure aggiungine uno"
@@ -296,9 +293,9 @@ def add_passenger(bot, update):
 
         for index in range(common.PAGE_SIZE * page, common.PAGE_SIZE * (page + 1), 1):
             try:
-                name, chat_id = users[index]
+                name, id = users[index]
                 keyboard.append([InlineKeyboardButton(
-                    name, callback_data=ccd("ADD_PASS", "MODE", direction, day, chat_id))])
+                    name, callback_data=ccd("ADD_PASS", "MODE", direction, day, id))])
             except IndexError:
                 break
 
