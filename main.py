@@ -8,7 +8,7 @@ from services.dumpable import DataHandler
 from services.money import MoneyHandler, WeeklyReportHandler
 from services.reminders import ReminderHandler
 from webhook import WebHookHandler, UpdateHandler
-
+from services.local_scripts import ScriptHandler
 
 class MainHandler(webapp2.RequestHandler):
     def get(self):
@@ -17,6 +17,7 @@ class MainHandler(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     ("/", MainHandler),
+    ("/localscripts", ScriptHandler),  # local_scripts.py
     ("/data", DataHandler),  # dumpable.py
     ("/money", MoneyHandler),  # money.py
     ("/weekly_report", WeeklyReportHandler),  # money.py

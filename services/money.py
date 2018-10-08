@@ -28,12 +28,26 @@ def process_day():
     anche rimossi.
     """
     today = datetime.datetime.today()
+    day = common.day_to_string(today.weekday() - 1)
+
     if 1 <= today.weekday() <= 5 and today.date() not in common.no_trip_days:
         for direction in secret_data.groups:
-            trips = secret_data.groups[direction][common.day_to_string(today.weekday() - 1)]
+            trips = secret_data.groups[direction][day]
             for driver in trips:
-                if "Suspended" in trips[driver] and trips[driver]["Suspended"]:
+                if trips[driver]["Suspended"]:
                     trips[driver]["Suspended"] = False  # Rimuovo la sospensione del viaggio
+                    bot.send_message(chat_id=str(driver),
+                                     text="Il tuo viaggio di " + day.lower() + " "
+                                          + common.direction_to_name(direction) + " è stato ripristinato.")
+
+                    for mode in trips[driver]:
+                        if mode == "Temporary" or mode == "Permanent":
+                            for user in trips[driver][mode]:
+                                bot.send_message(chat_id=str(user),
+                                                 text="Il viaggio di " + secret_data.users[driver]["Name"]
+                                                      + " per " + day.lower() + common.direction_to_name(direction)
+                                                      + " è di nuovo operativo. La tua prenotazione " +
+                                                      + common.localize_mode(mode) + " è di nuovo valida.")
                 else:
                     for mode in trips[driver]:
                         if mode == "Temporary" or mode == "Permanent":
@@ -42,12 +56,26 @@ def process_day():
                                     secret_data.users[user]["Debit"][driver] += common.trip_price
                                 except KeyError:
                                     secret_data.users[user]["Debit"][driver] = common.trip_price
+
                                 bot.send_message(chat_id=str(user),
                                                  text="Ti sono stati addebitati " + str(common.trip_price)
                                                       + " EUR da " + str(secret_data.users[driver]["Name"]) + ".")
                                 bot.send_message(chat_id=str(driver),
                                                  text="Hai ora un credito di " + str(common.trip_price)
                                                       + " EUR da parte di " + str(secret_data.users[user]["Name"]) + ".")
+                        elif mode == "SuspendedUsers":
+                            for user in trips[driver][mode]:
+                                trips[driver]["Permanent"].append(user)
+                                trips[driver]["SuspendedUsers"].remove(user)
+
+                                bot.send_message(chat_id=str(user),
+                                                 text="La prenotazione per " + day.lower() + " con "
+                                                      + secret_data.users[driver]["Name"] + " "
+                                                      + common.direction_to_name(direction) + " è di nuovo operativa.")
+                                bot.send_message(chat_id=str(driver),
+                                                 text="La prenotazione di "
+                                                      + secret_data.users[user]["Name"] + " per " + day.lower() + " "
+                                                      + common.direction_to_name(direction) + " è stata ripristinata.")
                 trips[driver]["Temporary"] = []
 
                 # Cancello l'eventuale ritrovo del giorno

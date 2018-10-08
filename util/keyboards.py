@@ -35,7 +35,7 @@ def trips_keyboard(chat_id):
             try:
                 group = secret_data.groups[direction][day][chat_id]
 
-                if "Suspended" in group and group["Suspended"]:
+                if group["Suspended"]:
                     counter = "SOSP."
                 else:
                     counter = len(group["Permanent"]) + len(group["Temporary"])
@@ -73,8 +73,7 @@ def booking_keyboard(mode, day, from_booking):
     for item in bookings:
         time, name, direction, driver = item
 
-        if "Suspended" not in secret_data.groups[direction][day][driver] \
-                or not secret_data.groups[direction][day][driver]["Suspended"]:
+        if not secret_data.groups[direction][day][driver]["Suspended"]:
             keyboard.append(
                 [InlineKeyboardButton("🚗 " + name + " - 🕓 " + time + "\n➡ " + common.direction_to_name(direction),
                                       callback_data=ccd("BOOKING", "CONFIRM", direction, day, driver, mode))])

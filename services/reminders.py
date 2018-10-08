@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 
 import datetime
 import logging as log
-import time
 
 import telegram
 import webapp2
@@ -11,7 +10,6 @@ import webapp2
 import dumpable
 import secret_data
 from util import common
-from util.common import MAX_ATTEMPTS
 
 
 class ReminderHandler(webapp2.RequestHandler):
@@ -24,32 +22,40 @@ class ReminderHandler(webapp2.RequestHandler):
 def remind():
     bot = telegram.Bot(secret_data.bot_token)
     for chat_id in secret_data.users:
-        counter = 0
-        while True:
-            try:
-                remind_user(bot, chat_id)
-                break
-            except Exception:
-                if counter < MAX_ATTEMPTS:
-                    time.sleep(2 ** counter)
-                    counter = counter + 1
-                else:
-                    log.error("Failed to alert " + str(chat_id))
-                    break
+        try:
+            remind_user(bot, chat_id)
+        except Exception as ex:
+            log.error("Failed to alert " + str(chat_id) + "\n\n" + ex.message)
+            # counter = 0
+        # while True:
+        #     try:
+        #         remind_user(bot, chat_id)
+        #         break
+        #     except Exception:
+        #         if counter < MAX_ATTEMPTS:
+        #             time.sleep(2 ** counter)
+        #             counter = counter + 1
+        #         else:
+        #             log.error("Failed to alert " + str(chat_id))
+        #             break
 
     for chat_id in secret_data.drivers:
-        counter = 0
-        while True:
-            try:
-                remind_driver(bot, chat_id)
-                break
-            except Exception:
-                if counter < MAX_ATTEMPTS:
-                    time.sleep(2 ** counter)
-                    counter = counter + 1
-                else:
-                    log.error("Failed to alert " + str(chat_id))
-                    break
+        try:
+            remind_driver(bot, chat_id)
+        except Exception as ex:
+            log.error("Failed to alert " + str(chat_id) + "\n\n" + ex.message)
+            # counter = 0
+        # while True:
+        #     try:
+        #         remind_driver(bot, chat_id)
+        #         break
+        #     except Exception:
+        #         if counter < MAX_ATTEMPTS:
+        #             time.sleep(2 ** counter)
+        #             counter = counter + 1
+        #         else:
+        #             log.error("Failed to alert " + str(chat_id))
+        #             break
 
 
 def remind_driver(bot, chat_id):

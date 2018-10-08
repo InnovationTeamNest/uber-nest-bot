@@ -111,7 +111,7 @@ def fetch_bookings(bot, chat_id, day):
                 text = text + "\n" + common.direction_to_name(direction) + ":\n\n"
 
                 for driver in day_group:  # Stringhe separate per ogni autista
-                    if "Suspended" not in day_group[driver] or not day_group[driver]["Suspended"]:
+                    if not day_group[driver]["Suspended"]:
                         people = [secret_data.users[user]["Name"]
                                   for mode in day_group[driver]
                                   if mode == "Temporary" or mode == "Permanent"

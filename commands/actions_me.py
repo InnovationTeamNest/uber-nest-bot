@@ -189,7 +189,9 @@ def newtrip_handler(bot, update):
 
         secret_data.groups[direction][unicode(day)][unicode(chat_id)] = {"Time": str(time),
                                                                          "Permanent": [],
-                                                                         "Temporary": []}
+                                                                         "Temporary": [],
+                                                                         "SuspendedUsers": [],
+                                                                         "Suspended": False}
 
         message_text = "Viaggio aggiunto con successo:" \
                        + "\n\n➡: " + common.direction_to_name(direction) \

@@ -107,7 +107,9 @@ def localize_mode(mode):
     if mode == "Temporary":
         return "Temporanea"
     elif mode == "Permanent":
-        return "Permanent"
+        return "Permanente"
+    elif mode == "SuspendedUsers":
+        return "Permanente (SOSPESA)"
     else:
         return " - "
 
@@ -119,7 +121,8 @@ def search_by_booking(person):
             for day in work_days
             for driver in secret_data.groups[direction][day]
             for mode in secret_data.groups[direction][day][driver]
-            if person in secret_data.groups[direction][day][driver][mode]]
+            if (mode == "Permanent" or mode == "Temporary" or mode == "SuspendedUsers")
+            and person in secret_data.groups[direction][day][driver][mode]]
 
 
 def delete_driver(chat_id):
@@ -150,7 +153,7 @@ def alert_suspension(bot, direction, day, driver):
     permanent_users = trip["Permanent"]
     temporary_users = trip["Temporary"]
 
-    if "Suspended" in trip and trip["Suspended"]:
+    if trip["Suspended"]:
         for user in permanent_users:
             bot.send_message(chat_id=user,
                              text="Attenzione! " + secret_data.users[driver]

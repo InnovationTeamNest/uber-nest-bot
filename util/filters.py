@@ -30,8 +30,8 @@ def inline_handler(bot, update):
     # Azioni in partenza da /prenota
     elif identifier == "BOOKING":
         actions_booking.booking_handler(bot, update)
-    elif identifier == "DEL_BOOK":
-        actions_booking.delete_booking(bot, update)
+    elif identifier == "EDIT_BOOK":
+        actions_booking.edit_booking(bot, update)
     # Azione in partenxza da /parcheggio
     elif identifier == "PARK":
         actions_parking.parcheggio(bot, update)
