@@ -13,7 +13,7 @@ from util import common
 bot = Bot(secret_data.bot_token)
 
 
-class MoneyHandler(webapp2.RequestHandler):
+class NightHandler(webapp2.RequestHandler):
     def get(self):
         dumpable.get_data()
         process_day()
@@ -65,17 +65,29 @@ def process_day():
                                                       + " EUR da parte di " + str(secret_data.users[user]["Name"]) + ".")
                         elif mode == "SuspendedUsers":
                             for user in trips[driver][mode]:
-                                trips[driver]["Permanent"].append(user)
-                                trips[driver]["SuspendedUsers"].remove(user)
+                                occupied_slots = len(trips["Permanent"]) + len(trips["Temporary"])
+                                total_slots = secret_data.drivers[driver]["Slots"]
 
-                                bot.send_message(chat_id=str(user),
-                                                 text="La prenotazione per " + day.lower() + " con "
-                                                      + secret_data.users[driver]["Name"] + " "
-                                                      + common.direction_to_name(direction) + " è di nuovo operativa.")
-                                bot.send_message(chat_id=str(driver),
-                                                 text="La prenotazione di "
-                                                      + secret_data.users[user]["Name"] + " per " + day.lower() + " "
-                                                      + common.direction_to_name(direction) + " è stata ripristinata.")
+                                if occupied_slots > total_slots:
+                                    bot.send_message(chat_id=str(user),
+                                                     text="ATTENZIONE: Non è stato possibile ripristinare"
+                                                          +" la tua prenotazione di " + day.lower() + " con "
+                                                          + secret_data.users[driver]["Name"] + " "
+                                                          + common.direction_to_name(
+                                                         direction) + "; qualcun'altro ha occupato il tuo"
+                                                          + " posto. Contatta l'autista per risolvere il problema.")
+                                else:
+                                    trips[driver]["Permanent"].append(user)
+                                    trips[driver]["SuspendedUsers"].remove(user)
+
+                                    bot.send_message(chat_id=str(user),
+                                                     text="La prenotazione per " + day.lower() + " con "
+                                                          + secret_data.users[driver]["Name"] + " "
+                                                          + common.direction_to_name(direction) + " è di nuovo operativa.")
+                                    bot.send_message(chat_id=str(driver),
+                                                     text="La prenotazione di "
+                                                          + secret_data.users[user]["Name"] + " per " + day.lower() + " "
+                                                          + common.direction_to_name(direction) + " è stata ripristinata.")
                 trips[driver]["Temporary"] = []
 
                 # Cancello l'eventuale ritrovo del giorno

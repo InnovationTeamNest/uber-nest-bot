@@ -76,12 +76,14 @@ def trips_handler(bot, update):
                                                                for user in trip["Temporary"])
                               + "\n👥 permanenti: " + ",".join(secret_data.users[user]["Name"]
                                                                for user in trip["Permanent"])
+                              + "\n👥 sospesi: " + ",".join(secret_data.users[user]["Name"]
+                                                               for user in trip["SuspendedUsers"])
                               + "\n\nCosa vuoi fare?",
                          reply_markup=InlineKeyboardMarkup(keyboard))
     #
     # SUS_TRIP = SUSPEND_TRIP. Questa parte sospende temporaneamente (per una settimana) un viaggio,
     # rendendolo invisibile all'utente finale e bloccando presenti e future prenotazioni. La sospensione
-    # viene sbloccata alle 02:00 del giorno successivo al viaggio bloccato, assieme alla gestione in money.py.
+    # viene sbloccata alle 02:00 del giorno successivo al viaggio bloccato, assieme alla gestione in night.py.
     # Il codice riconosce se il viaggio è già sospeso o meno e modifica il layout e le azioni di
     # conseguenza.
     #
@@ -149,8 +151,7 @@ def trips_handler(bot, update):
         direction, day, hour = data[2:5]
 
         keyboard = [
-            [InlineKeyboardButton(str(i).zfill(2),
-                                  callback_data=ccd("TRIPS", "CO_EDIT_TRIP", direction, day, hour, i))
+            [InlineKeyboardButton(str(i).zfill(2), callback_data=ccd("TRIPS", "CO_EDIT_TRIP", direction, day, hour, i))
              for i in range(0, 30, 5)],
             [InlineKeyboardButton(str(i), callback_data=ccd("TRIPS", "CO_EDIT_TRIP", direction, day, hour, i))
              for i in range(30, 60, 5)],
@@ -187,8 +188,12 @@ def trips_handler(bot, update):
     # EDIT_PASS - Comando chiamato una volta premuto il bottone della persona da prenotare
     elif action == "EDIT_PASS":
         direction, day = data[2:4]
-        permanent_users = secret_data.groups[direction][day][chat_id]["Permanent"]
-        temporary_users = secret_data.groups[direction][day][chat_id]["Temporary"]
+
+        trip = secret_data.groups[direction][day][chat_id]
+
+        permanent_users = trip["Permanent"]
+        temporary_users = trip["Temporary"]
+        suspended_users = trip["SuspendedUsers"]
 
         # Lista delle persone prenotate divise per Permanente e Temporanea
 
@@ -197,13 +202,15 @@ def trips_handler(bot, update):
                 for user in permanent_users] \
             + [[InlineKeyboardButton( secret_data.users[user]["Name"] + " - Temporaneo",
             callback_data=ccd("TRIPS", "REMOVE_PASS", direction, day, user, "Temporary"))]
-                for user in temporary_users]
+                for user in temporary_users] \
+            + [[InlineKeyboardButton( secret_data.users[user]["Name"] + " - Permanente (SOSPESO)",
+            callback_data=ccd("TRIPS", "REMOVE_PASS", direction, day, user, "SuspendedUsers"))]
+                for user in suspended_users]
 
         keyboard = user_lines + [
             [InlineKeyboardButton("Nuovo passeggero", callback_data=ccd("ADD_PASS", "SELECT", direction, day, "0"))],
-            [InlineKeyboardButton("Indietro", callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))]
-            , [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
-
+            [InlineKeyboardButton("Indietro", callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))],
+            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
         ]
 
         bot.send_message(chat_id=chat_id, text="Clicca su un passeggero per rimuoverlo"

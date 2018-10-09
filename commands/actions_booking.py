@@ -96,17 +96,12 @@ def booking_handler(bot, update):
                                   + common.booking_end.strftime("%H:%M") + ".")
     #
     # Dati in entrata ("BOOKING", "DAY", mode, day)
-    # Questi due menù vengono chiamati rispettivamente dal metodo sopra (BOOKING/NEW) e dai visualizzatori
-    # delle prenotazioni dei singoli giorni (/lunedi, /martedi, etc...). Differiscono soltanto per le callback
-    # query che permettono di tornare indietro nell'albero dei menù. # TODO sarebbe bello unificarli.
+    # Questo menù viene chiamato rispettivamente dal metodo sopra (BOOKING/NEW) e dai visualizzatori
+    # delle prenotazioni dei singoli giorni (/lunedi, /martedi, etc...).
     elif action == "DAY":
         mode, day = data[2:4]
         bot.send_message(chat_id=chat_id, text="Viaggi disponibili per " + day.lower() + ":",
-                         reply_markup=booking_keyboard(mode, day, from_booking=True))
-    elif action == "DAY_CUSTOM":
-        mode, day = data[2:4]
-        bot.send_message(chat_id=chat_id, text="Viaggi disponibili per " + day.lower() + ":",
-                         reply_markup=booking_keyboard(mode, day, from_booking=False))
+                         reply_markup=booking_keyboard(mode, day))
     #
     # Dati in entrata ("BOOKING", "CONFIRM", direction, day, driver, mode)
     # Messaggio finale di conferma all'utente e all'autista. Il metodo calcola se la prenotazione scelta è
@@ -131,7 +126,7 @@ def booking_handler(bot, update):
         elif occupied_slots >= total_slots:
             bot.send_message(chat_id=chat_id, text="Macchina piena, vai a piedi LOL",
                              reply_markup=InlineKeyboardMarkup(keyboard))
-        elif chat_id in trip["Temporary"] or chat_id in trip["Permanent"]:
+        elif chat_id in trip["Temporary"] or chat_id in trip["Permanent"] or chat_id in trip["SuspendedUsers"]:
             bot.send_message(chat_id=chat_id, text="Ti sei già prenotato in questa data con questa persona!",
                              reply_markup=InlineKeyboardMarkup(keyboard))
         else:
@@ -295,6 +290,19 @@ def edit_booking(bot, update):
                              + " per " + day.lower() + " " + common.direction_to_name(direction) + "."
 
         elif mode == "SuspendedUsers":
+            occupied_slots = len(trip["Permanent"]) + len(trip["Temporary"])
+            total_slots = secret_data.drivers[driver]["Slots"]
+
+            if occupied_slots >= total_slots:
+                # Può capitare che mentre un passeggero ha reso la propria prenotazione sospesa,
+                # altre persone hanno preso il suo posto.
+                bot.send_message(chat_id=chat_id, text="Mi dispiace, ma non puoi rendere operativa la"
+                                                       + " tua prenotazione in quanto la macchina è ora piena."
+                                                       + "Contatta " + secret_data.users[driver]["Name"]
+                                                       + " per risolvere la questione.",
+                                 reply_markup=InlineKeyboardMarkup(keyboard))
+                return
+
             trip["Permanent"].append(chat_id)
             trip["SuspendedUsers"].remove(chat_id)
 
@@ -307,8 +315,7 @@ def edit_booking(bot, update):
 
         bot.send_message(chat_id=chat_id, text=user_message,
                          reply_markup=InlineKeyboardMarkup(keyboard))
-        bot.send_message(chat_id=driver, text=driver_message,
-                         reply_markup=InlineKeyboardMarkup(keyboard))
+        bot.send_message(chat_id=driver, text=driver_message)
     #
     # Metodo per cancellare per sempre una data prenotazione.
     #

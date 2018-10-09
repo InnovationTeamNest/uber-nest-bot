@@ -70,18 +70,14 @@ def booking_keyboard(mode, day, from_booking):
         ]
     )
 
-    for item in bookings:
-        time, name, direction, driver = item
-
+    for time, name, direction, driver in bookings:
         if not secret_data.groups[direction][day][driver]["Suspended"]:
             keyboard.append(
                 [InlineKeyboardButton("🚗 " + name + " - 🕓 " + time + "\n➡ " + common.direction_to_name(direction),
                                       callback_data=ccd("BOOKING", "CONFIRM", direction, day, driver, mode))])
 
-    if from_booking:
-        keyboard.append([InlineKeyboardButton("Indietro", callback_data=ccd("BOOKING", "NEW", mode))])
-    else:
-        keyboard.append([InlineKeyboardButton("Indietro", callback_data=ccd("SHOW_BOOKINGS", day))])
+    keyboard.append([InlineKeyboardButton("Vai alla selezione giorno", callback_data=ccd("BOOKING", "NEW", mode))])
+    keyboard.append([InlineKeyboardButton("Vai a /" + day[:-1].lower() + "i", callback_data=ccd("SHOW_BOOKINGS", day))])
     keyboard.append([InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))])
 
     return InlineKeyboardMarkup(keyboard)

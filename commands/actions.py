@@ -105,32 +105,40 @@ def fetch_bookings(bot, chat_id, day):
     if common.is_weekday(day):
         text = "Lista dei viaggi di " + day.lower() + ":\n"
 
-        for direction in secret_data.groups:
-            day_group = secret_data.groups[direction][day]  # Rappresenta l'insieme di trip per coppia direzione/giorno
-            if len(day_group) > 0:  # Caso in cui c'è qualcuno che effettivamente farà un viaggio
-                text = text + "\n" + common.direction_to_name(direction) + ":\n\n"
+        bookings = sorted(
+            [
+                # Restituisce una tupla del tipo (ora, guidatore, direzione, chat_id) riordinata
+                (secret_data.groups[direction][day][driver]["Time"],
+                 secret_data.users[driver]["Name"], direction, driver)
 
-                for driver in day_group:  # Stringhe separate per ogni autista
-                    if not day_group[driver]["Suspended"]:
-                        people = [secret_data.users[user]["Name"]
-                                  for mode in day_group[driver]
-                                  if mode == "Temporary" or mode == "Permanent"
-                                  for user in day_group[driver][mode]]
+                for direction in secret_data.groups
+                for driver in secret_data.groups[direction][day]
+            ]
+        )
 
-                        # Aggiungo ogni viaggio trovato alla lista
-                        text = text + "🚗 " + secret_data.users[driver]["Name"] \
-                               + " - 🕒 " + day_group[driver]["Time"] \
-                               + ":\n👥 " + ", ".join(people) + "\n\n"
-            else:
-                text = text + "\n\nNessuna persona in viaggio " + common.direction_to_name(direction) + " oggi."
+        if len(bookings) > 0:
+            for time, name, direction, driver in bookings:
+                trip = secret_data.groups[direction][day][driver]
+                if not trip["Suspended"]:
+                    # Raccolgo in una list comprehension le persone che partecipano al viaggio
+                    people = [secret_data.users[user]["Name"]
+                              for mode in trip
+                              if mode == "Temporary" or mode == "Permanent"
+                              for user in trip[mode]]
+
+                    # Aggiungo ogni viaggio trovato alla lista
+                    text = text + "\n" + common.direction_to_name(direction) + ":\n\n" + "🚗 " + name \
+                           + " - 🕒 " + time + ":\n👥 " + ", ".join(people) + "\n\n"
+        else:
+            text = text + "\n\nNessuna persona in viaggio oggi."
 
         if str(chat_id) in secret_data.users:
             # Permetto l'uso della tastiera solo ai registrati
             keyboard = [
                 [InlineKeyboardButton("Prenota una tantum",
-                                      callback_data=create_callback_data("BOOKING", "DAY_CUSTOM", "Temporary", day))],
+                                      callback_data=create_callback_data("BOOKING", "DAY", "Temporary", day))],
                 [InlineKeyboardButton("Prenota permanentemente",
-                                      callback_data=create_callback_data("BOOKING", "DAY_CUSTOM", "Permanent", day))],
+                                      callback_data=create_callback_data("BOOKING", "DAY", "Permanent", day))],
                 [InlineKeyboardButton("Esci", callback_data=create_callback_data("EXIT"))]
             ]
             bot.send_message(chat_id=chat_id, text=text,
