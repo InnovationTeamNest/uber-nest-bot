@@ -21,7 +21,18 @@ owner_id = "..."
 url = "https://sample-name123456.appspot.com/"
 
 # Three objects, containing user data. They can be left blank and will be filled in by the bot as people register and add their trip times.
-groups = {}
+groups = {
+    "Salita": {
+        "Lunedì": {
+        
+        }, "Martedì": {
+            # same as above
+        } # ...
+    },
+    "Discesa": {
+        # same as above
+    }
+}
 users = {}
 drivers = {}
 ```

@@ -56,7 +56,7 @@ def trips_keyboard(chat_id):
 # Keyboard customizzata per visualizzare le prenotazioni in maniera inline
 # Day è un oggetto di tipo stringa
 
-def booking_keyboard(mode, day, from_booking):
+def booking_keyboard(mode, day):
     keyboard = []
 
     bookings = sorted(

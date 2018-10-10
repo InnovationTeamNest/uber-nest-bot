@@ -77,7 +77,7 @@ def trips_handler(bot, update):
                               + "\n👥 permanenti: " + ",".join(secret_data.users[user]["Name"]
                                                                for user in trip["Permanent"])
                               + "\n👥 sospesi: " + ",".join(secret_data.users[user]["Name"]
-                                                               for user in trip["SuspendedUsers"])
+                                                            for user in trip["SuspendedUsers"])
                               + "\n\nCosa vuoi fare?",
                          reply_markup=InlineKeyboardMarkup(keyboard))
     #
@@ -197,15 +197,18 @@ def trips_handler(bot, update):
 
         # Lista delle persone prenotate divise per Permanente e Temporanea
 
-        user_lines = [[InlineKeyboardButton( secret_data.users[user]["Name"] + " - Permanente",
-            callback_data=ccd("TRIPS", "REMOVE_PASS", direction, day, user, "Permanent"))]
-                for user in permanent_users] \
-            + [[InlineKeyboardButton( secret_data.users[user]["Name"] + " - Temporaneo",
-            callback_data=ccd("TRIPS", "REMOVE_PASS", direction, day, user, "Temporary"))]
-                for user in temporary_users] \
-            + [[InlineKeyboardButton( secret_data.users[user]["Name"] + " - Permanente (SOSPESO)",
-            callback_data=ccd("TRIPS", "REMOVE_PASS", direction, day, user, "SuspendedUsers"))]
-                for user in suspended_users]
+        user_lines = [[InlineKeyboardButton(secret_data.users[user]["Name"] + " - Permanente",
+                                            callback_data=ccd("TRIPS", "REMOVE_PASS", direction, day, user,
+                                                              "Permanent"))]
+                      for user in permanent_users] \
+                     + [[InlineKeyboardButton(secret_data.users[user]["Name"] + " - Temporaneo",
+                                              callback_data=ccd("TRIPS", "REMOVE_PASS", direction, day, user,
+                                                                "Temporary"))]
+                        for user in temporary_users] \
+                     + [[InlineKeyboardButton(secret_data.users[user]["Name"] + " - Permanente (SOSPESO)",
+                                              callback_data=ccd("TRIPS", "REMOVE_PASS", direction, day, user,
+                                                                "SuspendedUsers"))]
+                        for user in suspended_users]
 
         keyboard = user_lines + [
             [InlineKeyboardButton("Nuovo passeggero", callback_data=ccd("ADD_PASS", "SELECT", direction, day, "0"))],

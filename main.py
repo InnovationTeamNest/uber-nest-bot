@@ -5,10 +5,11 @@ import webapp2
 
 import secret_data
 from services.dumpable import DataHandler
+from services.local_scripts import ScriptHandler
 from services.night import NightHandler, WeeklyReportHandler
 from services.reminders import ReminderHandler
 from webhook import WebHookHandler, UpdateHandler
-from services.local_scripts import ScriptHandler
+
 
 class MainHandler(webapp2.RequestHandler):
     def get(self):
@@ -17,11 +18,11 @@ class MainHandler(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     ("/", MainHandler),
-    ("/localscripts", ScriptHandler),  # local_scripts.py
-    ("/data", DataHandler),  # dumpable.py
-    ("/money", NightHandler),  # night.py
-    ("/weekly_report", WeeklyReportHandler),  # night.py
-    ("/reminders", ReminderHandler),  # reminders.py
-    ("/set_webhook", WebHookHandler),  # webhook.py
+    ("/scripts/localscripts", ScriptHandler),  # local_scripts.py
+    ("/scripts/data", DataHandler),  # dumpable.py
+    ("/scripts/money", NightHandler),  # night.py
+    ("/scripts/weekly_report", WeeklyReportHandler),  # night.py
+    ("/scripts/reminders", ReminderHandler),  # reminders.py
+    ("/scripts/set_webhook", WebHookHandler),  # webhook.py
     ("/" + secret_data.bot_token, UpdateHandler)  # webhook.py
 ], debug=True)

@@ -66,7 +66,8 @@ def remind_driver(bot, chat_id):
         message = ""
 
         for direction in secret_data.groups:
-            if str(chat_id) in secret_data.groups[direction][common.tomorrow()]:
+            if str(chat_id) in secret_data.groups[direction][common.tomorrow()] \
+                    and not secret_data.groups[direction][common.tomorrow()][str(chat_id)]["Suspended"]:
                 # Mando il messaggio iniziale una sola volta
                 if not heading_sent:
                     message += "Sommario dei viaggi per domani:"

@@ -75,7 +75,7 @@ def me_handler(bot, update):
                                   " UberNEST per ulteriori informazioni.\n\n"
                                   "Sei sicuro di voler diventare un autista di UberNEST?",
                              reply_markup=InlineKeyboardMarkup(keyboard))
-    elif action == "US_RE":  
+    elif action == "US_RE":
         keyboard = [
             [InlineKeyboardButton("Sì", callback_data=ccd("ME", "CO_US_RE")),
              InlineKeyboardButton("No", callback_data=ccd("ME_MENU"))]]

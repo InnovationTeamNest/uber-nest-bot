@@ -39,7 +39,7 @@ def help(bot, update):
 
 def info(bot, update):
     bot.send_message(chat_id=update.message.chat_id,
-                     text="UberNEST Bot v. 1.6 - sviluppata dal"
+                     text="UberNEST Bot v. 1.6.5.2 - sviluppata dal"
                           " NEST Innovation Team. Contatta @mfranzil per suggerimenti,"
                           " proposte, bug o per partecipare attivamente allo"
                           " sviluppo del bot.\n\nUberNEST è una piattaforma creata da"
@@ -103,34 +103,32 @@ def show_bookings(bot, update):
 
 def fetch_bookings(bot, chat_id, day):
     if common.is_weekday(day):
-        text = "Lista dei viaggi di " + day.lower() + ":\n"
+        text = "Lista dei viaggi di " + day.lower() + ":"
 
-        bookings = sorted(
-            [
-                # Restituisce una tupla del tipo (ora, guidatore, direzione, chat_id) riordinata
-                (secret_data.groups[direction][day][driver]["Time"],
-                 secret_data.users[driver]["Name"], direction, driver)
-
-                for direction in secret_data.groups
+        for direction in "Salita", "Discesa":
+            bookings = sorted([
+                # Restituisce una tupla del tipo (ora, guidatore, chat_id) riordinata
+                (secret_data.groups[direction][day][driver]["Time"], secret_data.users[driver]["Name"], driver)
                 for driver in secret_data.groups[direction][day]
-            ]
-        )
+            ])
 
-        if len(bookings) > 0:
-            for time, name, direction, driver in bookings:
-                trip = secret_data.groups[direction][day][driver]
-                if not trip["Suspended"]:
-                    # Raccolgo in una list comprehension le persone che partecipano al viaggio
-                    people = [secret_data.users[user]["Name"]
-                              for mode in trip
-                              if mode == "Temporary" or mode == "Permanent"
-                              for user in trip[mode]]
+            if len(bookings) > 0:
+                text = text + "\n\n➡" + common.direction_to_name(direction) + "\n"
+                for time, name, driver in bookings:
+                    trip = secret_data.groups[direction][day][driver]
+                    if not trip["Suspended"]:
+                        # Raccolgo in una list comprehension le persone che partecipano al viaggio
+                        people = [secret_data.users[user]["Name"]
+                                  for mode in trip
+                                  if mode == "Temporary" or mode == "Permanent"
+                                  for user in trip[mode]]
 
-                    # Aggiungo ogni viaggio trovato alla lista
-                    text = text + "\n" + common.direction_to_name(direction) + ":\n\n" + "🚗 " + name \
-                           + " - 🕒 " + time + ":\n👥 " + ", ".join(people) + "\n\n"
-        else:
-            text = text + "\n\nNessuna persona in viaggio oggi."
+                        # Aggiungo ogni viaggio trovato alla lista
+                        text = text + "\n" + "🚗 " + name \
+                               + " - 🕒 " + time + ":" \
+                               + "\n👥 " + ", ".join(people) + "\n"
+            else:
+                text = text + "\n\nNessuna persona in viaggio " + common.direction_to_name(direction) + "oggi."
 
         if str(chat_id) in secret_data.users:
             # Permetto l'uso della tastiera solo ai registrati

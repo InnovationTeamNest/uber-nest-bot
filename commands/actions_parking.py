@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import logging as log
+
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.error import BadRequest
-import logging as log
 
 import secret_data
 from util import common
