@@ -63,7 +63,9 @@ def dispatcher_setup():
 
     dispatcher.add_handler(CommandHandler("budino", actions_money.edit_money_admin, pass_args=True))
 
+    dispatcher.add_handler(MessageHandler(Filters.group, filters.public_filter))
     dispatcher.add_handler(MessageHandler(Filters.text & Filters.private, filters.text_filter))
+
     dispatcher.add_handler(CallbackQueryHandler(filters.inline_handler))
 
 

@@ -26,36 +26,12 @@ def remind():
             remind_user(bot, chat_id)
         except Exception as ex:
             log.error("Failed to alert " + str(chat_id) + "\n\n" + ex.message)
-            # counter = 0
-        # while True:
-        #     try:
-        #         remind_user(bot, chat_id)
-        #         break
-        #     except Exception:
-        #         if counter < MAX_ATTEMPTS:
-        #             time.sleep(2 ** counter)
-        #             counter = counter + 1
-        #         else:
-        #             log.error("Failed to alert " + str(chat_id))
-        #             break
 
     for chat_id in secret_data.drivers:
         try:
             remind_driver(bot, chat_id)
         except Exception as ex:
             log.error("Failed to alert " + str(chat_id) + "\n\n" + ex.message)
-            # counter = 0
-        # while True:
-        #     try:
-        #         remind_driver(bot, chat_id)
-        #         break
-        #     except Exception:
-        #         if counter < MAX_ATTEMPTS:
-        #             time.sleep(2 ** counter)
-        #             counter = counter + 1
-        #         else:
-        #             log.error("Failed to alert " + str(chat_id))
-        #             break
 
 
 def remind_driver(bot, chat_id):
@@ -77,8 +53,9 @@ def remind_driver(bot, chat_id):
                 message += "\n\nViaggio " + common.direction_to_name(direction) + " - " + trip["Time"] + "\n\n" \
                            + "Permanentemente: " + ",".join(secret_data.users[i]["Name"] for i in trip["Permanent"]) \
                            + "\n" + "Solo domani: " + ",".join(secret_data.users[i]["Name"] for i in trip["Temporary"])
-                bot.send_message(chat_id=chat_id,
-                                 text=message)
+
+        if heading_sent:
+            bot.send_message(chat_id=chat_id, text=message)
 
 
 def remind_user(bot, chat_id):

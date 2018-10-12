@@ -92,3 +92,7 @@ def text_filter(bot, update):
     elif ReplyStatus.response_mode == 1:
         from commands import actions
         actions.response_registra(bot, update)
+
+
+def public_filter(bot, update):
+    bot.send_message(chat_id=update.message.chat_id, text="Per iniziare, scrivi un messaggio privato a @ubernestbot.")

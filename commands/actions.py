@@ -130,7 +130,7 @@ def fetch_bookings(bot, chat_id, day):
             else:
                 text = text + "\n\nNessuna persona in viaggio " + common.direction_to_name(direction) + "oggi."
 
-        if str(chat_id) in secret_data.users:
+        if str(chat_id) in secret_data.users and common.booking_time():
             # Permetto l'uso della tastiera solo ai registrati
             keyboard = [
                 [InlineKeyboardButton("Prenota una tantum",

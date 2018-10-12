@@ -44,11 +44,11 @@ locations = ["Povo 2", "Povo 1 (cima scale)", "Povo 1 (fronte entrata)",
 
 # Questi metodi gestiscono i giorni in formato stringa
 def today():
-    return day_to_string(datetime.datetime.today().weekday())
+    return day_to_string((datetime.datetime.now() + datetime.timedelta(hours=1 + is_dst())).weekday())
 
 
 def tomorrow():
-    return day_to_string(datetime.datetime.today().weekday() + 1)
+    return day_to_string((datetime.datetime.now() + datetime.timedelta(hours=1 + is_dst())).weekday() + 1)
 
 
 def day_to_string(number):
