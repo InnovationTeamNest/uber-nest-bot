@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 
 import logging as log
 
@@ -70,12 +69,12 @@ def cancel_handler(bot, update):
 
 def create_callback_data(*arg):
     """Create the callback data associated to each button"""
-    return ";".join(unicode(i) for i in arg)
+    return ";".join(str(i) for i in arg)
 
 
 def separate_callback_data(data):
     """ Separate the callback data"""
-    return [unicode(i) for i in data.split(";")]
+    return [str(i) for i in data.split(";")]
 
 
 # Questa classe e questo metodo vengono usate nel caso risposte testuali da parte dell'utente.

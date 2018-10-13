@@ -42,4 +42,3 @@ Feel free to contribute by forking the project and issuing a pull request. Any c
 ## To-Do
 
 * Insert information about implemented functionality
-* Port the whole project to Python 3 (Standard GAE Environment)

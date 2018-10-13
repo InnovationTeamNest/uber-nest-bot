@@ -1,22 +1,12 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 
 import datetime
 import logging as log
 
 import telegram
-import webapp2
 
-import dumpable
 import secret_data
 from util import common
-
-
-class ReminderHandler(webapp2.RequestHandler):
-    def get(self):
-        dumpable.get_data()
-        remind()
-        self.response.write("See console for output.")
 
 
 def remind():
@@ -25,13 +15,15 @@ def remind():
         try:
             remind_user(bot, chat_id)
         except Exception as ex:
-            log.error("Failed to alert " + str(chat_id) + "\n\n" + ex.message)
+            log.error("Failed to alert " + str(chat_id) + "\n\n")
+            log.error(ex)
 
     for chat_id in secret_data.drivers:
         try:
             remind_driver(bot, chat_id)
         except Exception as ex:
-            log.error("Failed to alert " + str(chat_id) + "\n\n" + ex.message)
+            log.error("Failed to alert " + str(chat_id) + "\n\n")
+            log.error(ex)
 
 
 def remind_driver(bot, chat_id):

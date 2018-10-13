@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import division
-from __future__ import unicode_literals
-
 import logging as log
 import math
 
@@ -72,12 +69,12 @@ def trips_handler(bot, update):
                               + "\n🗓: " + day
                               + "\n➡: " + common.direction_to_name(direction)
                               + "\n🕓: " + trip["Time"]
-                              + "\n👥 temporanei: " + ",".join(secret_data.users[user]["Name"]
-                                                               for user in trip["Temporary"])
-                              + "\n👥 permanenti: " + ",".join(secret_data.users[user]["Name"]
-                                                               for user in trip["Permanent"])
-                              + "\n👥 sospesi: " + ",".join(secret_data.users[user]["Name"]
-                                                            for user in trip["SuspendedUsers"])
+                              + "\n👥 temporanei: "
+                              + ",".join(secret_data.users[user]["Name"] for user in trip["Temporary"])
+                              + "\n👥 permanenti: "
+                              + ",".join(secret_data.users[user]["Name"] for user in trip["Permanent"])
+                              + "\n👥 sospesi: "
+                              + ",".join(secret_data.users[user]["Name"] for user in trip["SuspendedUsers"])
                               + "\n\nCosa vuoi fare?",
                          reply_markup=InlineKeyboardMarkup(keyboard))
     #
@@ -167,7 +164,7 @@ def trips_handler(bot, update):
         direction, day, hour, minute = data[2:6]
         time = hour.zfill(2) + ":" + minute.zfill(2)
 
-        trip = secret_data.groups[direction][unicode(day)][unicode(chat_id)]
+        trip = secret_data.groups[direction][str(day)][str(chat_id)]
 
         trip["Time"] = str(time)
 

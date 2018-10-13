@@ -1,24 +1,13 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 
 import datetime
 
-import webapp2
 from telegram import Bot
 
-import dumpable
 import secret_data
 from util import common
 
 bot = Bot(secret_data.bot_token)
-
-
-class NightHandler(webapp2.RequestHandler):
-    def get(self):
-        dumpable.get_data()
-        process_day()
-        dumpable.dump_data()
-        self.response.write("See console for output.")
 
 
 def process_day():
@@ -104,14 +93,6 @@ def process_day():
                         del trips[driver]["Location"]
                     except KeyError:
                         continue
-
-
-class WeeklyReportHandler(webapp2.RequestHandler):
-    def get(self):
-        dumpable.get_data()
-        weekly_report()
-        dumpable.dump_data()
-        self.response.write("See console for output.")
 
 
 def weekly_report():

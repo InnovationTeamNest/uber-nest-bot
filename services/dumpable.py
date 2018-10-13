@@ -1,28 +1,10 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 
 import logging as log
 
-import google.appengine.ext.ndb as ndb
-import webapp2
+from google.cloud import datastore
 
 import secret_data
-
-
-class DataHandler(webapp2.RequestHandler):
-    """Stampa in console il dataset corrente salvato su secret_data e sul Datastore."""
-
-    def get(self):
-        get_data()
-        print_data()
-        self.response.write("Data output in console.")
-
-
-class Dumpable(ndb.Model):
-    """Classe usata da Datastore per fare il backup dei dati."""
-    groups = ndb.JsonProperty()
-    users = ndb.JsonProperty()
-    drivers = ndb.JsonProperty()
 
 
 def dump_data():
@@ -32,9 +14,18 @@ def dump_data():
         for key in list_of_keys:
             key.delete()
 
-        Dumpable(groups=secret_data.groups,
-                 users=secret_data.users,
-                 drivers=secret_data.drivers).put()
+
+        client = datastore.Client()
+        key = client.key('Data', 0)
+
+        # Prepares the new entity
+        data = datastore.Entity(key=key)
+        data['groups'] = secret_data.groups
+        data['users'] = secret_data.users
+        data['drivers'] = secret_data.drivers
+
+        # Saves the entity
+        client.put(data)
     else:
         log.info("Trying to save empty data!")
 

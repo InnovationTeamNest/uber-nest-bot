@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import logging as log
 
 from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
@@ -187,7 +184,7 @@ def newtrip_handler(bot, update):
         minute, hour, day, direction = data
         time = hour.zfill(2) + ":" + minute.zfill(2)
 
-        secret_data.groups[direction][unicode(day)][unicode(chat_id)] = {"Time": str(time),
+        secret_data.groups[direction][str(day)][str(chat_id)] = {"Time": str(time),
                                                                          "Permanent": [],
                                                                          "Temporary": [],
                                                                          "SuspendedUsers": [],

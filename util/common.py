@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 
 import datetime
 
@@ -117,7 +116,7 @@ def localize_mode(mode):
 def search_by_booking(person):
     """Ritorna tutte le prenotazioni di una certa persona"""
     return [(direction, day, driver, mode, secret_data.groups[direction][day][driver]["Time"])
-            for direction in "Salita", "Discesa"
+            for direction in ("Salita", "Discesa")
             for day in work_days
             for driver in secret_data.groups[direction][day]
             for mode in secret_data.groups[direction][day][driver]

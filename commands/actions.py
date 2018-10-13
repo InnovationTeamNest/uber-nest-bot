@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 
 import logging as log
 
@@ -110,25 +109,26 @@ def fetch_bookings(bot, chat_id, day):
                 # Restituisce una tupla del tipo (ora, guidatore, chat_id) riordinata
                 (secret_data.groups[direction][day][driver]["Time"], secret_data.users[driver]["Name"], driver)
                 for driver in secret_data.groups[direction][day]
+                if not secret_data.groups[direction][day][driver]["Suspended"]
             ])
 
             if len(bookings) > 0:
                 text = text + "\n\n➡" + common.direction_to_name(direction) + "\n"
                 for time, name, driver in bookings:
                     trip = secret_data.groups[direction][day][driver]
-                    if not trip["Suspended"]:
-                        # Raccolgo in una list comprehension le persone che partecipano al viaggio
-                        people = [secret_data.users[user]["Name"]
-                                  for mode in trip
-                                  if mode == "Temporary" or mode == "Permanent"
-                                  for user in trip[mode]]
+                    # Raccolgo in una list comprehension le persone che partecipano al viaggio
+                    people = [secret_data.users[user]["Name"]
+                              for mode in trip
+                              if mode == "Temporary" or mode == "Permanent"
+                              for user in trip[mode]]
 
-                        # Aggiungo ogni viaggio trovato alla lista
-                        text = text + "\n" + "🚗 " + name \
-                               + " - 🕒 " + time + ":" \
-                               + "\n👥 " + ", ".join(people) + "\n"
+                    # Aggiungo ogni viaggio trovato alla lista
+                    text = text + "\n" + "🚗 " + name \
+                           + " - 🕒 " + time + ":" \
+                           + "\n👥 " + ", ".join(people) + "\n"
             else:
-                text = text + "\n\nNessuna persona in viaggio " + common.direction_to_name(direction) + "oggi."
+                text = text + "\n\n🚶🏻‍♂ 🚶🏻‍♂ Nessuna persona in viaggio " \
+                       + common.direction_to_name(direction) + " oggi."
 
         if str(chat_id) in secret_data.users and common.booking_time():
             # Permetto l'uso della tastiera solo ai registrati
@@ -169,7 +169,7 @@ def registra(bot, update):
 
 def response_registra(bot, update):
     user = update.message.text
-    secret_data.users[unicode(update.message.chat_id)] = {"Name": unicode(user), "Debit": {}}
+    secret_data.users[str(update.message.chat_id)] = {"Name": str(user), "Debit": {}}
     bot.send_message(chat_id=update.message.chat_id,
                      text="Il tuo username è stato aggiunto con successo"
                           " al database. Usa i seguenti comandi:\n/me "

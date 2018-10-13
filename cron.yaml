@@ -1,17 +1,17 @@
 cron:
 - description: set up the webhook to prevent failures
-  url: /scripts/set_webhook
+  url: /set_webhook
   timezone: Europe/Rome
   schedule: every 24 hours
 - description: process credit changes
-  url: /scripts/money
+  url: /money
   timezone: Europe/Rome
   schedule: every day 02:00
 - description: remind users and drivers about upcoming trips
-  url: /scripts/reminders
+  url: /reminders
   timezone: Europe/Rome
   schedule: every day 23:55
 - description: remind users about weekly debits and credits
-  url: /scripts/weekly_report
+  url: /weekly_report
   timezone: Europe/Rome
   schedule: every saturday 12:00
