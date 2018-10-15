@@ -4,17 +4,27 @@ import sys
 import telegram
 from telegram.error import BadRequest
 
-import secret_data
 
 # Questi comandi vengono usati dalla modalità inline per redirezionare correttamente i comandi.
 # Il metodo cancel_handler viene usato nel caso in cui si voglia troncare la catena di query.
 # Infine, create e separate_callback_data vengono usate per creare le stringhe d'identificazione.
 
+
 def inline_handler(bot, update):
-    from commands import actions, actions_booking, actions_me, actions_money, actions_trips, actions_parking
+    from commands import actions_booking, actions_me, actions_money, actions_trips, actions_parking, \
+        actions_show_bookings
 
     # Loggo il contenuto della Callback query
-    print(update.callback_query.data, file=sys.stderr)
+    print("Associated callback query:", update.callback_query.data, file=sys.stderr)
+
+    # Provo a cancellare, se possibile, il messaggio precedente
+    try:
+        update.callback_query.message.delete()
+    except BadRequest as ex:
+        print("Failed to delete previous message", ex, file=sys.stderr)
+
+    # Mando un azione di "Sto scrivendo..."
+    bot.send_chat_action(chat_id=update.callback_query.from_user.id, action=telegram.ChatAction.TYPING)
 
     # Nelle callback query, il primo elemento è sempre l'identificatore
     identifier = separate_callback_data(update.callback_query.data)[0]
@@ -33,58 +43,34 @@ def inline_handler(bot, update):
         actions_booking.booking_handler(bot, update)
     elif identifier == "EDIT_BOOK":
         actions_booking.edit_booking(bot, update)
+    elif identifier == "ALERT_USER":
+        actions_booking.alert_user(bot, update)
     # Azione in partenxza da /parcheggio
     elif identifier == "PARK":
         actions_parking.parcheggio(bot, update)
     # Azione in partenza da /prenota e da /settimana /lunedi etc
     elif identifier == "SHOW_BOOKINGS":
-        actions.show_bookings(bot, update)
+        actions_show_bookings.show_bookings(bot, update)
     # Azioni in partenza da /me -> trips
     elif identifier == "TRIPS":
         actions_trips.trips_handler(bot, update)
     elif identifier == "ADD_PASS":
         actions_trips.add_passenger(bot, update)
+    elif identifier == "NEWTRIP":
+        actions_trips.newtrip_handler(bot, update)
     # Azioni in partenza da /me
     elif identifier == "ME":
         actions_me.me_handler(bot, update)
-    elif identifier == "NEWTRIP":
-        actions_me.newtrip_handler(bot, update)
     elif identifier == "MONEY":
         actions_money.check_money(bot, update)
     elif identifier == "EDIT_MONEY":
         actions_money.edit_money(bot, update)
     elif identifier == "NEW_DEBITOR":
         actions_money.new_debitor(bot, update)
-    # Azioni generiche
-    elif identifier == "ALERT_USER":
-        alert_user(bot, update)
-
-
-def alert_user(bot, update):
-    chat_id = update.callback_query.from_user.id
-    data = separate_callback_data(update.callback_query.data)
-    mode = data[1]
-
-    bot.send_chat_action(chat_id=chat_id, action=telegram.ChatAction.TYPING)
-    try:
-        update.callback_query.message.delete()
-    except BadRequest:
-        print("Failed to delete previous message", file=sys.stderr)
-
-    if mode == "CONFIRM_BOOKING":
-        user = data[2]  # Utente della prenotazione
-        bot.send_message(chat_id=user, text=secret_data.users[chat_id]["Name"] + " ha confermato la tua prenotazione.")
-        bot.send_message(chat_id=chat_id, text="Prenotazione confermata con successo.")
 
 
 def cancel_handler(bot, update):
     chat_id = update.callback_query.from_user.id
-
-    bot.send_chat_action(chat_id=chat_id, action=telegram.ChatAction.TYPING)
-    try:
-        update.callback_query.message.delete()
-    except BadRequest:
-        print("Failed to delete previous message", file=sys.stderr)
 
     bot.send_message(chat_id=chat_id, text="Operazione annullata.")
 

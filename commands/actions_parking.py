@@ -32,8 +32,10 @@ def parcheggio(bot, update):
     ]
 
     if action == "CHOOSE":
-        if common.is_weekday(common.today()):
-            if chat_id in secret_data.groups["Discesa"][common.today()]:
+        day = common.today()
+        if common.is_weekday(day):
+            if chat_id in secret_data.groups["Discesa"][day] and not \
+                    secret_data.groups["Discesa"][day][chat_id]["Suspended"]:
                 for item in common.locations:
                     keyboard.insert(0, [InlineKeyboardButton(item, callback_data=ccd("PARK", "SET", item))])
 

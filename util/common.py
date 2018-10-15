@@ -146,6 +146,9 @@ def get_debits(input_debitor):
             for creditor in secret_data.users[input_debitor]["Debit"]]
 
 
+# I seguenti metodi sono stati piazzati qua perché c'entravano molto poco con qualsiasi altro file.
+# Siate liberi di spostarli dove vi pare.
+
 def alert_suspension(bot, direction, day, driver):
     trip = secret_data.groups[direction][day][driver]
 
@@ -155,19 +158,33 @@ def alert_suspension(bot, direction, day, driver):
     if trip["Suspended"]:
         for user in permanent_users:
             bot.send_message(chat_id=user,
-                             text="Attenzione! " + secret_data.users[driver]
+                             text="Attenzione! " + secret_data.users[driver]["Name"]
                                   + " ha sospeso il viaggio di " + day
                                   + " " + direction_to_name(direction)
                                   + ". Non verrai addebitato per questa volta.")
         for user in temporary_users:
             bot.send_message(chat_id=user,
-                             text="Attenzione! " + secret_data.users[driver]
+                             text="Attenzione! " + secret_data.users[driver]["Name"]
                                   + " ha sospeso il viaggio di " + day
                                   + " " + direction_to_name(direction)
                                   + ". La tua prenotazione scalerà alla settimana successiva.")
     else:
         for user in (permanent_users + temporary_users):
             bot.send_message(chat_id=user,
-                             text="Attenzione! " + secret_data.users[driver]
+                             text="Attenzione! " + secret_data.users[driver]["Name"]
                                   + " ha annullato la sospensione del viaggio di " + day
                                   + " " + direction_to_name(direction) + ".")
+
+
+def edit_money_admin(bot, update, args):
+    if str(update.message.chat_id) == secret_data.owner_id:
+        try:
+            debitor, creditor, value = args
+            secret_data.users[str(debitor)]["Debit"][str(creditor)] = float(value)
+            bot.send_message(chat_id=secret_data.owner_id,
+                             text="Modifica in corso: "
+                                  + "\n\nDebitore: " + secret_data.users[str(debitor)]["Name"]
+                                  + "\nCreditore: " + secret_data.users[str(creditor)]["Name"]
+                                  + "\nDebito inserito: " + str(value))
+        except Exception:
+            bot.send_message(chat_id=secret_data.owner_id, text="Sintassi non corretta. Riprova!")

@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 import math
-import sys
 
-from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.error import BadRequest
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 import secret_data
 import util.common
@@ -14,12 +12,6 @@ from util.filters import create_callback_data as ccd, separate_callback_data
 
 def check_money(bot, update):
     chat_id = str(update.callback_query.from_user.id)
-    bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
-
-    try:
-        update.callback_query.message.delete()
-    except BadRequest:
-        print("Failed to delete previous message", file=sys.stderr)
 
     # Prima raccolgo sottoforma di stringa i debiti
     debits = util.common.get_debits(chat_id)
@@ -62,18 +54,12 @@ def check_money(bot, update):
 def edit_money(bot, update):
     action, user = separate_callback_data(update.callback_query.data)[1:]
     chat_id = str(update.callback_query.from_user.id)
-    bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
 
     try:
         money = str(secret_data.users[user]["Debit"][chat_id])
     except KeyError:
         secret_data.users[user]["Debit"][chat_id] = 0
         money = "0.0"
-
-    try:
-        update.callback_query.message.delete()
-    except BadRequest:
-        print("Failed to delete previous message", file=sys.stderr)
 
     #
     # Tre azioni possibili: SUBTRACT (sottrae il prezzo di un viaggio), ADD (aggiunge il prezzo
@@ -135,13 +121,6 @@ def new_debitor(bot, update):
     chat_id = str(update.callback_query.from_user.id)
     page = int(separate_callback_data(update.callback_query.data)[1])
 
-    bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
-
-    try:
-        update.callback_query.message.delete()
-    except BadRequest:
-        print("Failed to delete previous message", file=sys.stderr)
-
     keyboard = []
     users = sorted(  # Resituisce una lista di tuple del tipo (Nome, ID)
         [(secret_data.users[user]["Name"], user)
@@ -175,17 +154,3 @@ def new_debitor(bot, update):
     bot.send_message(chat_id=chat_id,
                      text="Scegli un utente a cui aggiungere un debito.",
                      reply_markup=InlineKeyboardMarkup(keyboard))
-
-
-def edit_money_admin(bot, update, args):
-    if str(update.message.chat_id) == secret_data.owner_id:
-        try:
-            debitor, creditor, value = args
-            secret_data.users[str(debitor)]["Debit"][str(creditor)] = float(value)
-            bot.send_message(chat_id=secret_data.owner_id,
-                             text="Modifica in corso: "
-                                  + "\n\nDebitore: " + secret_data.users[str(debitor)]["Name"]
-                                  + "\nCreditore: " + secret_data.users[str(creditor)]["Name"]
-                                  + "\nDebito inserito: " + str(value))
-        except Exception:
-            bot.send_message(chat_id=secret_data.owner_id, text="Sintassi non corretta. Riprova!")

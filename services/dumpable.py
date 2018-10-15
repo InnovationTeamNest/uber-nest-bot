@@ -50,7 +50,8 @@ def print_data():
     client = datastore.Client()
     data = client.get(client.key('Data', 1))
     print("Stored data: " + str(data['drivers']) + str(data['users']) + str(data['groups']), file=sys.stderr)
-    print("Internal data: " + str(secret_data.drivers) + str(secret_data.users) + str(secret_data.groups), file=sys.stderr)
+    print("Internal data: " + str(secret_data.drivers) + str(secret_data.users) + str(secret_data.groups),
+          file=sys.stderr)
 
 
 def empty_datastore():

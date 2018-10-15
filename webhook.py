@@ -6,9 +6,7 @@ from telegram import Bot
 from telegram.ext import Dispatcher, CommandHandler, MessageHandler, CallbackQueryHandler, Filters
 
 import secret_data
-from services import dumpable
-from util import filters
-from util.common import MAX_ATTEMPTS
+import util.common
 
 bot = Bot(secret_data.bot_token)
 
@@ -16,7 +14,9 @@ bot = Bot(secret_data.bot_token)
 def dispatcher_setup():
     global dispatcher
     dispatcher = Dispatcher(bot=bot, update_queue=None, workers=0)
-    from commands import actions, actions_booking, actions_me, actions_money, actions_parking
+    from commands import actions, actions_booking, actions_me, actions_parking
+    from util import filters
+    from services import dumpable
 
     # Inizio prendendo i dati da Datastore
     outcome = dumpable.get_data()
@@ -50,20 +50,20 @@ def dispatcher_setup():
     # Azioni in partenza da actions_parking
     dispatcher.add_handler(CommandHandler("parcheggio", actions_parking.parcheggio))
     # Azione supersegreta in partenza da actions_money
-    dispatcher.add_handler(CommandHandler("budino", actions_money.edit_money_admin, pass_args=True))
+    dispatcher.add_handler(CommandHandler("budino", util.common.edit_money_admin, pass_args=True))
     # Filtri per tutto il resto
-    dispatcher.add_handler(MessageHandler(Filters.chat(secret_data.group_chat_id) | Filters.group, filters.public_filter))
     dispatcher.add_handler(MessageHandler(Filters.text & Filters.private, filters.text_filter))
     dispatcher.add_handler(CallbackQueryHandler(filters.inline_handler))
 
 
 def webhook(update, counter):
     try:
+        print(update, file=sys.stderr)
         dispatcher.process_update(update)
     except Exception as ex:
         dispatcher_setup()
         bot.setWebhook(secret_data.url + secret_data.bot_token)
-        if counter < MAX_ATTEMPTS:
+        if counter < util.common.MAX_ATTEMPTS:
             time.sleep(2 ** counter)
             webhook(update, counter + 1)
         else:

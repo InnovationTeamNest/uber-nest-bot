@@ -11,7 +11,7 @@ def index():
     return "UberNEST Bot is running!", 200
 
 
-@app.route('/set_webhook',  methods=['GET'])
+@app.route('/set_webhook', methods=['GET'])
 def webhook():
     if 'X-Appengine-Cron' in request.headers:
         from webhook import dispatcher_setup, bot

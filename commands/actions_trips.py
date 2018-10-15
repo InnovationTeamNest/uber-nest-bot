@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 import math
-import sys
 
-from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.error import BadRequest
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 import secret_data
 from util import common
@@ -16,16 +14,10 @@ def trips_handler(bot, update):
     action = data[1]
     chat_id = str(update.callback_query.from_user.id)
 
-    bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
-    try:
-        update.callback_query.message.delete()
-    except BadRequest:
-        print("Failed to delete previous message", file=sys.stderr)
-
     if action == "NEW_TRIP":  # Chiamata sul bottone "Nuovo viaggio"
         keyboard = [
-            [InlineKeyboardButton("per Povo", callback_data=ccd("NEWTRIP", "Salita")),
-             InlineKeyboardButton("per il NEST", callback_data=ccd("NEWTRIP", "Discesa"))],
+            [InlineKeyboardButton("per Povo", callback_data=ccd("NEWTRIP", "DAY", "Salita")),
+             InlineKeyboardButton("per il NEST", callback_data=ccd("NEWTRIP", "DAY", "Discesa"))],
             [InlineKeyboardButton("Indietro", callback_data=ccd("ME", "TRIPS"))],
             [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
         ]
@@ -278,12 +270,6 @@ def add_passenger(bot, update):
     action = data[1]
     chat_id = str(update.callback_query.from_user.id)
 
-    bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
-    try:
-        update.callback_query.message.delete()
-    except BadRequest:
-        print("Failed to delete previous message", file=sys.stderr)
-
     # Comando chiamato dalla vista viaggio per aggiungere un passeggero
     if action == "SELECT":
         direction, day, page = data[2:5]
@@ -378,3 +364,88 @@ def add_passenger(bot, update):
 
             bot.send_message(chat_id=chat_id, text=driver_text, reply_markup=InlineKeyboardMarkup(keyboard))
             bot.send_message(chat_id=user, text=user_text)
+
+
+#
+# Questo metodo viene chiamato da trips_handler().
+# Da questo metodo è possibile inserire per intero un nuovo viaggio di un autista.
+#
+def newtrip_handler(bot, update):
+    data = separate_callback_data(update.callback_query.data)
+    chat_id = str(update.callback_query.from_user.id)
+    mode = data[1]
+
+    #
+    # Metodo per l'inserimento del giorno
+    # Dati in entrata: "NEWTRIP", "DAY", direction
+    #
+    if mode == "DAY":
+        data = data[2:]
+        keyboard = []
+
+        for day in common.work_days:
+            keyboard.append(InlineKeyboardButton(day[:2], callback_data=ccd("NEWTRIP", "HOUR", day, *data)))
+
+        keyboard = [keyboard,
+                    [InlineKeyboardButton("Indietro", callback_data=ccd("TRIPS"))],
+                    [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]]
+
+        bot.send_message(chat_id=chat_id, text="Scegli il giorno della settimana del viaggio.",
+                         reply_markup=InlineKeyboardMarkup(keyboard))
+    #
+    # Metodo per l'inserimento dell'ora
+    # Dati in entrata: "NEWTRIP", "HOUR", day, direction
+    #
+    elif mode == "HOUR":
+        data = data[2:]
+        keyboard = [
+            [InlineKeyboardButton(str(i).zfill(2), callback_data=ccd("NEWTRIP", "MINUTE", str(i), *data))
+             for i in range(7, 14, 1)],
+            [InlineKeyboardButton(str(i), callback_data=ccd("NEWTRIP", "MINUTE", str(i), *data))
+             for i in range(14, 21, 1)],
+            [InlineKeyboardButton("Indietro", callback_data=ccd("NEWTRIP", "MINUTE", *data[1:]))],
+            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+        ]
+
+        bot.send_message(chat_id=chat_id, text="Scegli l'ora di partenza del viaggio. ",
+                         reply_markup=InlineKeyboardMarkup(keyboard))
+    #
+    # Metodo per l'inserimento dei minuti
+    # Dati in entrata: "NEWTRIP", "HOUR", hour, day, direction
+    #
+    elif mode == "MINUTE":
+        data = data[2:]
+        keyboard = [
+            [InlineKeyboardButton(str(i).zfill(2), callback_data=ccd("NEWTRIP", "CONFIRM", str(i), *data))
+             for i in range(0, 30, 5)],
+            [InlineKeyboardButton(str(i), callback_data=ccd("NEWTRIP", "CONFIRM", str(i), *data))
+             for i in range(30, 60, 5)],
+            [InlineKeyboardButton("Indietro", callback_data=ccd("NEWTRIP", "CONFIRM", *data[1:]))],
+            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+        ]
+
+        bot.send_message(chat_id=chat_id,
+                         text="Scegli i minuti di partenza del viaggio.",
+                         reply_markup=InlineKeyboardMarkup(keyboard))
+    #
+    # Metodo di conferma finale
+    # Dati in entrata: "NEWTRIP", "CONFIRM", minute, hour, day, direction
+    #
+    elif mode == "CONFIRM":
+        minute, hour, day, direction = data[2:]
+        time = hour.zfill(2) + ":" + minute.zfill(2)
+
+        secret_data.groups[direction][str(day)][str(chat_id)] = {"Time": str(time),
+                                                                 "Permanent": [],
+                                                                 "Temporary": [],
+                                                                 "SuspendedUsers": [],
+                                                                 "Suspended": False}
+
+        user_text = "Viaggio aggiunto con successo:" \
+                    + "\n\n➡: " + common.direction_to_name(direction) \
+                    + "\n🗓: " + day \
+                    + "\n🕓: " + str(time)
+
+        bot.send_message(chat_id=chat_id, text=user_text)
+    else:
+        bot.send_message(chat_id=chat_id, text="Spiacente, si è verificato un errore. Riprova più tardi.")

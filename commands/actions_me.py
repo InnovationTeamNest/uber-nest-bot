@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 
-from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.error import BadRequest
 
 import secret_data
@@ -23,34 +23,33 @@ from util.keyboards import me_keyboard, trips_keyboard
 
 def me(bot, update):
     if update.callback_query:
-        chat_id = update.callback_query.from_user.id
+        chat_id = str(update.callback_query.from_user.id)
         try:
             update.callback_query.message.delete()
         except BadRequest:
             print("Failed to delete previous message", file=sys.stderr)
     else:
-        chat_id = update.message.chat_id
+        chat_id = str(update.message.chat_id)
 
-    if str(chat_id) in secret_data.users:
+    if chat_id in secret_data.users:
         bot.send_message(chat_id=chat_id, text="Cosa vuoi fare?", reply_markup=me_keyboard(chat_id))
 
 
+#
+# Tutte le richieste inviate a questo metodo provengono dalla me_keyboard in keyboards.py.
+# Da questo menù viene gestito per intero /me (al livello base), le rimozioni e aggiunte di autista,
+# e le rimozioni degli utenti.
+#
 def me_handler(bot, update):
     action = separate_callback_data(update.callback_query.data)[1]
-    chat_id = update.callback_query.from_user.id
-
-    bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
-    try:
-        update.callback_query.message.delete()
-    except BadRequest:
-        print("Failed to delete previous message", file=sys.stderr)
+    chat_id = str(update.callback_query.from_user.id)
 
     if action == "TRIPS":  # Visualizza i vari trips dell'utente
         bot.send_message(chat_id=chat_id,
                          text="Viaggi (clicca su un viaggio per modificarlo):",
-                         reply_markup=trips_keyboard(str(chat_id)))
+                         reply_markup=trips_keyboard(chat_id))
     elif action == "DRIVER":  # Aggiunta o rimozione della modalità guidatore
-        if str(chat_id) in secret_data.drivers:
+        if chat_id in secret_data.drivers:
             keyboard = [
                 [InlineKeyboardButton("Sì", callback_data=ccd("ME", "CO_DR_RE")),
                  InlineKeyboardButton("No", callback_data=ccd("ME_MENU"))]]
@@ -75,7 +74,7 @@ def me_handler(bot, update):
             [InlineKeyboardButton("Sì", callback_data=ccd("ME", "CO_US_RE")),
              InlineKeyboardButton("No", callback_data=ccd("ME_MENU"))]]
 
-        user_debits = secret_data.users[str(chat_id)]["Debit"]
+        user_debits = secret_data.users[chat_id]["Debit"]
         debitors = ""
         for creditor in user_debits:
             debitors += secret_data.users[creditor]["Name"] + " - " + str(user_debits[creditor]) + " EUR"
@@ -101,11 +100,11 @@ def me_handler(bot, update):
                          reply_markup=InlineKeyboardMarkup(keyboard))
     elif action == "CO_DR":
         slots = int(separate_callback_data(update.callback_query.data)[2])
-        if str(chat_id) in secret_data.drivers:
+        if chat_id in secret_data.drivers:
             bot.send_message(chat_id=chat_id,
                              text="Numero di posti della vettura aggiornato con successo.")
         else:
-            secret_data.drivers[str(chat_id)] = {"Slots": slots}
+            secret_data.drivers[chat_id] = {"Slots": slots}
             bot.send_message(chat_id=chat_id,
                              text="Sei stato inserito nella lista degli autisti! Usa il menu /me per aggiungere"
                                   " viaggi, modificare i posti auto, aggiungere un messaggio da mostrare ai tuoi"
@@ -115,84 +114,14 @@ def me_handler(bot, update):
         bot.send_message(chat_id=chat_id,
                          text="Sei stato rimosso con successo dall'elenco degli autisti.")
     elif action == "CO_US_RE":
-        user_debits = secret_data.users[str(chat_id)]["Debit"]
+        user_debits = secret_data.users[chat_id]["Debit"]
         for creditor in user_debits:
             bot.send_message(chat_id=creditor,
-                             text="ATTENZIONE! " + secret_data.users[str(chat_id)]["Name"]
+                             text="ATTENZIONE! " + secret_data.users[chat_id]["Name"]
                                   + " si è cancellato da UberNEST. Ha ancora "
                                   + str(user_debits[creditor]) + " EUR di debito con te.")
 
-        del secret_data.users[str(chat_id)]
-        if str(chat_id) in secret_data.drivers:
+        del secret_data.users[chat_id]
+        if chat_id in secret_data.drivers:
             common.delete_driver(chat_id)
         bot.send_message(chat_id=chat_id, text="Sei stato rimosso con successo dal sistema.")
-
-
-def newtrip_handler(bot, update):
-    data = separate_callback_data(update.callback_query.data)[1:]
-    chat_id = str(update.callback_query.from_user.id)
-
-    bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
-    try:
-        update.callback_query.message.delete()
-    except BadRequest:
-        print("Failed to delete previous message", file=sys.stderr)
-
-    # NOTA BENE: (Python 2.7 non supporta argomenti di posizione dopo *)
-    if len(data) == 1:  # Inserimento del giorno
-        keyboard = []
-
-        for day in common.work_days:  # Ordine: giorno, direzione
-            keyboard.append(InlineKeyboardButton(day[:2], callback_data=ccd("NEWTRIP", day, *data)))
-
-        keyboard = [keyboard,
-                    [InlineKeyboardButton("Indietro", callback_data=ccd("TRIPS"))],
-                    [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]]
-
-        bot.send_message(chat_id=chat_id, text="Scegli il giorno della settimana del viaggio.",
-                         reply_markup=InlineKeyboardMarkup(keyboard))
-    elif len(data) == 2:  # Inserimento dell'ora
-        # Ordine: ora, giorno, direzione
-        keyboard = [
-            [InlineKeyboardButton(str(i).zfill(2), callback_data=ccd("NEWTRIP", str(i), *data))
-             for i in range(7, 14, 1)],
-            [InlineKeyboardButton(str(i), callback_data=ccd("NEWTRIP", str(i), *data))
-             for i in range(14, 21, 1)],
-            [InlineKeyboardButton("Indietro", callback_data=ccd("NEWTRIP", *data[1:]))],
-            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
-        ]
-
-        bot.send_message(chat_id=chat_id, text="Scegli l'ora di partenza del viaggio. ",
-                         reply_markup=InlineKeyboardMarkup(keyboard))
-    elif len(data) == 3:  # Inserimento dei minuti
-        # Ordine: minuti, ora, giorno, direzione
-        keyboard = [
-            [InlineKeyboardButton(str(i).zfill(2), callback_data=ccd("NEWTRIP", str(i), *data))
-             for i in range(0, 30, 5)],
-            [InlineKeyboardButton(str(i), callback_data=ccd("NEWTRIP", str(i), *data))
-             for i in range(30, 60, 5)],
-            [InlineKeyboardButton("Indietro", callback_data=ccd("NEWTRIP", *data[1:]))],
-            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
-        ]
-
-        bot.send_message(chat_id=chat_id,
-                         text="Scegli i minuti di partenza del viaggio.",
-                         reply_markup=InlineKeyboardMarkup(keyboard))
-    elif len(data) == 4:  # Conferma finale data all'utente
-        minute, hour, day, direction = data
-        time = hour.zfill(2) + ":" + minute.zfill(2)
-
-        secret_data.groups[direction][str(day)][str(chat_id)] = {"Time": str(time),
-                                                                         "Permanent": [],
-                                                                         "Temporary": [],
-                                                                         "SuspendedUsers": [],
-                                                                         "Suspended": False}
-
-        message_text = "Viaggio aggiunto con successo:" \
-                       + "\n\n➡: " + common.direction_to_name(direction) \
-                       + "\n🗓: " + day \
-                       + "\n🕓: " + str(time)
-
-        bot.send_message(chat_id=chat_id, text=message_text)
-    else:
-        bot.send_message(chat_id=chat_id, text="Spiacente, si è verificato un errore. Riprova più tardi.")

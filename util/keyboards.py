@@ -7,6 +7,9 @@ from util import common
 from util.filters import create_callback_data as ccd
 
 
+#
+# Tastiera chiamata dal menù /me. Cambia a seconda che il guidatore è un autista o meno.
+#
 def me_keyboard(chat_id):
     keyboard = []
     if str(chat_id) in secret_data.drivers:
@@ -26,6 +29,10 @@ def me_keyboard(chat_id):
     return InlineKeyboardMarkup(keyboard)
 
 
+#
+# Tastiera chiamata dal menù TRIPS di /me. Mostra tutti i viaggi di un certo autista, inclusi i posti liberi
+# oppure SOSP se il viaggio risulta sospeso.
+#
 def trips_keyboard(chat_id):
     keyboard = [[InlineKeyboardButton("Aggiungi un nuovo viaggio", callback_data=ccd("TRIPS", "NEW_TRIP"))]]
 
@@ -40,7 +47,8 @@ def trips_keyboard(chat_id):
                     counter = len(group["Permanent"]) + len(group["Temporary"])
 
                 keyboard.append(
-                    [InlineKeyboardButton(day + ": " + group["Time"] + " " + common.direction_to_name(direction)
+                    [InlineKeyboardButton(day + ": " + group["Time"]
+                                          + " " + common.direction_to_name(direction)
                                           + " (" + str(counter) + ")",
                                           callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))])
             except KeyError:
@@ -52,9 +60,12 @@ def trips_keyboard(chat_id):
     return InlineKeyboardMarkup(keyboard)
 
 
-# Keyboard customizzata per visualizzare le prenotazioni in maniera inline
-# Day è un oggetto di tipo stringa
-
+#
+# Tastiera chiamata con i menù di /prenota. mode e day sono due oggetti di tipo /prenota.
+# Al suo interno non vengono mai visualizzati i viaggi sospesi.
+# Vi sono inoltre due bottoni per cambiare liberamente tra la visualizzazione prenotzione e la
+# visualizzazione giorno semplice.
+#
 def booking_keyboard(mode, day):
     keyboard = []
 

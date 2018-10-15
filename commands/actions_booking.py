@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 
-from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.error import BadRequest
 
 import secret_data
@@ -49,12 +49,6 @@ def booking_handler(bot, update):
     data = separate_callback_data(update.callback_query.data)
     action = data[1]
     chat_id = str(update.callback_query.from_user.id)
-
-    bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
-    try:
-        update.callback_query.message.delete()
-    except BadRequest:
-        print("Failed to delete previous message", file=sys.stderr)
 
     #
     # Dati in entrata ("BOOKING", "NEW", mode)
@@ -115,7 +109,7 @@ def booking_handler(bot, update):
         ]
 
         driver_keyboard = [
-            [InlineKeyboardButton("Conferma", callback_data=ccd("ALERT_USER", "CONFIRM_BOOKING", chat_id))]
+            [InlineKeyboardButton("Conferma", callback_data=ccd("ALERT_USER", "CO_BO", direction, day, chat_id, mode))]
         ]
 
         trip = secret_data.groups[direction][day][driver]
@@ -132,13 +126,14 @@ def booking_handler(bot, update):
             bot.send_message(chat_id=chat_id, text="Ti sei già prenotato in questa data con questa persona!",
                              reply_markup=InlineKeyboardMarkup(user_keyboard))
         else:
-            trip[mode].append(chat_id)
+            # Si attende conferma dall'autista prima di aggiungere
             user_text = "Prenotazione completata. Dati del viaggio:" \
                         + "\n\n🚗: " + str(secret_data.users[driver]["Name"]) \
                         + "\n🗓: " + day \
                         + "\n🕓: " + trip["Time"] \
                         + "\n➡: " + common.direction_to_name(direction) \
-                        + "\n🔁: " + common.localize_mode(mode)
+                        + "\n🔁: " + common.localize_mode(mode) \
+                        + "\n\nRiceverai una conferma dall'autista il prima possibile."
 
             driver_text = "Hai una nuova prenotazione: " \
                           + "\n\n👤: " + str(secret_data.users[chat_id]["Name"]) \
@@ -169,12 +164,6 @@ def edit_booking(bot, update):
     chat_id = str(update.callback_query.from_user.id)
     data = separate_callback_data(update.callback_query.data)
     action = data[1]
-
-    bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
-    try:
-        update.callback_query.message.delete()
-    except BadRequest:
-        print("Failed to delete previous message", file=sys.stderr)
 
     #
     #  Comando base chiamato dal metodo prenota. Effettua una query di tutti i viaggi presentandoli
@@ -352,3 +341,16 @@ def edit_booking(bot, update):
                          text=secret_data.users[chat_id]["Name"]
                               + " ha cancellato la prenotazione per " + day + " "
                               + common.direction_to_name(direction) + ".")
+
+
+def alert_user(bot, update):
+    chat_id = str(update.callback_query.from_user.id)
+    data = separate_callback_data(update.callback_query.data)
+    action = data[1]
+
+    if action == "CO_BO":
+        direction, day, user, mode = data[2:]  # Utente della prenotazione
+        secret_data.groups[direction][day][chat_id][mode].append(chat_id)
+        bot.send_message(chat_id=user,
+                         text=secret_data.users[chat_id]["Name"] + " ha confermato la tua prenotazione.")
+        bot.send_message(chat_id=chat_id, text="Prenotazione confermata con successo.")
