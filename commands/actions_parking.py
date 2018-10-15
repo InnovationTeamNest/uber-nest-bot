@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-
-import logging as log
+import sys
 
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.error import BadRequest
@@ -16,7 +15,7 @@ def parcheggio(bot, update):
         try:
             update.callback_query.message.delete()
         except BadRequest:
-            log.info("Failed to delete previous message")
+            print("Failed to delete previous message", file=sys.stderr)
         data = separate_callback_data(update.callback_query.data)
         action = data[1]
     else:

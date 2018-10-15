@@ -1,18 +1,20 @@
 # -*- coding: utf-8 -*-
-
-import logging as log
+import sys
 
 import telegram
 from telegram.error import BadRequest
 
+import secret_data
 
 # Questi comandi vengono usati dalla modalità inline per redirezionare correttamente i comandi.
 # Il metodo cancel_handler viene usato nel caso in cui si voglia troncare la catena di query.
 # Infine, create e separate_callback_data vengono usate per creare le stringhe d'identificazione.
 
-
 def inline_handler(bot, update):
     from commands import actions, actions_booking, actions_me, actions_money, actions_trips, actions_parking
+
+    # Loggo il contenuto della Callback query
+    print(update.callback_query.data, file=sys.stderr)
 
     # Nelle callback query, il primo elemento è sempre l'identificatore
     identifier = separate_callback_data(update.callback_query.data)[0]
@@ -53,6 +55,26 @@ def inline_handler(bot, update):
         actions_money.edit_money(bot, update)
     elif identifier == "NEW_DEBITOR":
         actions_money.new_debitor(bot, update)
+    # Azioni generiche
+    elif identifier == "ALERT_USER":
+        alert_user(bot, update)
+
+
+def alert_user(bot, update):
+    chat_id = update.callback_query.from_user.id
+    data = separate_callback_data(update.callback_query.data)
+    mode = data[1]
+
+    bot.send_chat_action(chat_id=chat_id, action=telegram.ChatAction.TYPING)
+    try:
+        update.callback_query.message.delete()
+    except BadRequest:
+        print("Failed to delete previous message", file=sys.stderr)
+
+    if mode == "CONFIRM_BOOKING":
+        user = data[2]  # Utente della prenotazione
+        bot.send_message(chat_id=user, text=secret_data.users[chat_id]["Name"] + " ha confermato la tua prenotazione.")
+        bot.send_message(chat_id=chat_id, text="Prenotazione confermata con successo.")
 
 
 def cancel_handler(bot, update):
@@ -62,7 +84,7 @@ def cancel_handler(bot, update):
     try:
         update.callback_query.message.delete()
     except BadRequest:
-        log.info("Failed to delete previous message")
+        print("Failed to delete previous message", file=sys.stderr)
 
     bot.send_message(chat_id=chat_id, text="Operazione annullata.")
 

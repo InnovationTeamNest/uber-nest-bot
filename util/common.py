@@ -82,7 +82,7 @@ def is_dst():
 #     try:
 #         output = str(secret_data.groups[direction][day][driver]["Time"])
 #     except KeyError:
-#         log.debug("Nessuna partenza trovata per questa query: "
+#         print("Nessuna partenza trovata per questa query: "
 #                   + direction + ", " + day + ", " + driver)
 #         output = None
 #     return output

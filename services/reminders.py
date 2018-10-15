@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-import logging as log
+import sys
 
 import telegram
 
@@ -15,15 +15,15 @@ def remind():
         try:
             remind_user(bot, chat_id)
         except Exception as ex:
-            log.error("Failed to alert " + str(chat_id) + "\n\n")
-            log.error(ex)
+            print("Failed to alert " + str(chat_id) + "\n\n", file=sys.stderr)
+            print(ex, file=sys.stderr)
 
     for chat_id in secret_data.drivers:
         try:
             remind_driver(bot, chat_id)
         except Exception as ex:
-            log.error("Failed to alert " + str(chat_id) + "\n\n")
-            log.error(ex)
+            print("Failed to alert " + str(chat_id) + "\n\n", file=sys.stderr)
+            print(ex, file=sys.stderr)
 
 
 def remind_driver(bot, chat_id):

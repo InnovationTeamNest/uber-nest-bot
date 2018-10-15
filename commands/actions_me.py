@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import logging as log
+import sys
 
 from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.error import BadRequest
@@ -27,7 +27,7 @@ def me(bot, update):
         try:
             update.callback_query.message.delete()
         except BadRequest:
-            log.info("Failed to delete previous message")
+            print("Failed to delete previous message", file=sys.stderr)
     else:
         chat_id = update.message.chat_id
 
@@ -43,9 +43,7 @@ def me_handler(bot, update):
     try:
         update.callback_query.message.delete()
     except BadRequest:
-        log.info("Failed to delete previous message")
-
-    log.debug("Mode entered: " + action)
+        print("Failed to delete previous message", file=sys.stderr)
 
     if action == "TRIPS":  # Visualizza i vari trips dell'utente
         bot.send_message(chat_id=chat_id,
@@ -138,7 +136,7 @@ def newtrip_handler(bot, update):
     try:
         update.callback_query.message.delete()
     except BadRequest:
-        log.info("Failed to delete previous message")
+        print("Failed to delete previous message", file=sys.stderr)
 
     # NOTA BENE: (Python 2.7 non supporta argomenti di posizione dopo *)
     if len(data) == 1:  # Inserimento del giorno

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import logging as log
 import math
+import sys
 
 from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.error import BadRequest
@@ -19,7 +19,7 @@ def check_money(bot, update):
     try:
         update.callback_query.message.delete()
     except BadRequest:
-        log.info("Failed to delete previous message")
+        print("Failed to delete previous message", file=sys.stderr)
 
     # Prima raccolgo sottoforma di stringa i debiti
     debits = util.common.get_debits(chat_id)
@@ -73,7 +73,7 @@ def edit_money(bot, update):
     try:
         update.callback_query.message.delete()
     except BadRequest:
-        log.info("Failed to delete previous message")
+        print("Failed to delete previous message", file=sys.stderr)
 
     #
     # Tre azioni possibili: SUBTRACT (sottrae il prezzo di un viaggio), ADD (aggiunge il prezzo
@@ -140,7 +140,7 @@ def new_debitor(bot, update):
     try:
         update.callback_query.message.delete()
     except BadRequest:
-        log.info("Failed to delete previous message")
+        print("Failed to delete previous message", file=sys.stderr)
 
     keyboard = []
     users = sorted(  # Resituisce una lista di tuple del tipo (Nome, ID)

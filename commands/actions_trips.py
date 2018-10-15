@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import logging as log
 import math
+import sys
 
 from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.error import BadRequest
@@ -20,9 +20,8 @@ def trips_handler(bot, update):
     try:
         update.callback_query.message.delete()
     except BadRequest:
-        log.info("Failed to delete previous message")
+        print("Failed to delete previous message", file=sys.stderr)
 
-    log.debug("Mode entered: " + action)
     if action == "NEW_TRIP":  # Chiamata sul bottone "Nuovo viaggio"
         keyboard = [
             [InlineKeyboardButton("per Povo", callback_data=ccd("NEWTRIP", "Salita")),
@@ -283,9 +282,7 @@ def add_passenger(bot, update):
     try:
         update.callback_query.message.delete()
     except BadRequest:
-        log.info("Failed to delete previous message")
-
-    log.debug("Mode entered: " + action)
+        print("Failed to delete previous message", file=sys.stderr)
 
     # Comando chiamato dalla vista viaggio per aggiungere un passeggero
     if action == "SELECT":

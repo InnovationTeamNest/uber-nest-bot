@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-
-import logging as log
+import sys
 
 from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.error import BadRequest
@@ -23,7 +22,7 @@ def prenota(bot, update):
         try:
             update.callback_query.message.delete()
         except BadRequest:
-            log.info("Failed to delete previous message")
+            print("Failed to delete previous message", file=sys.stderr)
     else:
         chat_id = update.message.chat_id
 
@@ -55,7 +54,7 @@ def booking_handler(bot, update):
     try:
         update.callback_query.message.delete()
     except BadRequest:
-        log.info("Failed to delete previous message")
+        print("Failed to delete previous message", file=sys.stderr)
 
     #
     # Dati in entrata ("BOOKING", "NEW", mode)
@@ -78,7 +77,7 @@ def booking_handler(bot, update):
             else:
                 text = ""
 
-            keyboard = [
+            user_keyboard = [
                 [InlineKeyboardButton(day[:2],  # Abbreviazione del giorno
                                       callback_data=ccd("BOOKING", "DAY", mode, day)) for day in common.work_days],
                 [InlineKeyboardButton("Indietro", callback_data=ccd("BOOKING_MENU"))],
@@ -86,7 +85,7 @@ def booking_handler(bot, update):
             ]
 
             bot.send_message(chat_id=chat_id, text=text + "\n\nScegli la data della prenotazione.",
-                             reply_markup=InlineKeyboardMarkup(keyboard))
+                             reply_markup=InlineKeyboardMarkup(user_keyboard))
         else:
             bot.send_message(chat_id=chat_id,
                              text="Mi dispiace, è possibile effettuare prenotazioni"
@@ -110,9 +109,13 @@ def booking_handler(bot, update):
     elif action == "CONFIRM":
         direction, day, driver, mode = data[2:]
 
-        keyboard = [
+        user_keyboard = [
             [InlineKeyboardButton("Indietro", callback_data=ccd("BOOKING", "DAY", mode, day))],
             [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+        ]
+
+        driver_keyboard = [
+            [InlineKeyboardButton("Conferma", callback_data=ccd("ALERT_USER", "CONFIRM_BOOKING", chat_id))]
         ]
 
         trip = secret_data.groups[direction][day][driver]
@@ -121,13 +124,13 @@ def booking_handler(bot, update):
 
         if chat_id == driver:
             bot.send_message(chat_id=chat_id, text="Sei tu l'autista!",
-                             reply_markup=InlineKeyboardMarkup(keyboard))
+                             reply_markup=InlineKeyboardMarkup(user_keyboard))
         elif occupied_slots >= total_slots:
             bot.send_message(chat_id=chat_id, text="Macchina piena, vai a piedi LOL",
-                             reply_markup=InlineKeyboardMarkup(keyboard))
+                             reply_markup=InlineKeyboardMarkup(user_keyboard))
         elif chat_id in trip["Temporary"] or chat_id in trip["Permanent"] or chat_id in trip["SuspendedUsers"]:
             bot.send_message(chat_id=chat_id, text="Ti sei già prenotato in questa data con questa persona!",
-                             reply_markup=InlineKeyboardMarkup(keyboard))
+                             reply_markup=InlineKeyboardMarkup(user_keyboard))
         else:
             trip[mode].append(chat_id)
             user_text = "Prenotazione completata. Dati del viaggio:" \
@@ -143,15 +146,17 @@ def booking_handler(bot, update):
                           + "\n🗓: " + day \
                           + "\n🕓: " + trip["Time"] \
                           + "\n➡: " + common.direction_to_name(direction) \
-                          + "\n🔁: " + common.localize_mode(mode)
+                          + "\n🔁: " + common.localize_mode(mode) \
+                          + ".\n\nPer favore, conferma la presa visione della prentazione. In caso negativo," \
+                          + " la prenotazione verrà considerata non valida."
 
             # Eventuale aggiunta del luogo di ritrovo
             if "Location" in trip:
                 user_text += "\n📍: " + trip["Location"]
                 driver_text += "\n📍: " + trip["Location"]
 
-            bot.send_message(chat_id=chat_id, text=user_text, reply_markup=InlineKeyboardMarkup(keyboard))
-            bot.send_message(chat_id=driver, text=driver_text)
+            bot.send_message(chat_id=chat_id, text=user_text, reply_markup=InlineKeyboardMarkup(user_keyboard))
+            bot.send_message(chat_id=driver, text=driver_text, reply_markup=InlineKeyboardMarkup(driver_keyboard))
 
 
 def edit_booking(bot, update):
@@ -169,7 +174,7 @@ def edit_booking(bot, update):
     try:
         update.callback_query.message.delete()
     except BadRequest:
-        log.info("Failed to delete previous message")
+        print("Failed to delete previous message", file=sys.stderr)
 
     #
     #  Comando base chiamato dal metodo prenota. Effettua una query di tutti i viaggi presentandoli
