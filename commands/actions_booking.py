@@ -142,7 +142,7 @@ def booking_handler(bot, update):
                           + "\n🕓: " + trip["Time"] \
                           + "\n➡: " + common.direction_to_name(direction) \
                           + "\n🔁: " + common.localize_mode(mode) \
-                          + ".\n\nPer favore, conferma la presa visione della prentazione. In caso negativo," \
+                          + ".\n\nPer favore, conferma la presa visione della prenotazione. In caso negativo," \
                           + " la prenotazione verrà considerata non valida."
 
             # Eventuale aggiunta del luogo di ritrovo
@@ -350,7 +350,6 @@ def alert_user(bot, update):
 
     if action == "CO_BO":
         direction, day, user, mode = data[2:]  # Utente della prenotazione
-        secret_data.groups[direction][day][chat_id][mode].append(chat_id)
-        bot.send_message(chat_id=user,
-                         text=secret_data.users[chat_id]["Name"] + " ha confermato la tua prenotazione.")
+        secret_data.groups[direction][day][chat_id][mode].append(user)
+        bot.send_message(chat_id=user, text=secret_data.users[chat_id]["Name"] + " ha confermato la tua prenotazione.")
         bot.send_message(chat_id=chat_id, text="Prenotazione confermata con successo.")

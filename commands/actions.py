@@ -112,7 +112,7 @@ def registra(bot, update):
         bot.send_message(chat_id=update.message.chat_id,
                          text="Inserire nome e cognome, che verranno mostrati"
                               " sia agli autisti sia ai passeggeri. Ogni violazione di"
-                              " queste regole verrà punita con la rimozione dal"
+                              " queste regole verrà punita con la rimo<zione dal"
                               " sistema.")
         ReplyStatus.response_mode = 1
 
@@ -127,5 +127,5 @@ def response_registra(bot, update):
                           "i crediti e diventare autista di UberNEST.\n"
                           "/prenota per effettuare e disdire prenotazioni.")
     bot.send_message(chat_id=secret_data.owner_id,
-                     text="Nuovo utente iscritto: " + str(user.encode('utf8')))
+                     text="Nuovo utente iscritto: " + user)
     ReplyStatus.response_mode = 0

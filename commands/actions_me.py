@@ -10,17 +10,6 @@ from util.filters import create_callback_data as ccd, separate_callback_data
 from util.keyboards import me_keyboard, trips_keyboard
 
 
-# Informazioni sulla notazione usata (limitazione delle API a 64 byte per chiamata)
-#
-# TRIPS -> entrypoint per action_trips.py
-# DRIVER -> rimozione o aggiunta del driver
-# US_RE = USER_REMOVAL
-# ED_DR_SL = EDIT_DRIVER_SLOTS
-# CO_DR = CONFIRM_DRIVER
-# CO_DR_RE = CONFIRM_DRIVER_REMOVAL
-# CO_US_RE = CONFIRM_USER_REMOVAL
-
-
 def me(bot, update):
     if update.callback_query:
         chat_id = str(update.callback_query.from_user.id)
@@ -44,11 +33,17 @@ def me_handler(bot, update):
     action = separate_callback_data(update.callback_query.data)[1]
     chat_id = str(update.callback_query.from_user.id)
 
-    if action == "TRIPS":  # Visualizza i vari trips dell'utente
+    #
+    # Da questo menù viene invocata la keyboard in keyboards.py.
+    #
+    if action == "TRIPS":
         bot.send_message(chat_id=chat_id,
                          text="Viaggi (clicca su un viaggio per modificarlo):",
                          reply_markup=trips_keyboard(chat_id))
-    elif action == "DRIVER":  # Aggiunta o rimozione della modalità guidatore
+    #
+    # Da questo menù è possibile iscriversi e disiscriversi dalla modalità autista.
+    #
+    elif action == "DRIVER":
         if chat_id in secret_data.drivers:
             keyboard = [
                 [InlineKeyboardButton("Sì", callback_data=ccd("ME", "CO_DR_RE")),
@@ -69,6 +64,11 @@ def me_handler(bot, update):
                                   " UberNEST per ulteriori informazioni.\n\n"
                                   "Sei sicuro di voler diventare un autista di UberNEST?",
                              reply_markup=InlineKeyboardMarkup(keyboard))
+    #
+    # US_RE = USER_REMOVAL
+    # Da questo menù è possibile attuare la cancellazione completa e totale di tutti i dati dell'utente.
+    # Nulla rimarrà, a parte i debiti che verranno inoltrati ai rispettivi creditori.
+    #
     elif action == "US_RE":
         keyboard = [
             [InlineKeyboardButton("Sì", callback_data=ccd("ME", "CO_US_RE")),
@@ -89,6 +89,10 @@ def me_handler(bot, update):
                             " verranno avvisate dei tuoi debiti non saldati!\n" + debitors
 
         bot.send_message(chat_id=chat_id, text=message_text, reply_markup=InlineKeyboardMarkup(keyboard))
+    #
+    # ED_DR_SL = EDIT_DRIVER_SLOTS
+    # Questo menù permette di modificare gli slot a disposizione del guidatore.
+    #
     elif action == "ED_DR_SL":
         # Inserisco 5 bottoni per i posti con la list comprehension
         keyboard = [[InlineKeyboardButton(str(i), callback_data=ccd("ME", "CO_DR", str(i)))
@@ -98,6 +102,11 @@ def me_handler(bot, update):
         bot.send_message(chat_id=chat_id,
                          text="Inserisci il numero di posti disponibili nella tua macchina, autista escluso.",
                          reply_markup=InlineKeyboardMarkup(keyboard))
+    #
+    # CO_DR = CONFIRM_DRIVER
+    # Questo metodo svolge due diverse funzioni: se l'utente è un autista, è l'endpoint per la conferma
+    # degli slot, altrimenti dell'iscrizione
+    #
     elif action == "CO_DR":
         slots = int(separate_callback_data(update.callback_query.data)[2])
         if chat_id in secret_data.drivers:
@@ -109,10 +118,18 @@ def me_handler(bot, update):
                              text="Sei stato inserito nella lista degli autisti! Usa il menu /me per aggiungere"
                                   " viaggi, modificare i posti auto, aggiungere un messaggio da mostrare ai tuoi"
                                   " passeggeri ed altro.")
+    #
+    # CO_DR_RE = CONFIRM_DRIVER_REMOVAL
+    # Metodo di conferma della rimozione di un autista, vedi sopra.
+    #
     elif action == "CO_DR_RE":
         common.delete_driver(chat_id)
         bot.send_message(chat_id=chat_id,
                          text="Sei stato rimosso con successo dall'elenco degli autisti.")
+    #
+    # CO_US_RE = CONFIRM_USER_REMOVAL
+    # Metodo di conferma rimozione utente, vedi sopra.
+    #
     elif action == "CO_US_RE":
         user_debits = secret_data.users[chat_id]["Debit"]
         for creditor in user_debits:
