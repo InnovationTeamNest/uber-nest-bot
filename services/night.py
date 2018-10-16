@@ -37,16 +37,17 @@ def process_day():
                 # Caso in cui il viaggio è sospeso
                 if trips[driver]["Suspended"]:
                     trips[driver]["Suspended"] = False  # Rimuovo la sospensione del viaggio
-                    bot.send_message(chat_id=str(driver),
+                    bot.send_message(chat_id=driver,
                                      text="Il tuo viaggio di " + day.lower() + " "
                                           + common.direction_to_name(direction) + " è stato ripristinato.")
 
                     for mode in "Temporary", "Permanent":
                         for user in trips[driver][mode]:
-                            bot.send_message(chat_id=str(user),
+                            bot.send_message(chat_id=user,
                                              text="Il viaggio di " + secret_data.users[driver]["Name"]
-                                                  + " per " + day.lower() + common.direction_to_name(direction)
-                                                  + " è di nuovo operativo. La tua prenotazione " +
+                                                  + " per " + day.lower() + " "
+                                                  + common.direction_to_name(direction)
+                                                  + " è di nuovo operativo. La tua prenotazione "
                                                   + common.localize_mode(mode) + " è di nuovo valida.")
 
                 # Caso normale, i passeggeri vanno addebitati
