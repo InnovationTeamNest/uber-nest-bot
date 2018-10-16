@@ -3,7 +3,7 @@ cron:
   url: /set_webhook
   timezone: Europe/Rome
   schedule: every 24 hours
-- description: process credit changes\
+- description: process credit changes
   url: /money
   timezone: Europe/Rome
   schedule: every day 02:00
