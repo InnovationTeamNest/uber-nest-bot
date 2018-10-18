@@ -13,10 +13,6 @@ from util.keyboards import me_keyboard, trips_keyboard
 def me(bot, update):
     if update.callback_query:
         chat_id = str(update.callback_query.from_user.id)
-        try:
-            update.callback_query.message.delete()
-        except BadRequest:
-            print("Failed to delete previous message", file=sys.stderr)
     else:
         chat_id = str(update.message.chat_id)
 

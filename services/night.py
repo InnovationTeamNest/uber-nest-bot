@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import sys
 
 from telegram import Bot
 
 import secret_data
 from util import common
-
-bot = Bot(secret_data.bot_token)
 
 
 def process_day():
@@ -16,6 +15,8 @@ def process_day():
     e addebitandogli il prezzo impostato in common.trip_price. Se il viaggio è temporaneo, vengono
     anche rimossi.
     """
+    from webhook import bot
+
     today = datetime.datetime.today()
     day = common.day_to_string(today.weekday() - 1)
 
@@ -26,16 +27,16 @@ def process_day():
                 # Caso in cui il viaggio è sospeso
                 if trips[driver]["Suspended"]:
                     trips[driver]["Suspended"] = False  # Rimuovo la sospensione del viaggio
-                    bot.send_message(chat_id=str(driver),
+                    bot.send_message(chat_id=driver,
                                      text="Il tuo viaggio di " + day.lower() + " "
                                           + common.direction_to_name(direction) + " è stato ripristinato.")
 
                     for mode in "Temporary", "Permanent":
                         for user in trips[driver][mode]:
-                            bot.send_message(chat_id=str(user),
+                            bot.send_message(chat_id=user,
                                              text="Il viaggio di " + secret_data.users[driver]["Name"]
                                                   + " per " + day.lower() + common.direction_to_name(direction)
-                                                  + " è di nuovo operativo. La tua prenotazione " +
+                                                  + " è di nuovo operativo. La tua prenotazione "
                                                   + common.localize_mode(mode) + " è di nuovo valida.")
 
                 # Caso normale, i passeggeri vanno addebitati
@@ -100,20 +101,28 @@ def weekly_report():
     un messaggio con il riepilogo di soldi che devono dare. Se l'utente è anche un autista, riceverà anche
     un messaggio con i crediti.
     """
+    from webhook import bot
+
     for user in secret_data.users:
         # Invio dei debiti per tutti gli utenti
-        debits = common.get_debits(user)
-        if debits:
-            string = "Riepilogo settimanale dei debiti:\n"
-            for name, value in debits:
-                string = string + "\n" + secret_data.users[name]["Name"] + " - " + str(value) + " EUR"
-            bot.send_message(chat_id=user, text=string)
-
-        # Invio dei crediti per ogni singolo autista
-        if user in secret_data.drivers:
-            credits = common.get_credits(user)
-            if credits:
-                string = "Riepilogo settimanale dei crediti:\n"
-                for name, value in credits:
+        try:
+            debits = common.get_debits(user)
+            if debits:
+                string = "Riepilogo settimanale dei debiti:\n"
+                for name, value in debits:
                     string = string + "\n" + secret_data.users[name]["Name"] + " - " + str(value) + " EUR"
                 bot.send_message(chat_id=user, text=string)
+        except Exception as ex:
+            print("Failed to alert user " + user, ex, file=sys.stderr)
+
+        # Invio dei crediti per ogni singolo autista
+        try:
+            if user in secret_data.drivers:
+                credits = common.get_credits(user)
+                if credits:
+                    string = "Riepilogo settimanale dei crediti:\n"
+                    for name, value in credits:
+                        string = string + "\n" + secret_data.users[name]["Name"] + " - " + str(value) + " EUR"
+                    bot.send_message(chat_id=user, text=string)
+        except Exception as ex:
+            print("Failed to alert driver " + user, ex, file=sys.stderr)

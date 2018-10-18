@@ -28,7 +28,7 @@ work_days = days[:5]
 
 # Inizio e fine del tempo ammesso di prenotazione
 booking_start = datetime.time(6, 0)
-booking_end = datetime.time(23, 30)
+booking_end = datetime.time(23, 50)
 
 # Costo di ogni viaggio
 trip_price = 0.50
@@ -174,17 +174,3 @@ def alert_suspension(bot, direction, day, driver):
                              text="Attenzione! " + secret_data.users[driver]["Name"]
                                   + " ha annullato la sospensione del viaggio di " + day
                                   + " " + direction_to_name(direction) + ".")
-
-
-def edit_money_admin(bot, update, args):
-    if str(update.message.chat_id) == secret_data.owner_id:
-        try:
-            debitor, creditor, value = args
-            secret_data.users[str(debitor)]["Debit"][str(creditor)] = float(value)
-            bot.send_message(chat_id=secret_data.owner_id,
-                             text="Modifica in corso: "
-                                  + "\n\nDebitore: " + secret_data.users[str(debitor)]["Name"]
-                                  + "\nCreditore: " + secret_data.users[str(creditor)]["Name"]
-                                  + "\nDebito inserito: " + str(value))
-        except Exception:
-            bot.send_message(chat_id=secret_data.owner_id, text="Sintassi non corretta. Riprova!")

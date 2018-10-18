@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import sys
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
@@ -126,6 +127,5 @@ def response_registra(bot, update):
                           "per gestire il tuo profilo, gestire i debiti e "
                           "i crediti e diventare autista di UberNEST.\n"
                           "/prenota per effettuare e disdire prenotazioni.")
-    bot.send_message(chat_id=secret_data.owner_id,
-                     text="Nuovo utente iscritto: " + user)
+    print("Nuovo utente iscritto: " + user, file=sys.stderr)
     ReplyStatus.response_mode = 0

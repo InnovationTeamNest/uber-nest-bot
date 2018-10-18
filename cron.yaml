@@ -3,8 +3,8 @@ cron:
   url: /set_webhook
   timezone: Europe/Rome
   schedule: every 24 hours
-- description: process credit changes
-  url: /money
+- description: process credit changes and suspensions
+  url: /night
   timezone: Europe/Rome
   schedule: every day 02:00
 - description: remind users and drivers about upcoming trips

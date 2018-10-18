@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import sys
+
 from flask import Flask, request
 
 from secret_data import bot_token
@@ -15,29 +17,33 @@ def index():
 def webhook():
     if 'X-Appengine-Cron' in request.headers:
         from webhook import dispatcher_setup, bot
-        from secret_data import url, owner_id
         # Ogni volta che si carica una nuova versione, bisogna rifare il setup del bot!
         # Ciò viene automatizzato nelle richieste provenienti esclusivamente da Telegram.
-        dispatcher_setup()
-        res = bot.setWebhook(url + bot_token)
+        res = dispatcher_setup()
         if res:
             return "Success!", 200
         else:
-            bot.send_message(chat_id=owner_id, text="Errore nel reset del Webhook!")
+            print("Errore nel reset del Webhook!", file=sys.stderr)
             return "Webhook setup failed...", 500
     else:
-        return "Access%20denied", 403
+        return "Access denied", 403
 
 
 @app.route('/' + bot_token, methods=['POST'])
 def update():
     import telegram
     from services import dumpable
-    from webhook import bot, webhook as wb
+    from webhook import bot, process
 
+    # De-Jsonizzo l'update
     update = telegram.Update.de_json(request.get_json(force=True), bot)
-    wb(update, 0)
+    # Loggo il contenuto dell'update
+    print(update, file=sys.stderr)
+    # Faccio processare al dispatcher l'update
+    process(update)
+    # Infine salvo eventuali dati modificati
     dumpable.dump_data()
+
     return "See console for output", 200
 
 
@@ -46,6 +52,7 @@ def data():
     from services.dumpable import get_data, print_data
     get_data()
     print_data()
+
     return "Data output in console.", 200
 
 
@@ -54,10 +61,11 @@ def script():
     # get_data()
     # print_data()
     # dump_data()
+
     return "", 403
 
 
-@app.route('/money', methods=['GET'])
+@app.route('/night', methods=['GET'])
 def night():
     if 'X-Appengine-Cron' in request.headers:
         from services.dumpable import get_data, dump_data
@@ -66,9 +74,10 @@ def night():
         get_data()
         process_day()
         dump_data()
+
         return "See console for output.", 200
     else:
-        return "Access%20denied", 403
+        return "Access denied", 403
 
 
 @app.route('/weekly_report', methods=['GET'])
@@ -80,9 +89,10 @@ def weekly():
         get_data()
         weekly_report()
         dump_data()
+
         return "See console for output.", 200
     else:
-        return "Access%20denied", 403
+        return "Access denied", 403
 
 
 @app.route('/reminders', methods=['GET'])
@@ -93,6 +103,7 @@ def reminders():
 
         get_data()
         remind()
+
         return "See console for output.", 200
     else:
-        return "Access%20denied", 403
+        return "Access denied", 403

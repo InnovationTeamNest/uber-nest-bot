@@ -19,10 +19,6 @@ def prenota(bot, update):
     """
     if update.callback_query:
         chat_id = update.callback_query.from_user.id
-        try:
-            update.callback_query.message.delete()
-        except BadRequest:
-            print("Failed to delete previous message", file=sys.stderr)
     else:
         chat_id = update.message.chat_id
 

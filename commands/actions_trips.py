@@ -266,9 +266,9 @@ def add_passenger(bot, update):
     associata un bottone che permette di aprirla immediatamente. In ogni pagina vi sono PAGE_SIZE persone,
     costante definita in util/common.py
     """
+    chat_id = str(update.callback_query.from_user.id)
     data = separate_callback_data(update.callback_query.data)
     action = data[1]
-    chat_id = str(update.callback_query.from_user.id)
 
     # Comando chiamato dalla vista viaggio per aggiungere un passeggero
     if action == "SELECT":
