@@ -3,7 +3,7 @@ import sys
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-import secret_data
+import secrets
 from commands.actions_show_bookings import fetch_bookings
 from util import common
 from util.filters import ReplyStatus, create_callback_data
@@ -27,23 +27,23 @@ def start(bot, update):
 
 def help(bot, update):
     if update.chat.type == "private":
-        text = "Comandi disponibili:"
+        text = ["Comandi disponibili:"]
 
-        if str(update.message.chat_id) in secret_data.users:
-            text += "/me - Gestisci il tuo profilo." \
-                    "\n/prenota - Gestisci le tue prenotazioni." \
-                    "\n/parcheggio - Registra il tuo parcheggio di oggi."
+        if str(update.message.chat_id) in secrets.users:
+            text.append("\n\n/me - Gestisci il tuo profilo."
+                        "\n/prenota - Gestisci le tue prenotazioni."
+                        "\n/parcheggio - Registra il tuo parcheggio di oggi.")
         else:
-            text += "/registra - Inizia a usare UberNEST registrandoti a sistema."
+            text.append("\n\n/registra - Inizia a usare UberNEST registrandoti al sistema.")
 
-        text = text + "\n\n/oggi - Visualizza le prenotazioni per oggi." \
-               + "\n/domani - Visualizza le prenotazioni per domani." \
-               + "\n/settimana - Visualizza le prenotazioni per la settimana." \
-               + "\n\n/lunedi - /martedi - /mercoledi\n/giovedi - /venerdi - " \
-               + "Visualizza le prenotazioni dei singoli giorni." \
-               + "\n\n/info - Visualizza informazioni sulla versione del Bot."
+        text.append("\n\n/oggi - Visualizza le prenotazioni per oggi."
+                    "\n/domani - Visualizza le prenotazioni per domani."
+                    "\n/settimana - Visualizza le prenotazioni per la settimana."
+                    "\n\n/lunedi - /martedi - /mercoledi"
+                    "\n/giovedi - /venerdi - Visualizza le prenotazioni dei singoli giorni."
+                    "\n\n/info - Visualizza informazioni sulla versione del Bot.")
 
-        bot.send_message(chat_id=update.message.chat_id, text=text)
+        bot.send_message(chat_id=update.message.chat_id, text="".join(text))
     else:
         bot.send_message(chat_id=update.message.chat_id,
                          text="Per informazioni, scrivimi /help in privato su @ubernestbot.")
@@ -91,8 +91,7 @@ def settimana(bot, update):
     keyboard = []
 
     for day in common.work_days:
-        keyboard.append(
-            InlineKeyboardButton(day[:2], callback_data=create_callback_data("SHOW_BOOKINGS", day)))
+        keyboard.append(InlineKeyboardButton(day[:2], callback_data=create_callback_data("SHOW_BOOKINGS", day)))
 
     bot.send_message(chat_id=update.message.chat_id,
                      text="Scegli il giorno di cui visualizzare le prenotazioni.",
@@ -100,7 +99,7 @@ def settimana(bot, update):
 
 
 def registra(bot, update):
-    if str(update.message.chat_id) in secret_data.users:
+    if str(update.message.chat_id) in secrets.users:
         bot.send_message(chat_id=update.message.chat_id,
                          text="Questo utente risulta già iscritto a sistema!")
     else:
@@ -120,12 +119,12 @@ def registra(bot, update):
 
 def response_registra(bot, update):
     user = update.message.text
-    secret_data.users[str(update.message.chat_id)] = {"Name": str(user), "Debit": {}}
+    secrets.users[str(update.message.chat_id)] = {"Name": str(user), "Debit": {}}
     bot.send_message(chat_id=update.message.chat_id,
                      text="Il tuo username è stato aggiunto con successo"
                           " al database. Usa i seguenti comandi:\n/me "
                           "per gestire il tuo profilo, gestire i debiti e "
                           "i crediti e diventare autista di UberNEST.\n"
                           "/prenota per effettuare e disdire prenotazioni.")
-    print("Nuovo utente iscritto: " + user, file=sys.stderr)
+    print(f"Nuovo utente iscritto: {user}", file=sys.stderr)
     ReplyStatus.response_mode = 0

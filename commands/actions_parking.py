@@ -4,7 +4,7 @@ import sys
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.error import BadRequest
 
-import secret_data
+import secrets
 from util import common
 from util.filters import create_callback_data as ccd, separate_callback_data
 
@@ -24,7 +24,7 @@ def parcheggio(bot, update):
         action = "CHOOSE"
 
     # Controllo per evitare che i non autisti usino il comando
-    if chat_id not in secret_data.drivers:
+    if chat_id not in secrets.drivers:
         return
 
     keyboard = [
@@ -34,8 +34,8 @@ def parcheggio(bot, update):
     if action == "CHOOSE":
         day = common.today()
         if common.is_weekday(day):
-            if chat_id in secret_data.groups["Discesa"][day] and not \
-                    secret_data.groups["Discesa"][day][chat_id]["Suspended"]:
+            if chat_id in secrets.groups["Discesa"][day] and not \
+                    secrets.groups["Discesa"][day][chat_id]["Suspended"]:
                 for item in common.locations:
                     keyboard.insert(0, [InlineKeyboardButton(item, callback_data=ccd("PARK", "SET", item))])
 
@@ -51,7 +51,8 @@ def parcheggio(bot, update):
                              reply_markup=InlineKeyboardMarkup(keyboard))
     elif action == "SET":
         location = data[2]
-        day_group = secret_data.groups["Discesa"][common.today()][chat_id]
+        day_group = secrets.groups["Discesa"][common.today()][chat_id]
+        user_name = secrets.users[chat_id]["Name"]
         day_group["Location"] = location
 
         bot.send_message(chat_id=chat_id, text="Posizione impostata con successo: " + location,
@@ -59,7 +60,5 @@ def parcheggio(bot, update):
 
         for passenger_group in day_group["Temporary"], day_group["Permanent"]:
             for passenger in passenger_group:
-                bot.send_message(chat_id=passenger, text="Per il viaggio di ritorno, "
-                                                         + secret_data.users[chat_id]["Name"]
-                                                         + " ha impostato il luogo di ritrovo:\n"
-                                                         + "📍 " + location + ".")
+                bot.send_message(chat_id=passenger, text=f"Per il viaggio di ritorno, {user_name}"
+                                                         f" ha impostato il luogo di ritrovo:\n📍 {location}.")

@@ -5,10 +5,10 @@ import time
 from telegram import Bot
 from telegram.ext import Dispatcher, CommandHandler, MessageHandler, CallbackQueryHandler, Filters
 
-import secret_data
+import secrets
 from util import common
 
-bot = Bot(secret_data.bot_token)
+bot = Bot(secrets.bot_token)
 dispatcher = None
 
 
@@ -23,7 +23,7 @@ def dispatcher_setup():
     # Inizio prendendo i dati da Datastore
     outcome = dumpable.get_data()
 
-    # Se non ci sono dati, provo a inviarli da quanto salvato in secret_data.opy
+    # Se non ci sono dati, provo a inviarli da quanto salvato in secrets.opy
     if not outcome:
         outcome = dumpable.dump_data()
 
@@ -55,7 +55,7 @@ def dispatcher_setup():
     dispatcher.add_handler(MessageHandler(Filters.text & Filters.private, filters.text_filter))
     dispatcher.add_handler(CallbackQueryHandler(filters.inline_handler))
 
-    return bot.setWebhook(secret_data.url + secret_data.bot_token)
+    return bot.setWebhook(secrets.url + secrets.bot_token)
 
 
 def process(update, counter=0):

@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
-import sys
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.error import BadRequest
 
-import secret_data
+import secrets
 from util import common
 from util.filters import create_callback_data as ccd, separate_callback_data
 from util.keyboards import me_keyboard, trips_keyboard
@@ -16,7 +14,7 @@ def me(bot, update):
     else:
         chat_id = str(update.message.chat_id)
 
-    if chat_id in secret_data.users:
+    if chat_id in secrets.users:
         bot.send_message(chat_id=chat_id, text="Cosa vuoi fare?", reply_markup=me_keyboard(chat_id))
 
 
@@ -40,7 +38,7 @@ def me_handler(bot, update):
     # Da questo menù è possibile iscriversi e disiscriversi dalla modalità autista.
     #
     elif action == "DRIVER":
-        if chat_id in secret_data.drivers:
+        if chat_id in secrets.drivers:
             keyboard = [
                 [InlineKeyboardButton("Sì", callback_data=ccd("ME", "CO_DR_RE")),
                  InlineKeyboardButton("No", callback_data=ccd("ME_MENU"))]]
@@ -70,19 +68,20 @@ def me_handler(bot, update):
             [InlineKeyboardButton("Sì", callback_data=ccd("ME", "CO_US_RE")),
              InlineKeyboardButton("No", callback_data=ccd("ME_MENU"))]]
 
-        user_debits = secret_data.users[chat_id]["Debit"]
-        debitors = ""
+        user_debits = secrets.users[chat_id]["Debit"]
+        debitors = []
         for creditor in user_debits:
-            debitors += secret_data.users[creditor]["Name"] + " - " + str(user_debits[creditor]) + " EUR"
+            creditor_name = secrets.users[creditor]["Name"]
+            debitors.append(f" {creditor_name} - {str(user_debits[creditor])} EUR\n")
 
         message_text = "Sei sicuro di voler confermare la tua rimozione completa dal sistema?" \
-                       + " L'operazione è reversibile, ma tutte le" \
-                       + " tue prenotazioni e viaggi verranno cancellati per sempre."
+                       " L'operazione è reversibile, ma tutte le" \
+                       " tue prenotazioni e viaggi verranno cancellati per sempre."
 
-        if debitors != "":
+        if debitors != []:
             message_text += "\n\nATTENZIONE! Hai debiti con le seguenti persone," \
                             " in caso di cancellazione dal sistema" \
-                            " verranno avvisate dei tuoi debiti non saldati!\n" + debitors
+                            " verranno avvisate dei tuoi debiti non saldati!\n\n" + "".join(debitors)
 
         bot.send_message(chat_id=chat_id, text=message_text, reply_markup=InlineKeyboardMarkup(keyboard))
     #
@@ -105,11 +104,11 @@ def me_handler(bot, update):
     #
     elif action == "CO_DR":
         slots = int(separate_callback_data(update.callback_query.data)[2])
-        if chat_id in secret_data.drivers:
+        if chat_id in secrets.drivers:
             bot.send_message(chat_id=chat_id,
                              text="Numero di posti della vettura aggiornato con successo.")
         else:
-            secret_data.drivers[chat_id] = {"Slots": slots}
+            secrets.drivers[chat_id] = {"Slots": slots}
             bot.send_message(chat_id=chat_id,
                              text="Sei stato inserito nella lista degli autisti! Usa il menu /me per aggiungere"
                                   " viaggi, modificare i posti auto, aggiungere un messaggio da mostrare ai tuoi"
@@ -127,14 +126,14 @@ def me_handler(bot, update):
     # Metodo di conferma rimozione utente, vedi sopra.
     #
     elif action == "CO_US_RE":
-        user_debits = secret_data.users[chat_id]["Debit"]
+        user_debits = secrets.users[chat_id]["Debit"]
+        user_name = secrets.users[chat_id]["Name"]
         for creditor in user_debits:
             bot.send_message(chat_id=creditor,
-                             text="ATTENZIONE! " + secret_data.users[chat_id]["Name"]
-                                  + " si è cancellato da UberNEST. Ha ancora "
-                                  + str(user_debits[creditor]) + " EUR di debito con te.")
+                             text=f"ATTENZIONE! {user_name} si è cancellato da UberNEST. Ha ancora "
+                                  f"{str(user_debits[creditor])} EUR di debito con te.")
 
-        del secret_data.users[chat_id]
-        if chat_id in secret_data.drivers:
+        del secrets.users[chat_id]
+        if chat_id in secrets.drivers:
             common.delete_driver(chat_id)
         bot.send_message(chat_id=chat_id, text="Sei stato rimosso con successo dal sistema.")

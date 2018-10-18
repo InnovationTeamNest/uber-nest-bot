@@ -4,7 +4,7 @@ import sys
 
 from google.cloud import datastore
 
-import secret_data
+import secrets
 
 
 def dump_data():
@@ -16,11 +16,10 @@ def dump_data():
         client.delete(key)
 
         # Prepares the new entity
-        data = datastore.Entity(key=key,
-                                exclude_from_indexes=('groups', 'users', 'drivers'))
-        data['groups'] = json.dumps(secret_data.groups)
-        data['users'] = json.dumps(secret_data.users)
-        data['drivers'] = json.dumps(secret_data.drivers)
+        data = datastore.Entity(key=key, exclude_from_indexes=('groups', 'users', 'drivers'))
+        data['groups'] = json.dumps(secrets.groups)
+        data['users'] = json.dumps(secrets.users)
+        data['drivers'] = json.dumps(secrets.drivers)
 
         # Saves the entity
         client.put(data)
@@ -37,9 +36,9 @@ def get_data():
         client = datastore.Client()
         data = client.get(client.key('Data', 1))
 
-        secret_data.groups = json.loads(data['groups'])
-        secret_data.users = json.loads(data['users'])
-        secret_data.drivers = json.loads(data['drivers'])
+        secrets.groups = json.loads(data['groups'])
+        secrets.users = json.loads(data['users'])
+        secrets.drivers = json.loads(data['drivers'])
         return True
     else:
         return False
@@ -49,9 +48,8 @@ def print_data():
     """Prints to the Cloud Console Logs the current dataset"""
     client = datastore.Client()
     data = client.get(client.key('Data', 1))
-    print("Stored data: " + str(data['drivers']) + str(data['users']) + str(data['groups']), file=sys.stderr)
-    print("Internal data: " + str(secret_data.drivers) + str(secret_data.users) + str(secret_data.groups),
-          file=sys.stderr)
+    print("Stored data: ", str(data['drivers']), str(data['users']), str(data['groups']), file=sys.stderr)
+    print("Internal data: ", str(secrets.drivers), str(secrets.users), str(secrets.groups), file=sys.stderr)
 
 
 def empty_datastore():
@@ -60,5 +58,5 @@ def empty_datastore():
 
 
 def empty_dataset():
-    """Verifies if the input data from secret_data.py is empty"""
-    return secret_data.groups == {} or secret_data.users == {} or secret_data.drivers == {}
+    """Verifies if the input data from secrets.py is empty"""
+    return secrets.groups == {} or secrets.users == {} or secrets.drivers == {}

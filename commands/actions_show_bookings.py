@@ -1,8 +1,8 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-import secret_data
+import secrets
 from util import common
-from util.filters import separate_callback_data, create_callback_data
+from util.filters import separate_callback_data, create_callback_data as ccd
 
 
 def show_bookings(bot, update):
@@ -14,44 +14,43 @@ def show_bookings(bot, update):
 
 def fetch_bookings(bot, chat_id, day):
     if common.is_weekday(day):
-        text = "Lista dei viaggi di " + day.lower() + ":"
+        text = [f"Lista dei viaggi di {day.lower()}:"]
 
         for direction in "Salita", "Discesa":
             bookings = sorted([
                 # Restituisce una tupla del tipo (ora, guidatore, chat_id) riordinata
-                (secret_data.groups[direction][day][driver]["Time"], secret_data.users[driver]["Name"], driver)
-                for driver in secret_data.groups[direction][day]
-                if not secret_data.groups[direction][day][driver]["Suspended"]
+                (secrets.groups[direction][day][driver]["Time"], secrets.users[driver]["Name"], driver)
+                for driver in secrets.groups[direction][day]
+                if not secrets.groups[direction][day][driver]["Suspended"]
             ])
 
             if len(bookings) > 0:
-                text = text + "\n\n➡" + common.direction_to_name(direction) + "\n"
+                text.append("\n\n➡" + common.dir_name(direction) + "\n")
                 for time, name, driver in bookings:
-                    trip = secret_data.groups[direction][day][driver]
+                    trip = secrets.groups[direction][day][driver]
                     # Raccolgo in una list comprehension le persone che partecipano al viaggio
-                    people = [secret_data.users[user]["Name"]
+                    people = [secrets.users[user]["Name"]
                               for mode in trip
                               if mode == "Temporary" or mode == "Permanent"
                               for user in trip[mode]]
 
                     # Aggiungo ogni viaggio trovato alla lista
-                    text = text + "\n" + "🚗 " + name \
-                           + " - 🕒 " + time + ":" \
-                           + "\n👥 " + ", ".join(people) + "\n"
+                    text.append("\n" + "🚗 " + name \
+                                + " - 🕒 " + time + ":" \
+                                + "\n👥 " + ", ".join(people) + "\n")
             else:
-                text = text + "\n\n🚶🏻‍♂ 🚶🏻‍♂ Nessuna persona in viaggio " \
-                       + common.direction_to_name(direction) + " oggi."
+                text.append("\n\n🚶🏻‍♂ 🚶🏻‍♂ Nessuna persona in viaggio " \
+                            + common.dir_name(direction) + " oggi.")
 
-        if str(chat_id) in secret_data.users and common.booking_time():
+        if str(chat_id) in secrets.users and common.booking_time():
             # Permetto l'uso della tastiera solo ai registrati
             keyboard = [
-                [InlineKeyboardButton("Prenota una tantum",
-                                      callback_data=create_callback_data("BOOKING", "DAY", "Temporary", day))],
+                [InlineKeyboardButton("Prenota una tantum", callback_data=ccd("BOOKING", "DAY", "Temporary", day))],
                 [InlineKeyboardButton("Prenota permanentemente",
-                                      callback_data=create_callback_data("BOOKING", "DAY", "Permanent", day))],
-                [InlineKeyboardButton("Esci", callback_data=create_callback_data("EXIT"))]
+                                      callback_data=ccd("BOOKING", "DAY", "Permanent", day))],
+                [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
             ]
-            bot.send_message(chat_id=chat_id, text=text,
+            bot.send_message(chat_id=chat_id, text="".join(text),
                              reply_markup=InlineKeyboardMarkup(keyboard))
         else:
             bot.send_message(chat_id=chat_id, text=text)

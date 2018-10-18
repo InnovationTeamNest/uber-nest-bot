@@ -3,7 +3,7 @@ import sys
 
 from flask import Flask, request
 
-from secret_data import bot_token
+from secrets import bot_token
 
 app = Flask(__name__)
 

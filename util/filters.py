@@ -75,14 +75,14 @@ def cancel_handler(bot, update):
     bot.send_message(chat_id=chat_id, text="Operazione annullata.")
 
 
-def create_callback_data(*arg):
+def create_callback_data(*args):
     """Create the callback data associated to each button"""
-    return ";".join(str(i) for i in arg)
+    return ";".join(str(i) for i in args)
 
 
 def separate_callback_data(data):
     """ Separate the callback data"""
-    return [str(i) for i in data.split(";")]
+    return [i for i in data.split(";")]
 
 
 # Questa classe e questo metodo vengono usate nel caso risposte testuali da parte dell'utente.

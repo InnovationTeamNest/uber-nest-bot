@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
-import sys
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.error import BadRequest
 
-import secret_data
+import secrets
 import util.common as common
 from util.filters import create_callback_data as ccd, separate_callback_data
 from util.keyboards import booking_keyboard
@@ -22,7 +20,7 @@ def prenota(bot, update):
     else:
         chat_id = update.message.chat_id
 
-    if str(chat_id) in secret_data.users:
+    if str(chat_id) in secrets.users:
         keyboard = [[InlineKeyboardButton("Prenotare una-tantum",
                                           callback_data=ccd("BOOKING", "NEW", "Temporary"))],
                     [InlineKeyboardButton("Prenotare in maniera permanente",
@@ -59,17 +57,18 @@ def booking_handler(bot, update):
 
             if mode == "Temporary":
                 text = "Si ricorda che le prenotazioni una-tantum vengono automaticamente cancellate ed" \
-                       + " addebitate il giorno dopo la prenotazione. E' possibile prenotarsi a un viaggio" \
-                       + " già avvenuto, ma verrà addebitato comunque."
+                       " addebitate il giorno dopo la prenotazione. E' possibile prenotarsi a un viaggio" \
+                       " già avvenuto, ma verrà addebitato comunque."
             elif mode == "Permanent":
                 text = "Si ricorda che le prenotazioni permanenti verranno addebitate anche per i viaggi" \
-                       + " prenotati per la giornata corrente."
+                       " prenotati per la giornata corrente."
             else:
                 text = ""
 
             user_keyboard = [
                 [InlineKeyboardButton(day[:2],  # Abbreviazione del giorno
-                                      callback_data=ccd("BOOKING", "DAY", mode, day)) for day in common.work_days],
+                                      callback_data=ccd("BOOKING", "DAY", mode, day))
+                 for day in common.work_days],
                 [InlineKeyboardButton("Indietro", callback_data=ccd("BOOKING_MENU"))],
                 [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
             ]
@@ -77,11 +76,11 @@ def booking_handler(bot, update):
             bot.send_message(chat_id=chat_id, text=text + "\n\nScegli la data della prenotazione.",
                              reply_markup=InlineKeyboardMarkup(user_keyboard))
         else:
+            booking_start_f = common.booking_start.strftime("%H:%M")
+            booking_end_f = common.booking_end.strftime("%H:%M")
             bot.send_message(chat_id=chat_id,
-                             text="Mi dispiace, è possibile effettuare prenotazioni"
-                                  + " tramite UberNEST solo dalle "
-                                  + common.booking_start.strftime("%H:%M") + " alle "
-                                  + common.booking_end.strftime("%H:%M") + ".")
+                             text=f"Mi dispiace, è possibile effettuare prenotazioni"
+                                  f" tramite UberNEST solo dalle {booking_start_f} alle {booking_end_f} + .")
     #
     # Dati in entrata ("BOOKING", "DAY", mode, day)
     # Questo menù viene chiamato rispettivamente dal metodo sopra (BOOKING/NEW) e dai visualizzatori
@@ -108,46 +107,54 @@ def booking_handler(bot, update):
             [InlineKeyboardButton("Conferma", callback_data=ccd("ALERT_USER", "CO_BO", direction, day, chat_id, mode))]
         ]
 
-        trip = secret_data.groups[direction][day][driver]
+        trip = secrets.groups[direction][day][driver]
         occupied_slots = len(trip["Permanent"]) + len(trip["Temporary"])
-        total_slots = secret_data.drivers[driver]["Slots"]
+        total_slots = secrets.drivers[driver]["Slots"]
 
+        # Caso in cui l'autista tenta inutilmente di prenotarsi con sè stesso...
         if chat_id == driver:
-            bot.send_message(chat_id=chat_id, text="Sei tu l'autista!",
-                             reply_markup=InlineKeyboardMarkup(user_keyboard))
+            user_text = "Sei tu l'autista!"
+        # Caso in cui tutti gli slot sono occupati
         elif occupied_slots >= total_slots:
-            bot.send_message(chat_id=chat_id, text="Macchina piena, vai a piedi LOL",
-                             reply_markup=InlineKeyboardMarkup(user_keyboard))
+            user_text = "Macchina piena, vai a piedi LOL"
+        # Caso in cui lo stolto passeggero si era già prenotato
         elif chat_id in trip["Temporary"] or chat_id in trip["Permanent"] or chat_id in trip["SuspendedUsers"]:
-            bot.send_message(chat_id=chat_id, text="Ti sei già prenotato in questa data con questa persona!",
-                             reply_markup=InlineKeyboardMarkup(user_keyboard))
+            user_text = "Ti sei già prenotato in questa data con questa persona!"
+
         else:
             # Si attende conferma dall'autista prima di aggiungere
-            user_text = "Prenotazione completata. Dati del viaggio:" \
-                        + "\n\n🚗: " + str(secret_data.users[driver]["Name"]) \
-                        + "\n🗓: " + day \
-                        + "\n🕓: " + trip["Time"] \
-                        + "\n➡: " + common.direction_to_name(direction) \
-                        + "\n🔁: " + common.localize_mode(mode) \
-                        + "\n\nRiceverai una conferma dall'autista il prima possibile."
+            user_name = secrets.users[driver]["Name"]
+            trip_time = trip["Time"]
+
+            if "Location" in trip:
+                location = trip["Location"]
+            elif direction == "Salita":
+                location = "Macchinette"
+            else:
+                location = "Non definita"
+
+            user_text = f"Prenotazione completata. Dati del viaggio:" \
+                        f"\n\n🚗: {user_name}" \
+                        f"\n🗓: {day}" \
+                        f"\n🕓: {trip_time}" \
+                        f"\n➡: {common.dir_name(direction)}" \
+                        f"\n🔁: {common.mode_name(mode)}" \
+                        f"\n📍: {location}" \
+                        f"\n\nRiceverai una conferma dall'autista il prima possibile."
 
             driver_text = "Hai una nuova prenotazione: " \
-                          + "\n\n👤: " + str(secret_data.users[chat_id]["Name"]) \
-                          + " (" + str(total_slots - occupied_slots - 1) + " posti rimanenti)" \
-                          + "\n🗓: " + day \
-                          + "\n🕓: " + trip["Time"] \
-                          + "\n➡: " + common.direction_to_name(direction) \
-                          + "\n🔁: " + common.localize_mode(mode) \
-                          + ".\n\nPer favore, conferma la presa visione della prenotazione. In caso negativo," \
-                          + " la prenotazione verrà considerata non valida."
+                          f"\n\n👤: {user_name} ({str(total_slots - occupied_slots - 1)} posti rimanenti)" \
+                          f"\n🗓: {day}" \
+                          f"\n🕓: {trip_time}" \
+                          f"\n➡: {common.dir_name(direction)}" \
+                          f"\n🔁: {common.mode_name(mode)}" \
+                          f"\n📍: {location}" \
+                          f".\n\nPer favore, conferma la presa visione della prenotazione. In caso negativo," \
+                          f" la prenotazione verrà considerata non valida."
 
-            # Eventuale aggiunta del luogo di ritrovo
-            if "Location" in trip:
-                user_text += "\n📍: " + trip["Location"]
-                driver_text += "\n📍: " + trip["Location"]
-
-            bot.send_message(chat_id=chat_id, text=user_text, reply_markup=InlineKeyboardMarkup(user_keyboard))
             bot.send_message(chat_id=driver, text=driver_text, reply_markup=InlineKeyboardMarkup(driver_keyboard))
+
+        bot.send_message(chat_id=chat_id, text=user_text, reply_markup=InlineKeyboardMarkup(user_keyboard))
 
 
 def edit_booking(bot, update):
@@ -178,16 +185,16 @@ def edit_booking(bot, update):
 
             for item in bookings:
                 direction, day, driver, mode, time = item
+                driver_name = secrets.users[driver]["Name"]
 
-                if secret_data.groups[direction][day][driver]["Suspended"]:
+                if secrets.groups[direction][day][driver]["Suspended"]:
                     tag = " - SOSPESA"
                 else:
-                    tag = " - 🕓 " + day + " alle " + str(time)
+                    tag = f" - 🕓 {day} alle {str(time)}"
 
                 # Aggiunta del bottone
                 user_keyboard.append([InlineKeyboardButton(
-                    "🚗 " + secret_data.users[driver]["Name"] + tag
-                    + "\n➡ " + common.direction_to_name(direction) + " - " + common.localize_mode(mode),
+                    f"🚗 {driver_name}{tag}\n➡ {common.dir_name(direction)} - {common.mode_name(mode)}",
                     callback_data=ccd("EDIT_BOOK", "ACTION", direction, day, driver, mode))])
 
             bot.send_message(chat_id=chat_id,
@@ -204,34 +211,39 @@ def edit_booking(bot, update):
     elif action == "ACTION":
         direction, day, driver, mode = data[2:]
         keyboard = [
-            [InlineKeyboardButton("Annulla prenotazione", callback_data=ccd("EDIT_BOOK", "DELETION",
-                                                                            direction, day, driver, mode))],
+            [InlineKeyboardButton("Annulla prenotazione",
+                                  callback_data=ccd("EDIT_BOOK", "DELETION", direction, day, driver, mode))],
             [InlineKeyboardButton("Indietro", callback_data=ccd("EDIT_BOOK", "LIST"))],
             [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
         ]
 
-        text_string = ""
+        text_string = []
+        user_name = secrets.users[driver]["Name"]
+        trip_time = secrets.groups[direction][day][driver]["Time"]
 
         if mode == "Permanent":
             keyboard.insert(0, [InlineKeyboardButton(
-                "Sospendi prenotazione", callback_data=ccd("EDIT_BOOK", "SUS_BOOK", direction, day, driver, mode))])
+                "Sospendi prenotazione",
+                callback_data=ccd("EDIT_BOOK", "SUS_BOOK", direction, day, driver, mode))])
 
         elif mode == "SuspendedUsers":
+            text_string.append(" - SOSPESA dall'utente")
             keyboard.insert(0, [InlineKeyboardButton(
                 "Annulla sospensione prenotazione",
                 callback_data=ccd("EDIT_BOOK", "SUS_BOOK", direction, day, driver, mode))])
-            text_string += " - SOSPESA dall'utente"
 
-        if secret_data.groups[direction][day][driver]["Suspended"]:
-            text_string += " - SOSPESA dall'autista"
+        if secrets.groups[direction][day][driver]["Suspended"]:
+            text_string.append(" - SOSPESA dall'autista")
+
+        text_string = "".join(text_string)
 
         bot.send_message(chat_id=chat_id,
-                         text="Prenotazione selezionata:" + text_string + "\n"
-                              + "\n🚗:" + secret_data.users[driver]["Name"]
-                              + "\n🗓: " + day
-                              + "\n➡: " + common.direction_to_name(direction)
-                              + "\n🕓: " + secret_data.groups[direction][day][driver]["Time"]
-                              + "\n🔁: " + common.localize_mode(mode),
+                         text=f"Prenotazione selezionata: {text_string}\n"
+                              f"\n🚗: {user_name}"
+                              f"\n🗓: {day}"
+                              f"\n➡: {common.dir_name(direction)}"
+                              f"\n🕓: {trip_time}"
+                              f"\n🔁: {common.mode_name(mode)}",
                          reply_markup=InlineKeyboardMarkup(keyboard))
     #
     # SUS_BOOK = SUSPEND_BOOKING
@@ -263,32 +275,33 @@ def edit_booking(bot, update):
     #
     elif action == "CO_SUS_BOOK":
         direction, day, driver, mode = data[2:]
-        trip = secret_data.groups[direction][day][driver]
+        trip = secrets.groups[direction][day][driver]
 
         keyboard = [
             [InlineKeyboardButton("Indietro", callback_data=ccd("EDIT_BOOK", "LIST"))],
             [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
         ]
 
+        user_name = secrets.users[chat_id]["Name"]
+
         if mode == "Permanent":
             trip["Permanent"].remove(chat_id)
             trip["SuspendedUsers"].append(chat_id)
 
             user_message = "Prenotazione sospesa. Verrà ripristinata il prossimo viaggio."
-            driver_message = secret_data.users[chat_id]["Name"] + " ha sospeso la sua prenotazione permanente" \
-                             + " per " + day.lower() + " " + common.direction_to_name(direction) + "."
+            driver_message = f"{user_name} ha sospeso la sua prenotazione permanente" \
+                             f" per {day.lower()} {common.dir_name(direction)}."
 
         elif mode == "SuspendedUsers":
             occupied_slots = len(trip["Permanent"]) + len(trip["Temporary"])
-            total_slots = secret_data.drivers[driver]["Slots"]
+            total_slots = secrets.drivers[driver]["Slots"]
 
             if occupied_slots >= total_slots:
                 # Può capitare che mentre un passeggero ha reso la propria prenotazione sospesa,
                 # altre persone hanno preso il suo posto.
-                bot.send_message(chat_id=chat_id, text="Mi dispiace, ma non puoi rendere operativa la"
-                                                       + " tua prenotazione in quanto la macchina è ora piena."
-                                                       + "Contatta " + secret_data.users[driver]["Name"]
-                                                       + " per risolvere la questione.",
+                bot.send_message(chat_id=chat_id, text=f"Mi dispiace, ma non puoi rendere operativa la"
+                                                       f" tua prenotazione in quanto la macchina è ora piena."
+                                                       f"Contatta {user_name} per risolvere la questione.",
                                  reply_markup=InlineKeyboardMarkup(keyboard))
                 return
 
@@ -296,8 +309,8 @@ def edit_booking(bot, update):
             trip["SuspendedUsers"].remove(chat_id)
 
             user_message = "La prenotazione è di nuovo operativa."
-            driver_message = secret_data.users[chat_id]["Name"] + " ha reso operativa la sua prenotazione permanente" \
-                             + " di " + day.lower() + " " + common.direction_to_name(direction) + "."
+            driver_message = f"{user_name} ha reso operativa la sua prenotazione permanente" \
+                             f" di {day.lower()} {common.dir_name(direction)}."
 
         else:
             user_message = driver_message = ""
@@ -324,19 +337,19 @@ def edit_booking(bot, update):
     #
     elif action == "CO_DEL":
         direction, day, driver, mode = data[2:]
-        secret_data.groups[direction][day][driver][mode].remove(chat_id)
+        secrets.groups[direction][day][driver][mode].remove(chat_id)
 
         keyboard = [
             [InlineKeyboardButton("Indietro", callback_data=ccd("EDIT_BOOK", "LIST"))],
             [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
         ]
 
+        user_name = secrets.users[chat_id]["Name"]
+
         bot.send_message(chat_id=chat_id, text="Prenotazione cancellata con successo.",
                          reply_markup=InlineKeyboardMarkup(keyboard))
         bot.send_message(chat_id=driver,
-                         text=secret_data.users[chat_id]["Name"]
-                              + " ha cancellato la prenotazione per " + day + " "
-                              + common.direction_to_name(direction) + ".")
+                         text=f"{user_name} ha cancellato la prenotazione per {day} {common.dir_name(direction)}.")
 
 
 def alert_user(bot, update):
@@ -346,6 +359,8 @@ def alert_user(bot, update):
 
     if action == "CO_BO":
         direction, day, user, mode = data[2:]  # Utente della prenotazione
-        secret_data.groups[direction][day][chat_id][mode].append(user)
-        bot.send_message(chat_id=user, text=secret_data.users[chat_id]["Name"] + " ha confermato la tua prenotazione.")
+        secrets.groups[direction][day][chat_id][mode].append(user)
+        user_name = secrets.users[chat_id]["Name"]
+
+        bot.send_message(chat_id=user, text=f"{user_name} ha confermato la tua prenotazione.")
         bot.send_message(chat_id=chat_id, text="Prenotazione confermata con successo.")
