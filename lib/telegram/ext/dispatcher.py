@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # A library that provides a Python interface to the Telegram Bot API
-# Copyright (C) 2015-2017
+# Copyright (C) 2015-2018
 # Leandro Toledo de Souza <devs@python-telegram-bot.org>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -143,7 +143,7 @@ class Dispatcher(object):
 
         """
         if cls.__singleton is not None:
-            return cls.__singleton()
+            return cls.__singleton()  # pylint: disable=not-callable
         else:
             raise RuntimeError('{} not initialized or multiple instances exist'.format(
                 cls.__name__))
@@ -183,14 +183,20 @@ class Dispatcher(object):
         self.__async_queue.put(promise)
         return promise
 
-    def start(self):
+    def start(self, ready=None):
         """Thread target of thread 'dispatcher'.
 
         Runs in background and processes the update queue.
 
+        Args:
+            ready (:obj:`threading.Event`, optional): If specified, the event will be set once the
+                dispatcher is ready.
+
         """
         if self.running:
             self.logger.warning('already running')
+            if ready is not None:
+                ready.set()
             return
 
         if self.__exception_event.is_set():
@@ -201,6 +207,9 @@ class Dispatcher(object):
         self._init_async_threads(uuid4(), self.workers)
         self.running = True
         self.logger.debug('Dispatcher started')
+
+        if ready is not None:
+            ready.set()
 
         while 1:
             try:
@@ -299,7 +308,7 @@ class Dispatcher(object):
         A handler must be an instance of a subclass of :class:`telegram.ext.Handler`. All handlers
         are organized in groups with a numeric value. The default group is 0. All groups will be
         evaluated for handling an update, but only 0 or 1 handler per group will be used. If
-        :class:`telegram.DispatcherHandlerStop` is raised from one of the handlers, no further
+        :class:`telegram.ext.DispatcherHandlerStop` is raised from one of the handlers, no further
         handlers (regardless of the group) will be called.
 
         The priority/order of handlers is determined as follows:
@@ -370,5 +379,10 @@ class Dispatcher(object):
             error (:class:`telegram.TelegramError`): The Telegram error that was raised.
 
         """
-        for callback in self.error_handlers:
-            callback(self.bot, update, error)
+        if self.error_handlers:
+            for callback in self.error_handlers:
+                callback(self.bot, update, error)
+
+        else:
+            self.logger.exception(
+                'No error handlers are registered, logging exception.', exc_info=error)

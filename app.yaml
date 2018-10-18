@@ -7,15 +7,18 @@ handlers:
   static_files: favicon.ico
   upload: favicon\.ico
 
-- url: .*
+- url: /scripts/.*
+  script: main.app
+  login: admin
+- url: /.*
   script: main.app
 
 libraries:
 - name: webapp2
   version: "2.5.2"
 - name: setuptools
-  version: "0.6c11"
+  version: "36.6.0"
 - name: lxml
-  version: "2.3"
+  version: "3.7.3"
 - name: ssl
   version: "2.7.11"

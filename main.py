@@ -2,12 +2,13 @@
 from __future__ import unicode_literals
 
 import webapp2
-import money
-import dumpable
-import reminders
 
+import secret_data
+from services.dumpable import DataHandler
+from services.local_scripts import ScriptHandler
+from services.night import NightHandler, WeeklyReportHandler
+from services.reminders import ReminderHandler
 from webhook import WebHookHandler, UpdateHandler
-from secret_data import bot_token
 
 
 class MainHandler(webapp2.RequestHandler):
@@ -15,30 +16,13 @@ class MainHandler(webapp2.RequestHandler):
         self.response.write("Uber Nest Bot is running!")
 
 
-class DataHandler(webapp2.RequestHandler):
-    def get(self):
-        dumpable.print_data()
-        self.response.write("Data output in console.")
-
-
-class MoneyHandler(webapp2.RequestHandler):
-    def get(self):
-        money.process_debits()
-        dumpable.dump_data()
-        self.response.write("See console for output.")
-
-
-class ReminderHandler(webapp2.RequestHandler):
-    def get(self):
-        reminders.remind()
-        self.response.write("See console for output.")
-
-
 app = webapp2.WSGIApplication([
     ("/", MainHandler),
-    ("/data", DataHandler),
-    ("/money", MoneyHandler),
-    ("/reminders", ReminderHandler),
-    ("/set_webhook", WebHookHandler),
-    ("/" + bot_token, UpdateHandler)
+    ("/scripts/localscripts", ScriptHandler),  # local_scripts.py
+    ("/scripts/data", DataHandler),  # dumpable.py
+    ("/scripts/money", NightHandler),  # night.py
+    ("/scripts/weekly_report", WeeklyReportHandler),  # night.py
+    ("/scripts/reminders", ReminderHandler),  # reminders.py
+    ("/scripts/set_webhook", WebHookHandler),  # webhook.py
+    ("/" + secret_data.bot_token, UpdateHandler)  # webhook.py
 ], debug=True)

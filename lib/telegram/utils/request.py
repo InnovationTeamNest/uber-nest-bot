@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # A library that provides a Python interface to the Telegram Bot API
-# Copyright (C) 2015-2017
+# Copyright (C) 2015-2018
 # Leandro Toledo de Souza <devs@python-telegram-bot.org>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,11 +17,12 @@
 # You should have received a copy of the GNU Lesser Public License
 # along with this program.  If not, see [http://www.gnu.org/licenses/].
 """This module contains methods to make POST and GET requests."""
+import logging
 import os
 import socket
 import sys
-import logging
 import warnings
+from builtins import str  # For PY2
 
 try:
     import ujson as json
@@ -40,11 +41,13 @@ except ImportError:  # pragma: no cover
                   "how to properly install.")
     raise
 
-from telegram import (InputFile, TelegramError)
+from telegram import (InputFile, TelegramError, InputMedia)
 from telegram.error import (Unauthorized, NetworkError, TimedOut, BadRequest, ChatMigrated,
                             RetryAfter, InvalidToken)
 
 logging.getLogger('urllib3').setLevel(logging.WARNING)
+
+USER_AGENT = 'Python Telegram Bot (https://github.com/python-telegram-bot/python-telegram-bot)'
 
 
 class Request(object):
@@ -83,9 +86,12 @@ class Request(object):
 
         # TODO: Support other platforms like mac and windows.
         if 'linux' in sys.platform:
-            sockopts.append((socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, 120))
-            sockopts.append((socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 30))
-            sockopts.append((socket.IPPROTO_TCP, socket.TCP_KEEPCNT, 8))
+            sockopts.append((socket.IPPROTO_TCP,
+                             socket.TCP_KEEPIDLE, 120))  # pylint: disable=no-member
+            sockopts.append((socket.IPPROTO_TCP,
+                             socket.TCP_KEEPINTVL, 30))  # pylint: disable=no-member
+            sockopts.append((socket.IPPROTO_TCP,
+                             socket.TCP_KEEPCNT, 8))  # pylint: disable=no-member
 
         self._con_pool_size = con_pool_size
 
@@ -145,9 +151,14 @@ class Request(object):
             dict: A JSON parsed as Python dict with results - on error this dict will be empty.
 
         """
-        decoded_s = json_data.decode('utf-8')
+
         try:
+            decoded_s = json_data.decode('utf-8')
             data = json.loads(decoded_s)
+        except UnicodeDecodeError:
+            logging.getLogger(__name__).debug(
+                'Logging raw invalid UTF-8 response:\n%r', json_data)
+            raise TelegramError('Server response could not be decoded using UTF-8')
         except ValueError:
             raise TelegramError('Invalid server response')
 
@@ -185,6 +196,8 @@ class Request(object):
         if 'headers' not in kwargs:
             kwargs['headers'] = {}
         kwargs['headers']['connection'] = 'keep-alive'
+        # Also set our user agent
+        kwargs['headers']['user-agent'] = USER_AGENT
 
         try:
             resp = self._con_pool.request(*args, **kwargs)
@@ -242,6 +255,7 @@ class Request(object):
 
     def post(self, url, data, timeout=None):
         """Request an URL.
+
         Args:
             url (:obj:`str`): The web location we want to retrieve.
             data (dict[str, str|int]): A dict of key/value pairs. Note: On py2.7 value is unicode.
@@ -258,18 +272,41 @@ class Request(object):
         if timeout is not None:
             urlopen_kwargs['timeout'] = Timeout(read=timeout, connect=self._connect_timeout)
 
-        if InputFile.is_inputfile(data):
-            data = InputFile(data)
-            result = self._request_wrapper(
-                'POST', url, body=data.to_form(), headers=data.headers, **urlopen_kwargs)
+        # Are we uploading files?
+        files = False
+
+        for key, val in data.copy().items():
+            if isinstance(val, InputFile):
+                # Convert the InputFile to urllib3 field format
+                data[key] = val.field_tuple
+                files = True
+            elif isinstance(val, (float, int)):
+                # Urllib3 doesn't like floats it seems
+                data[key] = str(val)
+            elif key == 'media':
+                # One media or multiple
+                if isinstance(val, InputMedia):
+                    # Attach and set val to attached name
+                    data[key] = val.to_json()
+                    if isinstance(val.media, InputFile):
+                        data[val.media.attach] = val.media.field_tuple
+                else:
+                    # Attach and set val to attached name for all
+                    media = []
+                    for m in val:
+                        media.append(m.to_dict())
+                        if isinstance(m.media, InputFile):
+                            data[m.media.attach] = m.media.field_tuple
+                    data[key] = json.dumps(media)
+                files = True
+
+        # Use multipart upload if we're uploading files, otherwise use JSON
+        if files:
+            result = self._request_wrapper('POST', url, fields=data, **urlopen_kwargs)
         else:
-            data = json.dumps(data)
-            result = self._request_wrapper(
-                'POST',
-                url,
-                body=data.encode(),
-                headers={'Content-Type': 'application/json'},
-                **urlopen_kwargs)
+            result = self._request_wrapper('POST', url,
+                                           body=json.dumps(data).encode('utf-8'),
+                                           headers={'Content-Type': 'application/json'})
 
         return self._parse(result)
 
@@ -291,6 +328,7 @@ class Request(object):
 
     def download(self, url, filename, timeout=None):
         """Download a file by its URL.
+
         Args:
             url (str): The web location we want to retrieve.
             timeout (:obj:`int` | :obj:`float`): If this value is specified, use it as the read
