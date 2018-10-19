@@ -9,10 +9,16 @@ def show_bookings(bot, update):
     chat_id = update.callback_query.from_user.id
 
     data = separate_callback_data(update.callback_query.data)
-    fetch_bookings(bot, chat_id, data[1])
+
+    message, keyboard = fetch_bookings(chat_id, data[1])
+
+    bot.edit_message_text(chat_id=chat_id,
+                          message_id=update.callback_query.message.message_id,
+                          text=message,
+                          reply_markup=keyboard)
 
 
-def fetch_bookings(bot, chat_id, day):
+def fetch_bookings(chat_id, day):
     if common.is_weekday(day):
         text = [f"Lista dei viaggi di {day.lower()}:"]
 
@@ -50,10 +56,10 @@ def fetch_bookings(bot, chat_id, day):
                                       callback_data=ccd("BOOKING", "DAY", "Permanent", day))],
                 [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
             ]
-            bot.send_message(chat_id=chat_id, text="".join(text),
-                             reply_markup=InlineKeyboardMarkup(keyboard))
+            return "".join(text), InlineKeyboardMarkup(keyboard)
         else:
-            bot.send_message(chat_id=chat_id, text=text)
+            return text, InlineKeyboardMarkup([[InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]])
 
     else:
-        bot.send_message(chat_id=chat_id, text=day + " UberNEST non è attivo.")
+        return f"{day} UberNEST non è attivo.", \
+               InlineKeyboardMarkup([[InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]])

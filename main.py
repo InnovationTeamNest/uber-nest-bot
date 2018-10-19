@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging as log
 import sys
 
 from flask import Flask, request
@@ -6,6 +7,12 @@ from flask import Flask, request
 from secrets import bot_token
 
 app = Flask(__name__)
+
+
+@app.before_first_request
+def init():
+    # Inizializzo il logging
+    log.basicConfig(level=log.DEBUG, format=' - %(levelname)s - %(name)s - %(message)s')
 
 
 @app.route('/', methods=['GET'])
@@ -23,7 +30,7 @@ def webhook():
         if res:
             return "Success!", 200
         else:
-            print("Errore nel reset del Webhook!", file=sys.stderr)
+            log.error("Errore nel reset del Webhook!")
             return "Webhook setup failed...", 500
     else:
         return "Access denied", 403
@@ -32,17 +39,17 @@ def webhook():
 @app.route('/' + bot_token, methods=['POST'])
 def update():
     import telegram
-    from services import dumpable
+    from services.dumpable import dump_data
     from webhook import bot, process
 
     # De-Jsonizzo l'update
     update = telegram.Update.de_json(request.get_json(force=True), bot)
     # Loggo il contenuto dell'update
-    print(update, file=sys.stderr)
+    log.info(update)
     # Faccio processare al dispatcher l'update
     process(update)
     # Infine salvo eventuali dati modificati
-    dumpable.dump_data()
+    dump_data()
 
     return "See console for output", 200
 

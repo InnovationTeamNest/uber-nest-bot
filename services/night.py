@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-import sys
+import logging as log
 
 import secrets
 from util import common
@@ -110,7 +110,7 @@ def weekly_report():
                     message.append(f"\n{secrets.users[name]['Name']} - {str(value)} EUR")
                 bot.send_message(chat_id=user, text="".join(message))
         except Exception as ex:
-            print(f"Failed to alert user {user}", ex, file=sys.stderr)
+            log.info(f"Failed to alert user {user}", ex)
 
         # Invio dei crediti per ogni singolo autista
         try:
@@ -122,4 +122,4 @@ def weekly_report():
                         message.append(f"\n{secrets.users[name]['Name']} - {str(value)} EUR")
                     bot.send_message(chat_id=user, text="".join(message))
         except Exception as ex:
-            print(f"Failed to alert driver {user}", ex, file=sys.stderr)
+            log.info(f"Failed to alert driver {user}", ex)

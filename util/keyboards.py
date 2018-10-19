@@ -12,7 +12,7 @@ from util.filters import create_callback_data as ccd
 #
 def me_keyboard(chat_id):
     keyboard = []
-    if str(chat_id) in secrets.drivers:
+    if chat_id in secrets.drivers:
         money_string = "Gestire i miei debiti e crediti"
         driver_string = "Smettere di essere un autista"
         keyboard.append([InlineKeyboardButton("Gestire i miei viaggi", callback_data=ccd("ME", "TRIPS"))])
@@ -44,11 +44,11 @@ def trips_keyboard(chat_id):
                 if group["Suspended"]:
                     counter = "SOSP."
                 else:
-                    counter = len(group["Permanent"]) + len(group["Temporary"])
+                    counter = str(len(group["Permanent"]) + len(group["Temporary"]))
 
                 keyboard.append(
                     [InlineKeyboardButton(f"{day}: {group['Time']}"
-                                          f" {common.dir_name(direction)} ({str(counter)})",
+                                          f" {common.dir_name(direction)} ({counter})",
                                           callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))])
             except KeyError:
                 continue

@@ -16,9 +16,13 @@ def prenota(bot, update):
     - Vista prenotazioni
     """
     if update.callback_query:
-        chat_id = update.callback_query.from_user.id
+        prenota_cq(bot, update)
     else:
-        chat_id = update.message.chat_id
+        prenota_cmd(bot, update)
+
+
+def prenota_cmd(bot, update):
+    chat_id = update.message.chat_id
 
     if str(chat_id) in secrets.users:
         keyboard = [[InlineKeyboardButton("Prenotare una-tantum",
@@ -28,6 +32,7 @@ def prenota(bot, update):
                     [InlineKeyboardButton("Gestire le mie prenotazioni",
                                           callback_data=ccd("EDIT_BOOK", "LIST"))],
                     [InlineKeyboardButton("Uscire", callback_data=ccd("EXIT"))]]
+
         bot.send_message(chat_id=chat_id,
                          text="Cosa vuoi fare?",
                          reply_markup=InlineKeyboardMarkup(keyboard))
@@ -36,13 +41,35 @@ def prenota(bot, update):
                          text="Per effettuare una prenotazione, registrati con /registra.")
 
 
+def prenota_cq(bot, update):
+    chat_id = update.callback_query.from_user.id
+
+    if str(chat_id) in secrets.users:
+        keyboard = [[InlineKeyboardButton("Prenotare una-tantum",
+                                          callback_data=ccd("BOOKING", "NEW", "Temporary"))],
+                    [InlineKeyboardButton("Prenotare in maniera permanente",
+                                          callback_data=ccd("BOOKING", "NEW", "Permanent"))],
+                    [InlineKeyboardButton("Gestire le mie prenotazioni",
+                                          callback_data=ccd("EDIT_BOOK", "LIST"))],
+                    [InlineKeyboardButton("Uscire", callback_data=ccd("EXIT"))]]
+
+        bot.edit_message_text(chat_id=chat_id,
+                              message_id=update.callback_query.message.message_id,
+                              text="Cosa vuoi fare?",
+                              reply_markup=InlineKeyboardMarkup(keyboard))
+    else:
+        bot.edit_message_text(chat_id=chat_id,
+                              message_id=update.callback_query.message.message_id,
+                              text="Per effettuare una prenotazione, registrati con /registra.")
+
+
 def booking_handler(bot, update):
     """
     Gestore dei metodi delle prenotazioni. Da questo menù è possibile aggiungere prenotazioni.
     """
     data = separate_callback_data(update.callback_query.data)
     action = data[1]
-    chat_id = str(update.callback_query.from_user.id)
+    chat_id = str(update.callback_query.message.chat_id)
 
     #
     # Dati in entrata ("BOOKING", "NEW", mode)
@@ -73,22 +100,27 @@ def booking_handler(bot, update):
                 [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
             ]
 
-            bot.send_message(chat_id=chat_id, text=text + "\n\nScegli la data della prenotazione.",
-                             reply_markup=InlineKeyboardMarkup(user_keyboard))
+            bot.edit_message_text(chat_id=chat_id,
+                                  message_id=update.callback_query.message.message_id,
+                                  text=text + "\n\nScegli la data della prenotazione.",
+                                  reply_markup=InlineKeyboardMarkup(user_keyboard))
         else:
             booking_start_f = common.booking_start.strftime("%H:%M")
             booking_end_f = common.booking_end.strftime("%H:%M")
-            bot.send_message(chat_id=chat_id,
-                             text=f"Mi dispiace, è possibile effettuare prenotazioni"
-                                  f" tramite UberNEST solo dalle {booking_start_f} alle {booking_end_f} + .")
+            bot.edit_message_text(chat_id=chat_id,
+                                  message_id=update.callback_query.message.message_id,
+                                  text=f"Mi dispiace, è possibile effettuare prenotazioni"
+                                       f" tramite UberNEST solo dalle {booking_start_f} alle {booking_end_f}.")
     #
     # Dati in entrata ("BOOKING", "DAY", mode, day)
     # Questo menù viene chiamato rispettivamente dal metodo sopra (BOOKING/NEW) e dai visualizzatori
     # delle prenotazioni dei singoli giorni (/lunedi, /martedi, etc...).
     elif action == "DAY":
         mode, day = data[2:4]
-        bot.send_message(chat_id=chat_id, text="Viaggi disponibili per " + day.lower() + ":",
-                         reply_markup=booking_keyboard(mode, day))
+        bot.edit_message_text(chat_id=chat_id,
+                              message_id=update.callback_query.message.message_id,
+                              text="Viaggi disponibili per " + day.lower() + ":",
+                              reply_markup=booking_keyboard(mode, day))
     #
     # Dati in entrata ("BOOKING", "CONFIRM", direction, day, driver, mode)
     # Messaggio finale di conferma all'utente e all'autista. Il metodo calcola se la prenotazione scelta è
@@ -154,7 +186,9 @@ def booking_handler(bot, update):
 
             bot.send_message(chat_id=driver, text=driver_text, reply_markup=InlineKeyboardMarkup(driver_keyboard))
 
-        bot.send_message(chat_id=chat_id, text=user_text, reply_markup=InlineKeyboardMarkup(user_keyboard))
+        bot.edit_message_text(chat_id=chat_id,
+                              message_id=update.callback_query.message.message_id,
+                              text=user_text, reply_markup=InlineKeyboardMarkup(user_keyboard))
 
 
 def edit_booking(bot, update):
@@ -164,7 +198,7 @@ def edit_booking(bot, update):
     in common.py. Dal menù, una volta selezionata una prenotazione, è possibile cancellarla oppure sospenderla
     a lato utente, ovvero bloccarla per una settimana.
     """
-    chat_id = str(update.callback_query.from_user.id)
+    chat_id = str(update.callback_query.message.chat_id)
     data = separate_callback_data(update.callback_query.data)
     action = data[1]
 
@@ -197,12 +231,15 @@ def edit_booking(bot, update):
                     f"🚗 {driver_name}{tag}\n➡ {common.dir_name(direction)} - {common.mode_name(mode)}",
                     callback_data=ccd("EDIT_BOOK", "ACTION", direction, day, driver, mode))])
 
-            bot.send_message(chat_id=chat_id,
-                             text="Clicca su una prenotazione per cancellarla o sospenderla.",
-                             reply_markup=InlineKeyboardMarkup(user_keyboard + keyboard))
+            bot.edit_message_text(chat_id=chat_id,
+                                  message_id=update.callback_query.message.message_id,
+                                  text="Clicca su una prenotazione per cancellarla o sospenderla.",
+                                  reply_markup=InlineKeyboardMarkup(user_keyboard + keyboard))
         else:
-            bot.send_message(chat_id=chat_id, text="Mi dispiace, ma non hai prenotazioni all'attivo.",
-                             reply_markup=InlineKeyboardMarkup(keyboard))
+            bot.edit_message_text(chat_id=chat_id,
+                                  message_id=update.callback_query.message.message_id,
+                                  text="Mi dispiace, ma non hai prenotazioni all'attivo.",
+                                  reply_markup=InlineKeyboardMarkup(keyboard))
     #
     # Menù disponibile all'utente una volta selezionato un viaggio. I bottoni cambiano a seconda della prenotazione:
     # Temporanea -> solo cancellazione
@@ -237,14 +274,15 @@ def edit_booking(bot, update):
 
         text_string = "".join(text_string)
 
-        bot.send_message(chat_id=chat_id,
-                         text=f"Prenotazione selezionata: {text_string}\n"
-                              f"\n🚗: {user_name}"
-                              f"\n🗓: {day}"
-                              f"\n➡: {common.dir_name(direction)}"
-                              f"\n🕓: {trip_time}"
-                              f"\n🔁: {common.mode_name(mode)}",
-                         reply_markup=InlineKeyboardMarkup(keyboard))
+        bot.edit_message_text(chat_id=chat_id,
+                              message_id=update.callback_query.message.message_id,
+                              text=f"Prenotazione selezionata: {text_string}\n"
+                                   f"\n🚗: {user_name}"
+                                   f"\n🗓: {day}"
+                                   f"\n➡: {common.dir_name(direction)}"
+                                   f"\n🕓: {trip_time}"
+                                   f"\n🔁: {common.mode_name(mode)}",
+                              reply_markup=InlineKeyboardMarkup(keyboard))
     #
     # SUS_BOOK = SUSPEND_BOOKING
     #
@@ -267,8 +305,10 @@ def edit_booking(bot, update):
         else:
             message = ""
 
-        bot.send_message(chat_id=chat_id, text=message,
-                         reply_markup=InlineKeyboardMarkup([keyboard]))
+        bot.edit_message_text(chat_id=chat_id,
+                              message_id=update.callback_query.message.message_id,
+                              text=message,
+                              reply_markup=InlineKeyboardMarkup([keyboard]))
     #
     # CO_SUS_BOOK = CONFIRM_SUSPEND_BOOKING
     # Il metodo scambia la chiave di un utente da Permanente a SuspendUsers e vice-versa.
@@ -299,10 +339,12 @@ def edit_booking(bot, update):
             if occupied_slots >= total_slots:
                 # Può capitare che mentre un passeggero ha reso la propria prenotazione sospesa,
                 # altre persone hanno preso il suo posto.
-                bot.send_message(chat_id=chat_id, text=f"Mi dispiace, ma non puoi rendere operativa la"
-                                                       f" tua prenotazione in quanto la macchina è ora piena."
-                                                       f"Contatta {user_name} per risolvere la questione.",
-                                 reply_markup=InlineKeyboardMarkup(keyboard))
+                bot.edit_message_text(chat_id=chat_id,
+                                      message_id=update.callback_query.message.message_id,
+                                      text=f"Mi dispiace, ma non puoi rendere operativa la"
+                                           f" tua prenotazione in quanto la macchina è ora piena."
+                                           f"Contatta {user_name} per risolvere la questione.",
+                                      reply_markup=InlineKeyboardMarkup(keyboard))
                 return
 
             trip["Permanent"].append(chat_id)
@@ -313,10 +355,13 @@ def edit_booking(bot, update):
                              f" di {day.lower()} {common.dir_name(direction)}."
 
         else:
-            user_message = driver_message = ""
+            user_message = driver_message = "Qualcuno ha cercato di sospendere una prenotazione temporanea." \
+                                            " Contatta il creatore del bot al più presto."
 
-        bot.send_message(chat_id=chat_id, text=user_message,
-                         reply_markup=InlineKeyboardMarkup(keyboard))
+        bot.edit_message_text(chat_id=chat_id,
+                              message_id=update.callback_query.message.message_id,
+                              text=user_message,
+                              reply_markup=InlineKeyboardMarkup(keyboard))
         bot.send_message(chat_id=driver, text=driver_message)
     #
     # Metodo per cancellare per sempre una data prenotazione.
@@ -329,9 +374,10 @@ def edit_booking(bot, update):
             InlineKeyboardButton("No", callback_data=ccd("EDIT_BOOK", "LIST"))
         ]
 
-        bot.send_message(chat_id=chat_id,
-                         text="Sei sicuro di voler cancellare questo viaggio?",
-                         reply_markup=InlineKeyboardMarkup([keyboard]))
+        bot.edit_message_text(chat_id=chat_id,
+                              message_id=update.callback_query.message.message_id,
+                              text="Sei sicuro di voler cancellare questo viaggio?",
+                              reply_markup=InlineKeyboardMarkup([keyboard]))
     #
     # CO_DEL = CONFIRM_DELETION
     #
@@ -346,14 +392,16 @@ def edit_booking(bot, update):
 
         user_name = secrets.users[chat_id]["Name"]
 
-        bot.send_message(chat_id=chat_id, text="Prenotazione cancellata con successo.",
-                         reply_markup=InlineKeyboardMarkup(keyboard))
+        bot.edit_message_text(chat_id=chat_id,
+                              message_id=update.callback_query.message.message_id,
+                              text="Prenotazione cancellata con successo.",
+                              reply_markup=InlineKeyboardMarkup(keyboard))
         bot.send_message(chat_id=driver,
                          text=f"{user_name} ha cancellato la prenotazione per {day} {common.dir_name(direction)}.")
 
 
 def alert_user(bot, update):
-    chat_id = str(update.callback_query.from_user.id)
+    chat_id = str(update.callback_query.message.chat_id)
     data = separate_callback_data(update.callback_query.data)
     action = data[1]
 
@@ -363,4 +411,6 @@ def alert_user(bot, update):
         user_name = secrets.users[chat_id]["Name"]
 
         bot.send_message(chat_id=user, text=f"{user_name} ha confermato la tua prenotazione.")
-        bot.send_message(chat_id=chat_id, text="Prenotazione confermata con successo.")
+        bot.edit_message_text(chat_id=chat_id,
+                              message_id=update.callback_query.message.message_id,
+                              text="Prenotazione confermata con successo.")

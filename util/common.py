@@ -114,12 +114,16 @@ def search_by_booking(person):
 
 def delete_driver(chat_id):
     """Metodo per cancellare tutti i dati di un autista"""
-    del secrets.drivers[str(chat_id)]
+    del secrets.drivers[chat_id]
 
     for direction in secrets.groups:
         for day in secrets.groups[direction]:
-            if str(chat_id) in secrets.groups[direction][day]:
-                del secrets.groups[direction][day][str(chat_id)]
+            if chat_id in secrets.groups[direction][day]:
+                del secrets.groups[direction][day][chat_id]
+
+    for user in secrets.users:
+        if chat_id in secrets.users[user]["Debit"]:
+            del secrets.users[user]["Debit"][chat_id]
 
 
 def get_credits(input_creditor):

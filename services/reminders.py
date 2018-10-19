@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-import sys
+import logging as log
 
 import telegram
 
@@ -16,13 +16,13 @@ def remind():
             try:
                 remind_user(bot, chat_id)
             except Exception as ex:
-                print(f"Failed to alert {str(chat_id)}", ex, file=sys.stderr)
+                log.info(f"Failed to alert {str(chat_id)}", ex)
 
         for chat_id in secrets.drivers:
             try:
                 remind_driver(bot, chat_id)
             except Exception as ex:
-                print(f"Failed to alert {str(chat_id)}", ex, file=sys.stderr)
+                log.info(f"Failed to alert {str(chat_id)}", ex)
 
 
 def remind_driver(bot, chat_id):

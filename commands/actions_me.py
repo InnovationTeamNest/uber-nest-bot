@@ -10,12 +10,27 @@ from util.keyboards import me_keyboard, trips_keyboard
 
 def me(bot, update):
     if update.callback_query:
-        chat_id = str(update.callback_query.from_user.id)
+        me_cq(bot, update)
     else:
-        chat_id = str(update.message.chat_id)
+        me_cmd(bot, update)
+
+# I due comandi seguenti sono equivalenti, uno viene chiamato se l'utente utilizza il comando /me,
+# l'altro se torna al menù da una callback query
+
+def me_cmd(bot, update):
+    chat_id = str(update.message.chat_id)
 
     if chat_id in secrets.users:
         bot.send_message(chat_id=chat_id, text="Cosa vuoi fare?", reply_markup=me_keyboard(chat_id))
+
+
+def me_cq(bot, update):
+    chat_id = str(update.callback_query.message.chat_id)
+
+    if chat_id in secrets.users:
+        bot.edit_message_text(chat_id=chat_id,
+                              message_id=update.callback_query.message.message_id,
+                              text="Cosa vuoi fare?", reply_markup=me_keyboard(chat_id))
 
 
 #
@@ -25,15 +40,16 @@ def me(bot, update):
 #
 def me_handler(bot, update):
     action = separate_callback_data(update.callback_query.data)[1]
-    chat_id = str(update.callback_query.from_user.id)
+    chat_id = str(update.callback_query.message.chat_id)
 
     #
     # Da questo menù viene invocata la keyboard in keyboards.py.
     #
     if action == "TRIPS":
-        bot.send_message(chat_id=chat_id,
-                         text="Viaggi (clicca su un viaggio per modificarlo):",
-                         reply_markup=trips_keyboard(chat_id))
+        bot.edit_message_text(chat_id=chat_id,
+                              message_id=update.callback_query.message.message_id,
+                              text="Viaggi (clicca su un viaggio per modificarlo):",
+                              reply_markup=trips_keyboard(chat_id))
     #
     # Da questo menù è possibile iscriversi e disiscriversi dalla modalità autista.
     #
@@ -42,22 +58,24 @@ def me_handler(bot, update):
             keyboard = [
                 [InlineKeyboardButton("Sì", callback_data=ccd("ME", "CO_DR_RE")),
                  InlineKeyboardButton("No", callback_data=ccd("ME_MENU"))]]
-            bot.send_message(chat_id=chat_id,
-                             text="Sei sicuro di voler confermare la tua rimozione dalla"
-                                  " lista degli autisti? Se cambiassi idea, puoi sempre iscriverti"
-                                  " di nuovo da /me. La cancellazione dal sistema comporterà il reset"
-                                  " completo di tutti i viaggi, impostazioni e crediti.",
-                             reply_markup=InlineKeyboardMarkup(keyboard))
+            bot.edit_message_text(chat_id=chat_id,
+                                  message_id=update.callback_query.message.message_id,
+                                  text="Sei sicuro di voler confermare la tua rimozione dalla"
+                                       " lista degli autisti? Se cambiassi idea, puoi sempre iscriverti"
+                                       " di nuovo da /me. La cancellazione dal sistema comporterà il reset"
+                                       " completo di tutti i viaggi, impostazioni e crediti.",
+                                  reply_markup=InlineKeyboardMarkup(keyboard))
         else:
             keyboard = [
                 [InlineKeyboardButton("Sì", callback_data=ccd("ME", "ED_DR_SL")),
                  InlineKeyboardButton("No", callback_data=ccd("ME_MENU"))]]
-            bot.send_message(chat_id=chat_id,
-                             text="Una volta finalizzata l'iscrizione come autista, potrai gestire i tuoi"
-                                  " viaggi direttamente da questo bot. Contatta un membro del direttivo di"
-                                  " UberNEST per ulteriori informazioni.\n\n"
-                                  "Sei sicuro di voler diventare un autista di UberNEST?",
-                             reply_markup=InlineKeyboardMarkup(keyboard))
+            bot.edit_message_text(chat_id=chat_id,
+                                  message_id=update.callback_query.message.message_id,
+                                  text="Una volta finalizzata l'iscrizione come autista, potrai gestire i tuoi"
+                                       " viaggi direttamente da questo bot. Contatta un membro del direttivo di"
+                                       " UberNEST per ulteriori informazioni.\n\n"
+                                       "Sei sicuro di voler diventare un autista di UberNEST?",
+                                  reply_markup=InlineKeyboardMarkup(keyboard))
     #
     # US_RE = USER_REMOVAL
     # Da questo menù è possibile attuare la cancellazione completa e totale di tutti i dati dell'utente.
@@ -66,7 +84,8 @@ def me_handler(bot, update):
     elif action == "US_RE":
         keyboard = [
             [InlineKeyboardButton("Sì", callback_data=ccd("ME", "CO_US_RE")),
-             InlineKeyboardButton("No", callback_data=ccd("ME_MENU"))]]
+             InlineKeyboardButton("No", callback_data=ccd("ME_MENU"))]
+        ]
 
         user_debits = secrets.users[chat_id]["Debit"]
         debitors = []
@@ -83,49 +102,74 @@ def me_handler(bot, update):
                             " in caso di cancellazione dal sistema" \
                             " verranno avvisate dei tuoi debiti non saldati!\n\n" + "".join(debitors)
 
-        bot.send_message(chat_id=chat_id, text=message_text, reply_markup=InlineKeyboardMarkup(keyboard))
+        bot.edit_message_text(chat_id=chat_id,
+                              message_id=update.callback_query.message.message_id, text=message_text,
+                              reply_markup=InlineKeyboardMarkup(keyboard))
     #
     # ED_DR_SL = EDIT_DRIVER_SLOTS
     # Questo menù permette di modificare gli slot a disposizione del guidatore.
     #
     elif action == "ED_DR_SL":
         # Inserisco 5 bottoni per i posti con la list comprehension
-        keyboard = [[InlineKeyboardButton(str(i), callback_data=ccd("ME", "CO_DR", str(i)))
-                     for i in range(1, 6, 1)],
-                    [InlineKeyboardButton("Indietro", callback_data=ccd("ME_MENU"))],
-                    [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]]
-        bot.send_message(chat_id=chat_id,
-                         text="Inserisci il numero di posti disponibili nella tua macchina, autista escluso.",
-                         reply_markup=InlineKeyboardMarkup(keyboard))
+        keyboard = [
+            [InlineKeyboardButton(str(i), callback_data=ccd("ME", "CO_DR", str(i))) for i in range(1, 6, 1)],
+            [InlineKeyboardButton("Indietro", callback_data=ccd("ME_MENU"))],
+            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+        ]
+        bot.edit_message_text(chat_id=chat_id,
+                              message_id=update.callback_query.message.message_id,
+                              text="Inserisci il numero di posti disponibili nella tua macchina, autista escluso.",
+                              reply_markup=InlineKeyboardMarkup(keyboard))
     #
     # CO_DR = CONFIRM_DRIVER
     # Questo metodo svolge due diverse funzioni: se l'utente è un autista, è l'endpoint per la conferma
     # degli slot, altrimenti dell'iscrizione
     #
     elif action == "CO_DR":
+        keyboard = [
+            [InlineKeyboardButton("Indietro", callback_data=ccd("ME_MENU"))],
+            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+        ]
+
         slots = int(separate_callback_data(update.callback_query.data)[2])
         if chat_id in secrets.drivers:
-            bot.send_message(chat_id=chat_id,
-                             text="Numero di posti della vettura aggiornato con successo.")
+            bot.edit_message_text(chat_id=update.callback_query.message.chat_id,
+                                  message_id=update.callback_query.message.message_id,
+                                  text="Numero di posti della vettura aggiornato con successo.",
+                                  reply_markup=InlineKeyboardMarkup(keyboard))
         else:
             secrets.drivers[chat_id] = {"Slots": slots}
-            bot.send_message(chat_id=chat_id,
-                             text="Sei stato inserito nella lista degli autisti! Usa il menu /me per aggiungere"
-                                  " viaggi, modificare i posti auto, aggiungere un messaggio da mostrare ai tuoi"
-                                  " passeggeri ed altro.")
+            bot.edit_message_text(chat_id=update.callback_query.message.chat_id,
+                                  message_id=update.callback_query.message.message_id,
+                                  text="Sei stato inserito nella lista degli autisti! Usa il menu /me per aggiungere"
+                                       " viaggi, modificare i posti auto, aggiungere un messaggio da mostrare ai tuoi"
+                                       " passeggeri ed altro.",
+                                  reply_markup=InlineKeyboardMarkup(keyboard))
     #
     # CO_DR_RE = CONFIRM_DRIVER_REMOVAL
     # Metodo di conferma della rimozione di un autista, vedi sopra.
     #
     elif action == "CO_DR_RE":
+        keyboard = [
+            [InlineKeyboardButton("Indietro", callback_data=ccd("ME_MENU"))],
+            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+        ]
+
         common.delete_driver(chat_id)
-        bot.send_message(chat_id=chat_id,
-                         text="Sei stato rimosso con successo dall'elenco degli autisti.")
+        bot.edit_message_text(chat_id=update.callback_query.message.chat_id,
+                              message_id=update.callback_query.message.message_id,
+                              text="Sei stato rimosso con successo dall'elenco degli autisti.",
+                              reply_markup=InlineKeyboardMarkup(keyboard))
     #
     # CO_US_RE = CONFIRM_USER_REMOVAL
     # Metodo di conferma rimozione utente, vedi sopra.
     #
     elif action == "CO_US_RE":
+        keyboard = [
+            [InlineKeyboardButton("Indietro", callback_data=ccd("ME_MENU"))],
+            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+        ]
+
         user_debits = secrets.users[chat_id]["Debit"]
         user_name = secrets.users[chat_id]["Name"]
         for creditor in user_debits:
@@ -136,4 +180,8 @@ def me_handler(bot, update):
         del secrets.users[chat_id]
         if chat_id in secrets.drivers:
             common.delete_driver(chat_id)
-        bot.send_message(chat_id=chat_id, text="Sei stato rimosso con successo dal sistema.")
+
+        bot.edit_message_text(chat_id=update.callback_query.message.chat_id,
+                              message_id=update.callback_query.message.message_id,
+                              text="Sei stato rimosso con successo dal sistema.",
+                              reply_markup=InlineKeyboardMarkup(keyboard))

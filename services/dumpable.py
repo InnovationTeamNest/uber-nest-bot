@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import sys
+import logging as log
 
 from google.cloud import datastore
 
@@ -25,7 +25,7 @@ def dump_data():
         client.put(data)
         return True
     else:
-        print("Trying to save empty data!", file=sys.stderr)
+        log.info("Trying to save empty data!")
         return False
 
 
@@ -48,8 +48,8 @@ def print_data():
     """Prints to the Cloud Console Logs the current dataset"""
     client = datastore.Client()
     data = client.get(client.key('Data', 1))
-    print("Stored data: ", str(data['drivers']), str(data['users']), str(data['groups']), file=sys.stderr)
-    print("Internal data: ", str(secrets.drivers), str(secrets.users), str(secrets.groups), file=sys.stderr)
+    log.info("Stored data: ", str(data['drivers']), str(data['users']), str(data['groups']))
+    log.info("Internal data: ", str(secrets.drivers), str(secrets.users), str(secrets.groups))
 
 
 def empty_datastore():

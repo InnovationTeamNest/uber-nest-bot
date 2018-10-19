@@ -60,31 +60,45 @@ def info(bot, update):
 
 
 def oggi(bot, update):
-    fetch_bookings(bot, update.message.chat_id, common.today())
+    message, keyboard = fetch_bookings(update.message.chat_id, common.today())
+
+    bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard)
 
 
 def domani(bot, update):
-    fetch_bookings(bot, update.message.chat_id, common.tomorrow())
+    message, keyboard = fetch_bookings(update.message.chat_id, common.tomorrow())
+
+    bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard)
 
 
 def lunedi(bot, update):
-    fetch_bookings(bot, update.message.chat_id, "Lunedì")
+    message, keyboard = fetch_bookings(update.message.chat_id, "Lunedì")
+
+    bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard)
 
 
 def martedi(bot, update):
-    fetch_bookings(bot, update.message.chat_id, "Martedì")
+    message, keyboard = fetch_bookings(update.message.chat_id, "Martedì")
+
+    bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard)
 
 
 def mercoledi(bot, update):
-    fetch_bookings(bot, update.message.chat_id, "Mercoledì")
+    message, keyboard = fetch_bookings(update.message.chat_id, "Mercoledì")
+
+    bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard)
 
 
 def giovedi(bot, update):
-    fetch_bookings(bot, update.message.chat_id, "Giovedì")
+    message, keyboard = fetch_bookings(update.message.chat_id, "Giovedì")
+
+    bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard)
 
 
 def venerdi(bot, update):
-    fetch_bookings(bot, update.message.chat_id, "Venerdì")
+    message, keyboard = fetch_bookings(update.message.chat_id, "Venerdì")
+
+    bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard)
 
 
 def settimana(bot, update):
@@ -126,5 +140,5 @@ def response_registra(bot, update):
                           "per gestire il tuo profilo, gestire i debiti e "
                           "i crediti e diventare autista di UberNEST.\n"
                           "/prenota per effettuare e disdire prenotazioni.")
-    print(f"Nuovo utente iscritto: {user}", file=sys.stderr)
+    log.info(f"Nuovo utente iscritto: {user}")
     ReplyStatus.response_mode = 0
