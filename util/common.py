@@ -83,20 +83,20 @@ def booking_time():
 
 def dir_name(direction):
     if direction == "Salita":
-        return "per Povo"
+        return "🎒 per Povo"
     elif direction == "Discesa":
-        return "per il NEST"
+        return "🏡 per il NEST"
     else:
         return " - "
 
 
 def mode_name(mode):
     if mode == "Temporary":
-        return "Temporanea"
+        return "🔂 Temporanea"
     elif mode == "Permanent":
-        return "Permanente"
+        return "🔁 Permanente"
     elif mode == "SuspendedUsers":
-        return "Permanente (SOSPESA)"
+        return "🚫 Permanente (SOSPESA)"
     else:
         return " - "
 

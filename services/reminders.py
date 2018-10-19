@@ -63,8 +63,8 @@ def remind_user(bot, chat_id):
             if day == common.tomorrow() and mode != "SuspendedUsers":
                 bot.send_message(chat_id=chat_id,
                                  text=f"REMINDER: Domani hai un viaggio: "
-                                      f"\n\n🚗: {str(secrets.users[driver]['Name'])}"
-                                      f"\n🗓: {day}"
-                                      f"\n🕓: {time}"
-                                      f"\n➡: {common.dir_name(direction)}"
-                                      f"\n🔁: {common.mode_name(mode)}")
+                                      f"\n\n🚗 {str(secrets.users[driver]['Name'])}"
+                                      f"\n🗓 {day}"
+                                      f"\n🕓 {time}"
+                                      f"\n {common.dir_name(direction)}"
+                                      f"\n{common.mode_name(mode)}")

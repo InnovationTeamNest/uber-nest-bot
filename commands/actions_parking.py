@@ -51,7 +51,7 @@ def confirm_parking(bot, update):
 
     bot.edit_message_text(chat_id=chat_id,
                           message_id=update.callback_query.message.message_id,
-                          text="Posizione impostata con successo: " + location,
+                          text=f"Posizione impostata con successo: {location}",
                           reply_markup=InlineKeyboardMarkup(keyboard))
 
     for passenger_group in day_group["Temporary"], day_group["Permanent"]:

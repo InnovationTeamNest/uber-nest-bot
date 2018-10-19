@@ -82,11 +82,12 @@ def booking_keyboard(mode, day):
     for time, name, direction, driver in bookings:
         if not secrets.groups[direction][day][driver]["Suspended"]:
             keyboard.append(
-                [InlineKeyboardButton(f"🚗 {name} - 🕓 {time}\n➡ {common.dir_name(direction)}",
+                [InlineKeyboardButton(f"🚗 {name.split(' ')[-1]} 🕓 {time} "
+                                      f"{common.dir_name(direction)}",
                                       callback_data=ccd("BOOKING", "CONFIRM", direction, day, driver, mode))])
 
     keyboard.append([InlineKeyboardButton("Vai alla selezione giorno", callback_data=ccd("BOOKING", "NEW", mode))])
-    keyboard.append([InlineKeyboardButton(f"Vai a /{day[:-1].lower()}i", callback_data=ccd("SHOW_BOOKINGS", day))])
+    keyboard.append([InlineKeyboardButton(f"Vai a /{day[:-1].lower()}ì", callback_data=ccd("SHOW_BOOKINGS", day))])
     keyboard.append([InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))])
 
     return InlineKeyboardMarkup(keyboard)

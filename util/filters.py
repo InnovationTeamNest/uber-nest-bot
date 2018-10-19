@@ -15,7 +15,7 @@ def inline_handler(bot, update):
         actions_show_bookings
 
     # Loggo il contenuto della Callback query
-    log.info("Associated callback query:", update.callback_query.data)
+    log.info(update.callback_query.data)
 
     # Mando un azione di "Sto scrivendo..."
     bot.send_chat_action(chat_id=update.callback_query.from_user.id, action=telegram.ChatAction.TYPING)
@@ -23,44 +23,56 @@ def inline_handler(bot, update):
     # Nelle callback query, il primo elemento è sempre l'identificatore
     identifier = separate_callback_data(update.callback_query.data)[0]
 
-    # Caso base usato da molti comandi
-    if identifier == "EXIT":
-        cancel_handler(bot, update)
-    # Azione alternativa per /me
-    elif identifier == "ME_MENU":
-        actions_me.me(bot, update)
-    # Azione alternativa per /prenota
-    elif identifier == "BOOKING_MENU":
-        actions_booking.prenota(bot, update)
-    # Azioni in partenza da /prenota
-    elif identifier == "BOOKING":
-        actions_booking.booking_handler(bot, update)
-    elif identifier == "EDIT_BOOK":
-        actions_booking.edit_booking(bot, update)
-    elif identifier == "ALERT_USER":
-        actions_booking.alert_user(bot, update)
-    # Azione in partenxza da /parcheggio
-    elif identifier == "CONFIRM_PARK":
-        actions_parking.confirm_parking(bot, update)
-    # Azione in partenza da /prenota e da /settimana /lunedi etc
-    elif identifier == "SHOW_BOOKINGS":
-        actions_show_bookings.show_bookings(bot, update)
-    # Azioni in partenza da /me -> trips
-    elif identifier == "TRIPS":
-        actions_trips.trips_handler(bot, update)
-    elif identifier == "ADD_PASS":
-        actions_trips.add_passenger(bot, update)
-    elif identifier == "NEWTRIP":
-        actions_trips.newtrip_handler(bot, update)
-    # Azioni in partenza da /me
-    elif identifier == "ME":
-        actions_me.me_handler(bot, update)
-    elif identifier == "MONEY":
-        actions_money.check_money(bot, update)
-    elif identifier == "EDIT_MONEY":
-        actions_money.edit_money(bot, update)
-    elif identifier == "NEW_DEBITOR":
-        actions_money.new_debitor(bot, update)
+    try:
+        # Caso base usato da molti comandi
+        if identifier == "EXIT":
+            cancel_handler(bot, update)
+        # Azione alternativa per /me
+        elif identifier == "ME_MENU":
+            actions_me.me(bot, update)
+        # Azione alternativa per /prenota
+        elif identifier == "BOOKING_MENU":
+            actions_booking.prenota(bot, update)
+        # Azioni in partenza da /prenota
+        elif identifier == "BOOKING":
+            actions_booking.booking_handler(bot, update)
+        elif identifier == "EDIT_BOOK":
+            actions_booking.edit_booking(bot, update)
+        elif identifier == "ALERT_USER":
+            actions_booking.alert_user(bot, update)
+        # Azione in partenxza da /parcheggio
+        elif identifier == "CONFIRM_PARK":
+            actions_parking.confirm_parking(bot, update)
+        # Azione in partenza da /prenota e da /settimana /lunedi etc
+        elif identifier == "SHOW_BOOKINGS":
+            actions_show_bookings.show_bookings(bot, update)
+        # Azioni in partenza da /me -> trips
+        elif identifier == "TRIPS":
+            actions_trips.trips_handler(bot, update)
+        elif identifier == "ADD_PASS":
+            actions_trips.add_passenger(bot, update)
+        elif identifier == "NEWTRIP":
+            actions_trips.newtrip_handler(bot, update)
+        # Azioni in partenza da /me
+        elif identifier == "ME":
+            actions_me.me_handler(bot, update)
+        elif identifier == "MONEY":
+            actions_money.check_money(bot, update)
+        elif identifier == "EDIT_MONEY":
+            actions_money.edit_money(bot, update)
+        elif identifier == "NEW_DEBITOR":
+            actions_money.new_debitor(bot, update)
+    except telegram.error.TimedOut as ex:
+        log.error(ex)
+        bot.answer_callback_query(callback_query_id=update.callback_query.id,
+                                  text="I server di Telegram sono impegnati in questo momento. "
+                                       "Riprova a cliccare.")
+        return
+    except telegram.error.BadRequest as ex:
+        log.error(ex)
+        bot.answer_callback_query(callback_query_id=update.callback_query.id,
+                                  text="Errore nella richiesta. Per favore, contatta il creatore del bot.")
+        return
 
     # Rimuovo il messaggio di caricamento
     bot.answer_callback_query(callback_query_id=update.callback_query.id)

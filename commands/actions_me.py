@@ -90,21 +90,22 @@ def me_handler(bot, update):
 
         user_debits = secrets.users[chat_id]["Debit"]
         debitors = []
+
         for creditor in user_debits:
             creditor_name = secrets.users[creditor]["Name"]
             debitors.append(f" {creditor_name} - {str(user_debits[creditor])} EUR\n")
 
-        message_text = "Sei sicuro di voler confermare la tua rimozione completa dal sistema?" \
-                       " L'operazione è reversibile, ma tutte le" \
-                       " tue prenotazioni e viaggi verranno cancellati per sempre."
+        message_text = [f"Sei sicuro di voler confermare la tua rimozione completa dal sistema?"
+                        f" L'operazione è reversibile, ma tutte le tue prenotazioni e viaggi"
+                        f" verranno cancellati per sempre."]
 
         if debitors != []:
-            message_text += "\n\nATTENZIONE! Hai debiti con le seguenti persone," \
-                            " in caso di cancellazione dal sistema" \
-                            " verranno avvisate dei tuoi debiti non saldati!\n\n" + "".join(debitors)
+            message_text.append(f"\n\nATTENZIONE! Hai debiti con le seguenti persone,"
+                                f" in caso di cancellazione dal sistema"
+                                f" verranno avvisate dei tuoi debiti non saldati!\n\n{''.join(debitors)}")
 
         bot.edit_message_text(chat_id=chat_id,
-                              message_id=update.callback_query.message.message_id, text=message_text,
+                              message_id=update.callback_query.message.message_id, text="".join(message_text),
                               reply_markup=InlineKeyboardMarkup(keyboard))
     #
     # ED_DR_SL = EDIT_DRIVER_SLOTS

@@ -29,11 +29,10 @@ def check_money(bot, update):
             creditor_name = secrets.users[creditor_id]["Name"]
             people.append(f"{creditor_name} - {str(value)} EUR\n")
 
-        people = "".join(people)
-        message.append(f"Al momento possiedi debiti verso le seguenti persone:\n{people}"
+        message.append(f"💸 Al momento possiedi debiti verso le seguenti persone:\n{''.join(people)}"
                        f"\nContatta ciascun autista per saldare i relativi debiti.")
     else:
-        message.append("Al momento sei a posto con i debiti.")
+        message.append("💰 Al momento sei a posto con i debiti.")
 
     # Poi creo un bottone separato per ogni credito.
     # Questa sezione del codice viene fatta girare solo se l'utente è un autista.
@@ -47,10 +46,10 @@ def check_money(bot, update):
                 keyboard.insert(0, [InlineKeyboardButton(f"{debitor_name} - {str(value)} EUR",
                                                          callback_data=ccd("EDIT_MONEY", "VIEW", debitor_id))])
 
-            message.append("\n\nAl momento possiedi queste persone hanno debiti con te."
+            message.append("\n\n💰 Al momento possiedi queste persone hanno debiti con te."
                            "Clicca su uno per modificarne il debito:")
         else:
-            message.append("\n\nNessuno ti deve denaro al momento.")
+            message.append("\n\n💸 Nessuno ti deve denaro al momento.")
 
     bot.edit_message_text(chat_id=chat_id,
                           message_id=update.callback_query.message.message_id,
@@ -77,21 +76,21 @@ def edit_money(bot, update):
         secrets.users[user]["Debit"][chat_id] -= common.trip_price
         money = str(float(money) - common.trip_price)
 
-        user_text = f"Hai saldato {str(common.trip_price)} EUR con " \
+        user_text = f"💶 Hai saldato {str(common.trip_price)} EUR con " \
                     f"[{secrets.users[chat_id]['Name']}](tg://user?id={chat_id}). " \
                     f"Debito corrente : {money} EUR."
 
     elif action == "ADD":
         secrets.users[user]["Debit"][chat_id] += common.trip_price
         money = str(float(money) + common.trip_price)
-        user_text = f"[{secrets.users[chat_id]['Name']}](tg://user?id={chat_id})" \
+        user_text = f"💶 [{secrets.users[chat_id]['Name']}](tg://user?id={chat_id})" \
                     f" ti ha addebitato {str(common.trip_price)} EUR. " \
                     f"Debito corrente: {money} EUR."
 
     elif action == "ZERO":
         del secrets.users[user]["Debit"][chat_id]
         money = "0.0"
-        user_text = secrets.users[chat_id]["Name"] + " ha azzerato il debito con te."
+        user_text = f"💸 {secrets.users[chat_id]['Name']} ha azzerato il debito con te."
 
     else:
         user_text = ""

@@ -24,6 +24,8 @@ def fetch_bookings(chat_id, day):
         text = [f"Lista dei viaggi di {day.lower()}:"]
 
         for direction in "Salita", "Discesa":
+            text.append(f"\n\n{common.dir_name(direction)}\n")
+
             bookings = sorted([
                 (
                     secrets.groups[direction][day][driver]["Time"],  # Orario di partenza
@@ -35,7 +37,6 @@ def fetch_bookings(chat_id, day):
             ])
 
             if len(bookings) > 0:
-                text.append("\n\n➡" + common.dir_name(direction) + "\n")
                 for time, driver_name, driver_id in bookings:
                     trip = secrets.groups[direction][day][driver_id]
                     # Raccolgo in una list comprehension le persone che partecipano al viaggio
@@ -44,11 +45,10 @@ def fetch_bookings(chat_id, day):
                               for user in trip[mode]]
 
                     # Aggiungo ogni viaggio trovato alla lista
-                    text.append(f"\n🚗 [{driver_name}](tg://user?id={driver_id}) - 🕒 *{time}*:"
+                    text.append(f"\n🚗 [{driver_name}](tg://user?id={driver_id}) - 🕓 *{time}*:"
                                 f"\n👥 {', '.join(people)}\n")
             else:
-                text.append("\n\n🚶🏻‍♂ 🚶🏻‍♂ Nessuna persona in viaggio " \
-                            + common.dir_name(direction) + " oggi.")
+                text.append("\n🚶🏻‍♂ Nessuna persona in viaggio oggi.")
 
         if str(chat_id) in secrets.users and common.booking_time():
             # Permetto l'uso della tastiera solo ai registrati
