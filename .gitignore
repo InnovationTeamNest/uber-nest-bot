@@ -1,6 +1,7 @@
 .idea/
 .vscode/
 *.bak
-secret_data.py
+secrets.py
 client_secret.json
 calendar-python-quickstart.json
+venv/

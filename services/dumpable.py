@@ -1,65 +1,62 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 
 import logging as log
 
-import google.appengine.ext.ndb as ndb
-import webapp2
+from google.cloud import datastore
 
-import secret_data
-
-
-class DataHandler(webapp2.RequestHandler):
-    """Stampa in console il dataset corrente salvato su secret_data e sul Datastore."""
-
-    def get(self):
-        get_data()
-        print_data()
-        self.response.write("Data output in console.")
-
-
-class Dumpable(ndb.Model):
-    """Classe usata da Datastore per fare il backup dei dati."""
-    groups = ndb.JsonProperty()
-    users = ndb.JsonProperty()
-    drivers = ndb.JsonProperty()
+import secrets
 
 
 def dump_data():
     """Dumps the whole dataset to Cloud Datastore"""
     if not empty_dataset():
-        list_of_keys = Dumpable.query().fetch(keys_only=True)
-        for key in list_of_keys:
-            key.delete()
+        import json
+        client = datastore.Client()
+        key = client.key('Data', 1)
+        client.delete(key)
 
-        Dumpable(groups=secret_data.groups,
-                 users=secret_data.users,
-                 drivers=secret_data.drivers).put()
+        # Prepares the new entity
+        data = datastore.Entity(key=key, exclude_from_indexes=('groups', 'users', 'drivers'))
+        data['groups'] = json.dumps(secrets.groups)
+        data['users'] = json.dumps(secrets.users)
+        data['drivers'] = json.dumps(secrets.drivers)
+
+        # Saves the entity
+        client.put(data)
+        return True
     else:
         log.info("Trying to save empty data!")
+        return False
 
 
 def get_data():
+    import json
     """Gets the data from Cloud Datastore"""
     if not empty_datastore():
-        data = Dumpable.query().fetch()[0]
-        secret_data.groups = data.groups
-        secret_data.users = data.users
-        secret_data.drivers = data.drivers
+        client = datastore.Client()
+        data = client.get(client.key('Data', 1))
+
+        secrets.groups = json.loads(data['groups'])
+        secrets.users = json.loads(data['users'])
+        secrets.drivers = json.loads(data['drivers'])
+        return True
+    else:
+        return False
 
 
 def print_data():
     """Prints to the Cloud Console Logs the current dataset"""
-    data = Dumpable.query().fetch()[0]
-    log.debug("Stored data: " + str(data.drivers) + str(data.users) + str(data.groups))
-    log.debug("Internal data: " + str(secret_data.drivers) + str(secret_data.users) + str(secret_data.groups))
+    client = datastore.Client()
+    data = client.get(client.key('Data', 1))
+    log.info("Stored data: ", str(data['drivers']), str(data['users']), str(data['groups']))
+    log.info("Internal data: ", str(secrets.drivers), str(secrets.users), str(secrets.groups))
 
 
 def empty_datastore():
     """Verifies that the Cloud Datastore is empty"""
-    return Dumpable.query().fetch() is None
+    return datastore.Client().get(datastore.Client().key('Data', 1)) is None
 
 
 def empty_dataset():
-    """Verifies if the input data from secret_data.py is empty"""
-    return secret_data.groups == {} or secret_data.users == {} or secret_data.drivers == {}
+    """Verifies if the input data from secrets.py is empty"""
+    return secrets.groups == {} or secrets.users == {} or secrets.drivers == {}

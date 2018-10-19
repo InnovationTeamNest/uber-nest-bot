@@ -1,14 +1,9 @@
 # -*- coding: utf-8 -*-
-from __future__ import division
-from __future__ import unicode_literals
-
-import logging as log
 import math
 
-from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.error import BadRequest
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-import secret_data
+import secrets
 import util.common
 from util import common
 from util.common import PAGE_SIZE
@@ -16,99 +11,95 @@ from util.filters import create_callback_data as ccd, separate_callback_data
 
 
 def check_money(bot, update):
-    chat_id = str(update.callback_query.from_user.id)
-    bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
+    chat_id = str(update.callback_query.message.chat_id)
 
-    try:
-        update.callback_query.message.delete()
-    except BadRequest:
-        log.info("Failed to delete previous message")
+    keyboard = [
+        [InlineKeyboardButton("Indietro", callback_data=ccd("ME_MENU"))],
+        [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+    ]
 
-    # Prima raccolgo sottoforma di stringa i debiti
-    debits = util.common.get_debits(chat_id)
+    message = []
 
-    if len(debits) != 0:
-        string = ""
-        for name, value in debits:
-            string += secret_data.users[name]["Name"] + " - " + str(value) + " EUR\n"
+    # Prima raccolgo sottoforma di stringa i debiti (per tutti gli utenti)
+    debit_list = util.common.get_debits(chat_id)
 
-        message = "Al momento possiedi debiti verso le seguenti persone: \n" \
-                  + string + "\nContattali per saldare i debiti."
+    if len(debit_list) > 0:
+        people = []
+        for creditor_id, value in debit_list:
+            creditor_name = secrets.users[creditor_id]["Name"]
+            people.append(f"{creditor_name} - {str(value)} EUR\n")
+
+        message.append(f"💸 Al momento possiedi debiti verso le seguenti persone:\n{''.join(people)}"
+                       f"\nContatta ciascun autista per saldare i relativi debiti.")
     else:
-        message = "Al momento sei a posto con i debiti."
+        message.append("💰 Al momento sei a posto con i debiti.")
 
-    # Poi creo un bottone separato per ogni credito
-    if chat_id in secret_data.drivers:
-        keyboard = [
-            [InlineKeyboardButton("Aggiungi un nuovo debitore", callback_data=ccd("NEW_DEBITOR", 0))],
-            [InlineKeyboardButton("Indietro", callback_data=ccd("ME_MENU"))],
-            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
-        ]
+    # Poi creo un bottone separato per ogni credito.
+    # Questa sezione del codice viene fatta girare solo se l'utente è un autista.
+    if chat_id in secrets.drivers:
+        keyboard.insert(0, [InlineKeyboardButton("Aggiungi un nuovo debitore", callback_data=ccd("NEW_DEBITOR", 0))])
 
-        credits = util.common.get_credits(chat_id)
-        if len(credits) > 0:
-            for name, value in credits:
-                keyboard.insert(0, [InlineKeyboardButton(secret_data.users[name]["Name"] + " - " + str(value) + " EUR",
-                                                         callback_data=ccd("EDIT_MONEY", "VIEW", name))])
-            bot.send_message(chat_id=chat_id,
-                             text=message + "\n\nAl momento possiedi queste persone hanno debiti con te. Clicca "
-                                            "su uno per modificarne il debito:",
-                             reply_markup=InlineKeyboardMarkup(keyboard))
+        credit_list = util.common.get_credits(chat_id)
+        if len(credit_list) > 0:
+            for debitor_id, value in credit_list:
+                debitor_name = secrets.users[debitor_id]["Name"]
+                keyboard.insert(0, [InlineKeyboardButton(f"{debitor_name} - {str(value)} EUR",
+                                                         callback_data=ccd("EDIT_MONEY", "VIEW", debitor_id))])
+
+            message.append("\n\n💰 Al momento possiedi queste persone hanno debiti con te."
+                           "Clicca su uno per modificarne il debito:")
         else:
-            bot.send_message(chat_id=chat_id,
-                             text=message + "\n\nNessuno ti deve denaro al momento.",
-                             reply_markup=InlineKeyboardMarkup(keyboard))
-    else:
-        bot.send_message(chat_id=chat_id, text=message)
+            message.append("\n\n💸 Nessuno ti deve denaro al momento.")
+
+    bot.edit_message_text(chat_id=chat_id,
+                          message_id=update.callback_query.message.message_id,
+                          text="".join(message),
+                          reply_markup=InlineKeyboardMarkup(keyboard))
 
 
 def edit_money(bot, update):
     action, user = separate_callback_data(update.callback_query.data)[1:]
-    chat_id = str(update.callback_query.from_user.id)
-    bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
+    chat_id = str(update.callback_query.message.chat_id)
 
     try:
-        money = str(secret_data.users[user]["Debit"][chat_id])
+        money = str(secrets.users[user]["Debit"][chat_id])
     except KeyError:
-        secret_data.users[user]["Debit"][chat_id] = 0
+        secrets.users[user]["Debit"][chat_id] = 0
         money = "0.0"
-
-    try:
-        update.callback_query.message.delete()
-    except BadRequest:
-        log.info("Failed to delete previous message")
 
     #
     # Tre azioni possibili: SUBTRACT (sottrae il prezzo di un viaggio), ADD (aggiunge il prezzo
     # di un viaggio), ZERO (cancella completamente il debito)
     #
+
     if action == "SUBTRACT":
-        secret_data.users[user]["Debit"][chat_id] -= common.trip_price
+        secrets.users[user]["Debit"][chat_id] -= common.trip_price
         money = str(float(money) - common.trip_price)
-        user_text = "Hai saldato " + str(common.trip_price) \
-                    + " EUR con " + secret_data.users[chat_id]["Name"] \
-                    + ". Debito corrente :" + money + " EUR."
+
+        user_text = f"💶 Hai saldato {str(common.trip_price)} EUR con " \
+                    f"[{secrets.users[chat_id]['Name']}](tg://user?id={chat_id}). " \
+                    f"Debito corrente : {money} EUR."
 
     elif action == "ADD":
-        secret_data.users[user]["Debit"][chat_id] += common.trip_price
+        secrets.users[user]["Debit"][chat_id] += common.trip_price
         money = str(float(money) + common.trip_price)
-        user_text = secret_data.users[chat_id]["Name"] \
-                    + " ti ha addebitato " + str(common.trip_price) + " EUR con " \
-                    + ". Debito corrente: " + money + " EUR."
+        user_text = f"💶 [{secrets.users[chat_id]['Name']}](tg://user?id={chat_id})" \
+                    f" ti ha addebitato {str(common.trip_price)} EUR. " \
+                    f"Debito corrente: {money} EUR."
 
     elif action == "ZERO":
-        del secret_data.users[user]["Debit"][chat_id]
+        del secrets.users[user]["Debit"][chat_id]
         money = "0.0"
-        user_text = secret_data.users[chat_id]["Name"] + " ha azzerato il debito con te."
+        user_text = f"💸 {secrets.users[chat_id]['Name']} ha azzerato il debito con te."
 
     else:
         user_text = ""
 
     keyboard = [
         [
-            InlineKeyboardButton("+" + str(common.trip_price) + " EUR",
+            InlineKeyboardButton(f"+ {str(common.trip_price)} EUR",
                                  callback_data=ccd("EDIT_MONEY", "ADD", user)),
-            InlineKeyboardButton("-" + str(common.trip_price) + " EUR",
+            InlineKeyboardButton(f"- {str(common.trip_price)} EUR",
                                  callback_data=ccd("EDIT_MONEY", "SUBTRACT", user)),
             InlineKeyboardButton("Azzera",
                                  callback_data=ccd("EDIT_MONEY", "ZERO", user))
@@ -117,11 +108,15 @@ def edit_money(bot, update):
         [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
     ]
 
-    bot.send_message(chat_id=chat_id, text=secret_data.users[user]["Name"] + ": " + money + " EUR",
-                     reply_markup=InlineKeyboardMarkup(keyboard))
+    debitor_name = secrets.users[user]["Name"]
+    bot.edit_message_text(chat_id=chat_id,
+                          message_id=update.callback_query.message.message_id,
+                          text=f"{debitor_name}: {money} EUR", reply_markup=InlineKeyboardMarkup(keyboard),
+                          parse_mode="Markdown")
 
     if not action == "VIEW":
-        bot.send_message(chat_id=user, text=user_text)
+        bot.send_message(chat_id=user, text=user_text,
+                         parse_mode="Markdown")
 
 
 def new_debitor(bot, update):
@@ -135,29 +130,20 @@ def new_debitor(bot, update):
     Una volta selezionato un utente, viene aperto edit_money(bot, update) con il debito automaticamente
     settato a zero.
     """
-    chat_id = str(update.callback_query.from_user.id)
+    chat_id = str(update.callback_query.message.chat_id)
     page = int(separate_callback_data(update.callback_query.data)[1])
-
-    bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
-
-    try:
-        update.callback_query.message.delete()
-    except BadRequest:
-        log.info("Failed to delete previous message")
 
     keyboard = []
     users = sorted(  # Resituisce una lista di tuple del tipo (Nome, ID)
-        [(secret_data.users[user]["Name"], user)
-         for user in secret_data.users
-         if user != chat_id and chat_id not in secret_data.users[user]["Debit"]]
+        [(secrets.users[user]["Name"], user)
+         for user in secrets.users
+         if user != chat_id and chat_id not in secrets.users[user]["Debit"]]
     )
 
     for index in range(PAGE_SIZE * page, PAGE_SIZE * (page + 1), 1):
         try:
-            name, id = users[index]
-            keyboard.append(
-                [InlineKeyboardButton(name, callback_data=ccd("EDIT_MONEY", "VIEW", id))]
-            )
+            name, name_chat_id = users[index]
+            keyboard.append([InlineKeyboardButton(name, callback_data=ccd("EDIT_MONEY", "VIEW", name_chat_id))])
         except IndexError:
             break
 
@@ -175,20 +161,7 @@ def new_debitor(bot, update):
     keyboard.append([InlineKeyboardButton("Indietro", callback_data=ccd("MONEY"))])
     keyboard.append([InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))])
 
-    bot.send_message(chat_id=chat_id,
-                     text="Scegli un utente a cui aggiungere un debito.",
-                     reply_markup=InlineKeyboardMarkup(keyboard))
-
-
-def edit_money_admin(bot, update, args):
-    if str(update.message.chat_id) == secret_data.owner_id:
-        try:
-            debitor, creditor, value = args
-            secret_data.users[str(debitor)]["Debit"][str(creditor)] = float(value)
-            bot.send_message(chat_id=secret_data.owner_id,
-                             text="Modifica in corso: "
-                                  + "\n\nDebitore: " + secret_data.users[str(debitor)]["Name"]
-                                  + "\nCreditore: " + secret_data.users[str(creditor)]["Name"]
-                                  + "\nDebito inserito: " + str(value))
-        except Exception:
-            bot.send_message(chat_id=secret_data.owner_id, text="Sintassi non corretta. Riprova!")
+    bot.edit_message_text(chat_id=chat_id,
+                          message_id=update.callback_query.message.message_id,
+                          text="Scegli un utente a cui aggiungere un debito.",
+                          reply_markup=InlineKeyboardMarkup(keyboard))
