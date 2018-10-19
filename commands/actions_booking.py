@@ -233,7 +233,7 @@ def edit_booking(bot, update):
                 if secrets.groups[direction][day][driver]["Suspended"]:
                     tag = " 🚫 Sospesa"
                 else:
-                    tag = f""
+                    tag = f" 🗓 {day} 🕓 {time}"
 
                 # Aggiunta del bottone
                 user_keyboard.append([InlineKeyboardButton(

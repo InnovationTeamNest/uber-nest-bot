@@ -96,7 +96,7 @@ def mode_name(mode):
     elif mode == "Permanent":
         return "🔁 Permanente"
     elif mode == "SuspendedUsers":
-        return "🚫 Permanente (SOSPESA)"
+        return "🚫 Sospesa (Permanente)"
     else:
         return " - "
 
