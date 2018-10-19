@@ -155,7 +155,6 @@ def booking_handler(bot, update):
 
         else:
             # Si attende conferma dall'autista prima di aggiungere
-            user_name = secrets.users[driver]["Name"]
             trip_time = trip["Time"]
 
             if "Location" in trip:
@@ -166,7 +165,7 @@ def booking_handler(bot, update):
                 location = "Non definita"
 
             user_text = f"Prenotazione completata. Dati del viaggio:" \
-                        f"\n\n🚗: {user_name}" \
+                        f"\n\n🚗: [{secrets.users[driver]['Name']}](tg://user?id={driver})" \
                         f"\n🗓: {day}" \
                         f"\n🕓: {trip_time}" \
                         f"\n➡: {common.dir_name(direction)}" \
@@ -175,7 +174,8 @@ def booking_handler(bot, update):
                         f"\n\nRiceverai una conferma dall'autista il prima possibile."
 
             driver_text = "Hai una nuova prenotazione: " \
-                          f"\n\n👤: {user_name} ({str(total_slots - occupied_slots - 1)} posti rimanenti)" \
+                          f"\n\n👤: [{secrets.users[chat_id]['Name']}](tg://user?id={chat_id}) " \
+                          f"({str(total_slots - occupied_slots - 1)} posti rimanenti)" \
                           f"\n🗓: {day}" \
                           f"\n🕓: {trip_time}" \
                           f"\n➡: {common.dir_name(direction)}" \
@@ -184,11 +184,16 @@ def booking_handler(bot, update):
                           f".\n\nPer favore, conferma la presa visione della prenotazione. In caso negativo," \
                           f" la prenotazione verrà considerata non valida."
 
-            bot.send_message(chat_id=driver, text=driver_text, reply_markup=InlineKeyboardMarkup(driver_keyboard))
+            bot.send_message(chat_id=driver,
+                             text=driver_text,
+                             reply_markup=InlineKeyboardMarkup(driver_keyboard),
+                             parse_mode="Markdown")
 
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
-                              text=user_text, reply_markup=InlineKeyboardMarkup(user_keyboard))
+                              text=user_text,
+                              reply_markup=InlineKeyboardMarkup(user_keyboard),
+                              parse_mode="Markdown")
 
 
 def edit_booking(bot, update):
@@ -255,7 +260,6 @@ def edit_booking(bot, update):
         ]
 
         text_string = []
-        user_name = secrets.users[driver]["Name"]
         trip_time = secrets.groups[direction][day][driver]["Time"]
 
         if mode == "Permanent":
@@ -277,12 +281,13 @@ def edit_booking(bot, update):
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
                               text=f"Prenotazione selezionata: {text_string}\n"
-                                   f"\n🚗: {user_name}"
+                                   f"\n🚗: [{secrets.users[driver]['Name']}](tg://user?id={driver})"
                                    f"\n🗓: {day}"
                                    f"\n➡: {common.dir_name(direction)}"
                                    f"\n🕓: {trip_time}"
                                    f"\n🔁: {common.mode_name(mode)}",
-                              reply_markup=InlineKeyboardMarkup(keyboard))
+                              reply_markup=InlineKeyboardMarkup(keyboard),
+                              parse_mode="Markdown")
     #
     # SUS_BOOK = SUSPEND_BOOKING
     #
@@ -322,14 +327,13 @@ def edit_booking(bot, update):
             [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
         ]
 
-        user_name = secrets.users[chat_id]["Name"]
-
         if mode == "Permanent":
             trip["Permanent"].remove(chat_id)
             trip["SuspendedUsers"].append(chat_id)
 
             user_message = "Prenotazione sospesa. Verrà ripristinata il prossimo viaggio."
-            driver_message = f"{user_name} ha sospeso la sua prenotazione permanente" \
+            driver_message = f"[{secrets.users[chat_id]['Name']}](tg://user?id={chat_id})" \
+                             f" ha sospeso la sua prenotazione permanente" \
                              f" per {day.lower()} {common.dir_name(direction)}."
 
         elif mode == "SuspendedUsers":
@@ -343,15 +347,18 @@ def edit_booking(bot, update):
                                       message_id=update.callback_query.message.message_id,
                                       text=f"Mi dispiace, ma non puoi rendere operativa la"
                                            f" tua prenotazione in quanto la macchina è ora piena."
-                                           f"Contatta {user_name} per risolvere la questione.",
-                                      reply_markup=InlineKeyboardMarkup(keyboard))
+                                           f"Contatta [{secrets.users[driver]['Name']}](tg://user?id={driver})"
+                                           f" per risolvere la questione.",
+                                      reply_markup=InlineKeyboardMarkup(keyboard),
+                                      parse_mode="Markdown")
                 return
 
             trip["Permanent"].append(chat_id)
             trip["SuspendedUsers"].remove(chat_id)
 
             user_message = "La prenotazione è di nuovo operativa."
-            driver_message = f"{user_name} ha reso operativa la sua prenotazione permanente" \
+            driver_message = f"[{secrets.users[chat_id]['Name']}](tg://user?id={chat_id})" \
+                             f" ha reso operativa la sua prenotazione permanente" \
                              f" di {day.lower()} {common.dir_name(direction)}."
 
         else:
@@ -361,8 +368,10 @@ def edit_booking(bot, update):
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
                               text=user_message,
-                              reply_markup=InlineKeyboardMarkup(keyboard))
-        bot.send_message(chat_id=driver, text=driver_message)
+                              reply_markup=InlineKeyboardMarkup(keyboard),
+                              parse_mode="Markdown")
+        bot.send_message(chat_id=driver, text=driver_message,
+                         parse_mode="Markdown")
     #
     # Metodo per cancellare per sempre una data prenotazione.
     #
@@ -390,14 +399,14 @@ def edit_booking(bot, update):
             [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
         ]
 
-        user_name = secrets.users[chat_id]["Name"]
-
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
                               text="Prenotazione cancellata con successo.",
                               reply_markup=InlineKeyboardMarkup(keyboard))
         bot.send_message(chat_id=driver,
-                         text=f"{user_name} ha cancellato la prenotazione per {day} {common.dir_name(direction)}.")
+                         text=f"[{secrets.users[chat_id]['Name']}](tg://user?id={chat_id})"
+                              f" ha cancellato la prenotazione per {day} {common.dir_name(direction)}.",
+                         parse_mode="Markdown")
 
 
 def alert_user(bot, update):
@@ -408,9 +417,11 @@ def alert_user(bot, update):
     if action == "CO_BO":
         direction, day, user, mode = data[2:]  # Utente della prenotazione
         secrets.groups[direction][day][chat_id][mode].append(user)
-        user_name = secrets.users[chat_id]["Name"]
 
-        bot.send_message(chat_id=user, text=f"{user_name} ha confermato la tua prenotazione.")
+        bot.send_message(chat_id=user, text=f"[{secrets.users[chat_id]['Name']}](tg://user?id={chat_id})"
+                                            f" ha confermato la tua prenotazione.",
+                         parse_mode="Markdown")
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
-                              text="Prenotazione confermata con successo.")
+                              text="Prenotazione confermata con successo.",
+                              parse_mode="Markdown")

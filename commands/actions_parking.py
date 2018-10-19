@@ -47,7 +47,6 @@ def confirm_parking(bot, update):
 
     location = data[2]
     day_group = secrets.groups["Discesa"][common.today()][chat_id]
-    user_name = secrets.users[chat_id]["Name"]
     day_group["Location"] = location
 
     bot.edit_message_text(chat_id=chat_id,
@@ -57,5 +56,7 @@ def confirm_parking(bot, update):
 
     for passenger_group in day_group["Temporary"], day_group["Permanent"]:
         for passenger in passenger_group:
-            bot.send_message(chat_id=passenger, text=f"Per il viaggio di ritorno, {user_name}"
-                                                     f" ha impostato il luogo di ritrovo:\n📍 {location}.")
+            bot.send_message(chat_id=passenger, text=f"Per il viaggio di ritorno,"
+                                                     f" [{secrets.users[chat_id]['Name']}](tg://user?id={chat_id})"
+                                                     f" ha impostato il luogo di ritrovo:\n📍 {location}.",
+                             parse_mode="Markdown")

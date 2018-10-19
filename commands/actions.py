@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-import sys
+
+import logging as log
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
@@ -62,43 +63,43 @@ def info(bot, update):
 def oggi(bot, update):
     message, keyboard = fetch_bookings(update.message.chat_id, common.today())
 
-    bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard)
+    bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard, parse_mode="Markdown")
 
 
 def domani(bot, update):
     message, keyboard = fetch_bookings(update.message.chat_id, common.tomorrow())
 
-    bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard)
+    bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard, parse_mode="Markdown")
 
 
 def lunedi(bot, update):
     message, keyboard = fetch_bookings(update.message.chat_id, "Lunedì")
 
-    bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard)
+    bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard, parse_mode="Markdown")
 
 
 def martedi(bot, update):
     message, keyboard = fetch_bookings(update.message.chat_id, "Martedì")
 
-    bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard)
+    bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard, parse_mode="Markdown")
 
 
 def mercoledi(bot, update):
     message, keyboard = fetch_bookings(update.message.chat_id, "Mercoledì")
 
-    bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard)
+    bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard, parse_mode="Markdown")
 
 
 def giovedi(bot, update):
     message, keyboard = fetch_bookings(update.message.chat_id, "Giovedì")
 
-    bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard)
+    bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard, parse_mode="Markdown")
 
 
 def venerdi(bot, update):
     message, keyboard = fetch_bookings(update.message.chat_id, "Venerdì")
 
-    bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard)
+    bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard, parse_mode="Markdown")
 
 
 def settimana(bot, update):

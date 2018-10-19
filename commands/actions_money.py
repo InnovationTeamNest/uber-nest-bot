@@ -61,7 +61,6 @@ def check_money(bot, update):
 def edit_money(bot, update):
     action, user = separate_callback_data(update.callback_query.data)[1:]
     chat_id = str(update.callback_query.message.chat_id)
-    user_name = secrets.users[chat_id]["Name"]
 
     try:
         money = str(secrets.users[user]["Debit"][chat_id])
@@ -78,13 +77,15 @@ def edit_money(bot, update):
         secrets.users[user]["Debit"][chat_id] -= common.trip_price
         money = str(float(money) - common.trip_price)
 
-        user_text = f"Hai saldato {str(common.trip_price)} EUR con {user_name}. " \
+        user_text = f"Hai saldato {str(common.trip_price)} EUR con " \
+                    f"[{secrets.users[chat_id]['Name']}](tg://user?id={chat_id}). " \
                     f"Debito corrente : {money} EUR."
 
     elif action == "ADD":
         secrets.users[user]["Debit"][chat_id] += common.trip_price
         money = str(float(money) + common.trip_price)
-        user_text = f"{user_name} ti ha addebitato {str(common.trip_price)} EUR. " \
+        user_text = f"[{secrets.users[chat_id]['Name']}](tg://user?id={chat_id})" \
+                    f" ti ha addebitato {str(common.trip_price)} EUR. " \
                     f"Debito corrente: {money} EUR."
 
     elif action == "ZERO":
@@ -111,10 +112,12 @@ def edit_money(bot, update):
     debitor_name = secrets.users[user]["Name"]
     bot.edit_message_text(chat_id=chat_id,
                           message_id=update.callback_query.message.message_id,
-                          text=f"{debitor_name}: {money} EUR", reply_markup=InlineKeyboardMarkup(keyboard))
+                          text=f"{debitor_name}: {money} EUR", reply_markup=InlineKeyboardMarkup(keyboard),
+                          parse_mode="Markdown")
 
     if not action == "VIEW":
-        bot.send_message(chat_id=user, text=user_text)
+        bot.send_message(chat_id=user, text=user_text,
+                         parse_mode="Markdown")
 
 
 def new_debitor(bot, update):

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging as log
-import sys
 
 from flask import Flask, request
 

@@ -14,6 +14,7 @@ def me(bot, update):
     else:
         me_cmd(bot, update)
 
+
 # I due comandi seguenti sono equivalenti, uno viene chiamato se l'utente utilizza il comando /me,
 # l'altro se torna al menù da una callback query
 
@@ -133,13 +134,13 @@ def me_handler(bot, update):
 
         slots = int(separate_callback_data(update.callback_query.data)[2])
         if chat_id in secrets.drivers:
-            bot.edit_message_text(chat_id=update.callback_query.message.chat_id,
+            bot.edit_message_text(chat_id=chat_id,
                                   message_id=update.callback_query.message.message_id,
                                   text="Numero di posti della vettura aggiornato con successo.",
                                   reply_markup=InlineKeyboardMarkup(keyboard))
         else:
             secrets.drivers[chat_id] = {"Slots": slots}
-            bot.edit_message_text(chat_id=update.callback_query.message.chat_id,
+            bot.edit_message_text(chat_id=chat_id,
                                   message_id=update.callback_query.message.message_id,
                                   text="Sei stato inserito nella lista degli autisti! Usa il menu /me per aggiungere"
                                        " viaggi, modificare i posti auto, aggiungere un messaggio da mostrare ai tuoi"
@@ -156,7 +157,7 @@ def me_handler(bot, update):
         ]
 
         common.delete_driver(chat_id)
-        bot.edit_message_text(chat_id=update.callback_query.message.chat_id,
+        bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
                               text="Sei stato rimosso con successo dall'elenco degli autisti.",
                               reply_markup=InlineKeyboardMarkup(keyboard))
@@ -171,17 +172,18 @@ def me_handler(bot, update):
         ]
 
         user_debits = secrets.users[chat_id]["Debit"]
-        user_name = secrets.users[chat_id]["Name"]
         for creditor in user_debits:
             bot.send_message(chat_id=creditor,
-                             text=f"ATTENZIONE! {user_name} si è cancellato da UberNEST. Ha ancora "
-                                  f"{str(user_debits[creditor])} EUR di debito con te.")
+                             text=f"ATTENZIONE! [{secrets.users[chat_id]['Name']}](tg://user?id={chat_id})"
+                                  f" si è cancellato da UberNEST. Ha ancora "
+                                  f"{str(user_debits[creditor])} EUR di debito con te.",
+                             parse_mode="Markdown")
 
         del secrets.users[chat_id]
         if chat_id in secrets.drivers:
             common.delete_driver(chat_id)
 
-        bot.edit_message_text(chat_id=update.callback_query.message.chat_id,
+        bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
                               text="Sei stato rimosso con successo dal sistema.",
                               reply_markup=InlineKeyboardMarkup(keyboard))
