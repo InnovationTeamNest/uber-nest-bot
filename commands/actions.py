@@ -17,7 +17,7 @@ from util.filters import ReplyStatus, create_callback_data
 
 
 def start(bot, update):
-    if update.chat.type == "private":  # Solo nei messaggi privati!
+    if update.chat.message.type == "private":  # Solo nei messaggi privati!
         bot.send_message(chat_id=update.message.chat_id,
                          text="Benvenuto nel bot di UberNEST. Per iniziare, digita /registra per registrarti a sistema"
                               " (obbligatorio per effettuare prenotazioni) o /help per visualizzare i comandi.")
@@ -27,7 +27,7 @@ def start(bot, update):
 
 
 def help(bot, update):
-    if update.chat.type == "private":
+    if update.chat.message.type == "private":
         text = ["Comandi disponibili:"]
 
         if str(update.message.chat_id) in secrets.users:

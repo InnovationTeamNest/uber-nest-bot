@@ -27,7 +27,7 @@ def check_money(bot, update):
         people = []
         for creditor_id, value in debit_list:
             creditor_name = secrets.users[creditor_id]["Name"]
-            people.append(f"{creditor_name} - {str(value)} EUR\n")
+            people.append(f"{creditor_name} 💶 {str(value)} EUR\n")
 
         message.append(f"💸 Al momento possiedi debiti verso le seguenti persone:\n{''.join(people)}"
                        f"\nContatta ciascun autista per saldare i relativi debiti.")
@@ -46,8 +46,8 @@ def check_money(bot, update):
                 keyboard.insert(0, [InlineKeyboardButton(f"{debitor_name} - {str(value)} EUR",
                                                          callback_data=ccd("EDIT_MONEY", "VIEW", debitor_id))])
 
-            message.append("\n\n💰 Al momento possiedi queste persone hanno debiti con te."
-                           "Clicca su uno per modificarne il debito:")
+            message.append("\n\n💰 Al momento possiedi queste persone hanno debiti con te. "
+                           "Clicca su una persona per modificare o azzerare il debito:")
         else:
             message.append("\n\n💸 Nessuno ti deve denaro al momento.")
 
@@ -90,9 +90,10 @@ def edit_money(bot, update):
     elif action == "ZERO":
         del secrets.users[user]["Debit"][chat_id]
         money = "0.0"
-        user_text = f"💸 {secrets.users[chat_id]['Name']} ha azzerato il debito con te."
+        user_text = f"💸 [{secrets.users[chat_id]['Name']}](tg://user?id={chat_id})" \
+                    f" ha azzerato il debito con te."
 
-    else:
+    else: # Caso in cui l'azione è VIEW
         user_text = ""
 
     keyboard = [
@@ -108,10 +109,10 @@ def edit_money(bot, update):
         [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
     ]
 
-    debitor_name = secrets.users[user]["Name"]
     bot.edit_message_text(chat_id=chat_id,
                           message_id=update.callback_query.message.message_id,
-                          text=f"{debitor_name}: {money} EUR", reply_markup=InlineKeyboardMarkup(keyboard),
+                          text=f"👤 [{secrets.users[user]['Name']}](tg://user?id={user})"
+                               f"\n💶 *{money} EUR*", reply_markup=InlineKeyboardMarkup(keyboard),
                           parse_mode="Markdown")
 
     if not action == "VIEW":

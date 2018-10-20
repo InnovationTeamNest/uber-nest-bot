@@ -168,8 +168,12 @@ def trips_handler(bot, update):
         time = f"{hour.zfill(2)}:{minute.zfill(2)}"
 
         trip = secrets.groups[direction][str(day)][str(chat_id)]
-
         trip["Time"] = str(time)
+
+        keyboard = [
+            [InlineKeyboardButton("Indietro", callback_data=ccd("TRIPS"))],
+            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+        ]
 
         for user_group in trip["Permanent"], trip["Temporary"]:
             for user in user_group:
@@ -180,7 +184,8 @@ def trips_handler(bot, update):
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
                               text=f"Nuovo orario di partenza:\n{day} alle "
-                                   f"{str(time)} {common.dir_name(direction)}")
+                                   f"{str(time)} {common.dir_name(direction)}",
+                              reply_markup=InlineKeyboardMarkup(keyboard))
     #
     # I seguenti comandi sono utilizzati per modificare la lista dei viaggitori di un
     # dato viaggio e rimuoverlo. Il metodo per aggiungere nuovi passeggeri si trova
@@ -477,6 +482,11 @@ def newtrip_handler(bot, update):
         minute, hour, day, direction = data[2:]
         time = f"{hour.zfill(2)}:{minute.zfill(2)}"
 
+        keyboard = [
+            [InlineKeyboardButton("Indietro", callback_data=ccd("TRIPS"))],
+            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+        ]
+
         secrets.groups[direction][str(day)][str(chat_id)] = {"Time": str(time),
                                                              "Permanent": [],
                                                              "Temporary": [],
@@ -490,8 +500,5 @@ def newtrip_handler(bot, update):
 
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
-                              text=user_text)
-    else:
-        bot.edit_message_text(chat_id=chat_id,
-                              message_id=update.callback_query.message.message_id,
-                              text="Spiacente, si è verificato un errore. Riprova più tardi.")
+                              text=user_text,
+                              reply_markup=InlineKeyboardMarkup(keyboard))
