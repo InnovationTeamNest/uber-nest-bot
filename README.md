@@ -1,3 +1,5 @@
+**WARNING** This is an archived version from 19/10/2018, the last version to be written in Python 2.7. You should check the `master` branch for the latest non-deprecated version.
+
 # Uber NEST Bot
 
 **Uber NEST Bot** is a Python-driven Telegram bot implementing the [python-telegram-bot](https://github.com/python-telegram-bot/python-telegram-bot) API, and run on a Google App Engine Standard environment.
@@ -38,8 +40,3 @@ drivers = {}
 ```
 ## Contribute
 Feel free to contribute by forking the project and issuing a pull request. Any contribution will be assessed by the NEST Innovation Team before merging the pull request.
-
-## To-Do
-
-* Insert information about implemented functionality
-* Port the whole project to Python 3 (Standard GAE Environment)
