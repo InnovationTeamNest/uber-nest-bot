@@ -17,9 +17,10 @@ from util.filters import ReplyStatus, create_callback_data
 
 
 def start(bot, update):
-    if update.chat.message.type == "private":  # Solo nei messaggi privati!
+    if update.message.chat.type == "private":  # Solo nei messaggi privati!
         bot.send_message(chat_id=update.message.chat_id,
-                         text="Benvenuto nel bot di UberNEST. Per iniziare, digita /registra per registrarti a sistema"
+                         text="Benvenuto nel bot di UberNEST. 🚗🚗"
+                              "\n\nPer iniziare, digita /registra per registrarti a sistema"
                               " (obbligatorio per effettuare prenotazioni) o /help per visualizzare i comandi.")
     else:
         bot.send_message(chat_id=update.message.chat_id,
@@ -27,22 +28,22 @@ def start(bot, update):
 
 
 def help(bot, update):
-    if update.chat.message.type == "private":
+    if update.message.chat.type == "private":
         text = ["Comandi disponibili:"]
 
         if str(update.message.chat_id) in secrets.users:
-            text.append("\n\n/me - Gestisci il tuo profilo."
-                        "\n/prenota - Gestisci le tue prenotazioni."
-                        "\n/parcheggio - Registra il tuo parcheggio di oggi.")
+            text.append("\n\n👤 /me - Gestisci il tuo profilo."
+                        "\n📚 /prenota - Gestisci le tue prenotazioni."
+                        "\n🚗 /parcheggio - Registra il tuo parcheggio di oggi.")
         else:
-            text.append("\n\n/registra - Inizia a usare UberNEST registrandoti al sistema.")
+            text.append("\n\n🖊 /registra - Inizia a usare UberNEST registrandoti al sistema.")
 
-        text.append("\n\n/oggi - Visualizza le prenotazioni per oggi."
-                    "\n/domani - Visualizza le prenotazioni per domani."
-                    "\n/settimana - Visualizza le prenotazioni per la settimana."
+        text.append("\n\n🗓 /oggi - Visualizza le prenotazioni per oggi."
+                    "\n🗓 /domani - Visualizza le prenotazioni per domani."
+                    "\n📅 /settimana - Visualizza le prenotazioni per la settimana."
                     "\n\n/lunedi - /martedi - /mercoledi"
                     "\n/giovedi - /venerdi - Visualizza le prenotazioni dei singoli giorni."
-                    "\n\n/info - Visualizza informazioni sulla versione del Bot.")
+                    "\n\nℹ /info - Visualizza informazioni sulla versione del Bot.")
 
         bot.send_message(chat_id=update.message.chat_id, text="".join(text))
     else:

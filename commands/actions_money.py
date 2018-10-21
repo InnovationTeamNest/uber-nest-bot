@@ -14,8 +14,8 @@ def check_money(bot, update):
     chat_id = str(update.callback_query.message.chat_id)
 
     keyboard = [
-        [InlineKeyboardButton("Indietro", callback_data=ccd("ME_MENU"))],
-        [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+        [InlineKeyboardButton("↩ Indietro", callback_data=ccd("ME_MENU"))],
+        [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
     ]
 
     message = []
@@ -26,8 +26,8 @@ def check_money(bot, update):
     if len(debit_list) > 0:
         people = []
         for creditor_id, value in debit_list:
-            creditor_name = secrets.users[creditor_id]["Name"]
-            people.append(f"{creditor_name} 💶 {str(value)} EUR\n")
+            people.append(f"[{secrets.users[creditor_id]['Name']}](tg://user?id={creditor_id})"
+                          f" 💶 {str(value)} EUR\n")
 
         message.append(f"💸 Al momento possiedi debiti verso le seguenti persone:\n{''.join(people)}"
                        f"\nContatta ciascun autista per saldare i relativi debiti.")
@@ -37,13 +37,12 @@ def check_money(bot, update):
     # Poi creo un bottone separato per ogni credito.
     # Questa sezione del codice viene fatta girare solo se l'utente è un autista.
     if chat_id in secrets.drivers:
-        keyboard.insert(0, [InlineKeyboardButton("Aggiungi un nuovo debitore", callback_data=ccd("NEW_DEBITOR", 0))])
+        keyboard.insert(0, [InlineKeyboardButton("➕ Aggiungi un nuovo debitore", callback_data=ccd("NEW_DEBITOR", 0))])
 
         credit_list = util.common.get_credits(chat_id)
         if len(credit_list) > 0:
             for debitor_id, value in credit_list:
-                debitor_name = secrets.users[debitor_id]["Name"]
-                keyboard.insert(0, [InlineKeyboardButton(f"{debitor_name} - {str(value)} EUR",
+                keyboard.insert(0, [InlineKeyboardButton(f"{secrets.users[debitor_id]['Name']} 💶 {str(value)} EUR",
                                                          callback_data=ccd("EDIT_MONEY", "VIEW", debitor_id))])
 
             message.append("\n\n💰 Al momento possiedi queste persone hanno debiti con te. "
@@ -53,6 +52,7 @@ def check_money(bot, update):
 
     bot.edit_message_text(chat_id=chat_id,
                           message_id=update.callback_query.message.message_id,
+                          parse_mode="Markdown",
                           text="".join(message),
                           reply_markup=InlineKeyboardMarkup(keyboard))
 
@@ -105,8 +105,8 @@ def edit_money(bot, update):
             InlineKeyboardButton("Azzera",
                                  callback_data=ccd("EDIT_MONEY", "ZERO", user))
         ],
-        [InlineKeyboardButton("Indietro", callback_data=ccd("MONEY"))],
-        [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+        [InlineKeyboardButton("↩ Indietro", callback_data=ccd("MONEY"))],
+        [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
     ]
 
     bot.edit_message_text(chat_id=chat_id,
@@ -159,8 +159,8 @@ def new_debitor(bot, update):
         page_buttons.append(InlineKeyboardButton(text, callback_data=ccd("NEW_DEBITOR", index)))
 
     keyboard.append(page_buttons)
-    keyboard.append([InlineKeyboardButton("Indietro", callback_data=ccd("MONEY"))])
-    keyboard.append([InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))])
+    keyboard.append([InlineKeyboardButton("↩ Indietro", callback_data=ccd("MONEY"))])
+    keyboard.append([InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))])
 
     bot.edit_message_text(chat_id=chat_id,
                           message_id=update.callback_query.message.message_id,

@@ -25,13 +25,13 @@ def prenota_cmd(bot, update):
     chat_id = update.message.chat_id
 
     if str(chat_id) in secrets.users:
-        keyboard = [[InlineKeyboardButton("Prenotare una-tantum",
+        keyboard = [[InlineKeyboardButton("🔂 Prenotare una-tantum",
                                           callback_data=ccd("BOOKING", "NEW", "Temporary"))],
-                    [InlineKeyboardButton("Prenotare in maniera permanente",
+                    [InlineKeyboardButton("🔁 Prenotare in maniera permanente",
                                           callback_data=ccd("BOOKING", "NEW", "Permanent"))],
-                    [InlineKeyboardButton("Gestire le mie prenotazioni",
+                    [InlineKeyboardButton("📚 Gestire le mie prenotazioni",
                                           callback_data=ccd("EDIT_BOOK", "LIST"))],
-                    [InlineKeyboardButton("Uscire", callback_data=ccd("EXIT"))]]
+                    [InlineKeyboardButton("🔚 Uscire", callback_data=ccd("EXIT"))]]
 
         bot.send_message(chat_id=chat_id,
                          text="Cosa vuoi fare?",
@@ -45,13 +45,13 @@ def prenota_cq(bot, update):
     chat_id = update.callback_query.from_user.id
 
     if str(chat_id) in secrets.users:
-        keyboard = [[InlineKeyboardButton("Prenotare una-tantum",
+        keyboard = [[InlineKeyboardButton("🔂 Prenotare una-tantum",
                                           callback_data=ccd("BOOKING", "NEW", "Temporary"))],
-                    [InlineKeyboardButton("Prenotare in maniera permanente",
+                    [InlineKeyboardButton("🔁 Prenotare in maniera permanente",
                                           callback_data=ccd("BOOKING", "NEW", "Permanent"))],
-                    [InlineKeyboardButton("Gestire le mie prenotazioni",
+                    [InlineKeyboardButton("📚 Gestire le mie prenotazioni",
                                           callback_data=ccd("EDIT_BOOK", "LIST"))],
-                    [InlineKeyboardButton("Uscire", callback_data=ccd("EXIT"))]]
+                    [InlineKeyboardButton("🔚 Uscire", callback_data=ccd("EXIT"))]]
 
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
@@ -96,8 +96,8 @@ def booking_handler(bot, update):
                 [InlineKeyboardButton(day[:2],  # Abbreviazione del giorno
                                       callback_data=ccd("BOOKING", "DAY", mode, day))
                  for day in common.work_days],
-                [InlineKeyboardButton("Indietro", callback_data=ccd("BOOKING_MENU"))],
-                [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+                [InlineKeyboardButton("↩ Indietro", callback_data=ccd("BOOKING_MENU"))],
+                [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
             ]
 
             bot.edit_message_text(chat_id=chat_id,
@@ -131,8 +131,8 @@ def booking_handler(bot, update):
         direction, day, driver, mode = data[2:]
 
         user_keyboard = [
-            [InlineKeyboardButton("Indietro", callback_data=ccd("BOOKING", "DAY", mode, day))],
-            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("BOOKING", "DAY", mode, day))],
+            [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 
         trip = secrets.groups[direction][day][driver]
@@ -219,8 +219,8 @@ def edit_booking(bot, update):
         bookings = common.search_by_booking(chat_id)
 
         keyboard = [
-            [InlineKeyboardButton("Indietro", callback_data=ccd("BOOKING_MENU"))],
-            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("BOOKING_MENU"))],
+            [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 
         if len(bookings) > 0:
@@ -259,8 +259,8 @@ def edit_booking(bot, update):
         keyboard = [
             [InlineKeyboardButton("Annulla prenotazione",
                                   callback_data=ccd("EDIT_BOOK", "DELETION", direction, day, driver, mode))],
-            [InlineKeyboardButton("Indietro", callback_data=ccd("EDIT_BOOK", "LIST"))],
-            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("EDIT_BOOK", "LIST"))],
+            [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 
         text_string = []
@@ -300,8 +300,8 @@ def edit_booking(bot, update):
         mode = booking[3]
 
         keyboard = [
-            InlineKeyboardButton("Sì", callback_data=ccd("EDIT_BOOK", "CO_SUS_BOOK", *booking)),
-            InlineKeyboardButton("No", callback_data=ccd("EDIT_BOOK", "LIST"))
+            InlineKeyboardButton("✔ Sì", callback_data=ccd("EDIT_BOOK", "CO_SUS_BOOK", *booking)),
+            InlineKeyboardButton("❌ No", callback_data=ccd("EDIT_BOOK", "LIST"))
         ]
 
         if mode == "Permanent":
@@ -327,8 +327,8 @@ def edit_booking(bot, update):
         trip = secrets.groups[direction][day][driver]
 
         keyboard = [
-            [InlineKeyboardButton("Indietro", callback_data=ccd("EDIT_BOOK", "LIST"))],
-            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("EDIT_BOOK", "LIST"))],
+            [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 
         if mode == "Permanent":
@@ -383,8 +383,8 @@ def edit_booking(bot, update):
         booking = data[2:]
 
         keyboard = [
-            InlineKeyboardButton("Sì", callback_data=ccd("EDIT_BOOK", "CO_DEL", *booking)),
-            InlineKeyboardButton("No", callback_data=ccd("EDIT_BOOK", "LIST"))
+            InlineKeyboardButton("✔ Sì", callback_data=ccd("EDIT_BOOK", "CO_DEL", *booking)),
+            InlineKeyboardButton("❌ No", callback_data=ccd("EDIT_BOOK", "LIST"))
         ]
 
         bot.edit_message_text(chat_id=chat_id,
@@ -399,8 +399,8 @@ def edit_booking(bot, update):
         secrets.groups[direction][day][driver][mode].remove(chat_id)
 
         keyboard = [
-            [InlineKeyboardButton("Indietro", callback_data=ccd("EDIT_BOOK", "LIST"))],
-            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("EDIT_BOOK", "LIST"))],
+            [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 
         bot.edit_message_text(chat_id=chat_id,

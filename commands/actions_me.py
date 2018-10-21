@@ -57,8 +57,8 @@ def me_handler(bot, update):
     elif action == "DRIVER":
         if chat_id in secrets.drivers:
             keyboard = [
-                [InlineKeyboardButton("Sì", callback_data=ccd("ME", "CO_DR_RE")),
-                 InlineKeyboardButton("No", callback_data=ccd("ME_MENU"))]]
+                [InlineKeyboardButton("✔ Sì", callback_data=ccd("ME", "CO_DR_RE")),
+                 InlineKeyboardButton("❌ No", callback_data=ccd("ME_MENU"))]]
             bot.edit_message_text(chat_id=chat_id,
                                   message_id=update.callback_query.message.message_id,
                                   text="Sei sicuro di voler confermare la tua rimozione dalla"
@@ -68,8 +68,8 @@ def me_handler(bot, update):
                                   reply_markup=InlineKeyboardMarkup(keyboard))
         else:
             keyboard = [
-                [InlineKeyboardButton("Sì", callback_data=ccd("ME", "ED_DR_SL")),
-                 InlineKeyboardButton("No", callback_data=ccd("ME_MENU"))]]
+                [InlineKeyboardButton("✔ Sì", callback_data=ccd("ME", "ED_DR_SL")),
+                 InlineKeyboardButton("❌ No", callback_data=ccd("ME_MENU"))]]
             bot.edit_message_text(chat_id=chat_id,
                                   message_id=update.callback_query.message.message_id,
                                   text="Una volta finalizzata l'iscrizione come autista, potrai gestire i tuoi"
@@ -84,8 +84,8 @@ def me_handler(bot, update):
     #
     elif action == "US_RE":
         keyboard = [
-            [InlineKeyboardButton("Sì", callback_data=ccd("ME", "CO_US_RE")),
-             InlineKeyboardButton("No", callback_data=ccd("ME_MENU"))]
+            [InlineKeyboardButton("✔ Sì", callback_data=ccd("ME", "CO_US_RE")),
+             InlineKeyboardButton("❌ No", callback_data=ccd("ME_MENU"))]
         ]
 
         user_debits = secrets.users[chat_id]["Debit"]
@@ -115,8 +115,8 @@ def me_handler(bot, update):
         # Inserisco 5 bottoni per i posti con la list comprehension
         keyboard = [
             [InlineKeyboardButton(str(i), callback_data=ccd("ME", "CO_DR", str(i))) for i in range(1, 6, 1)],
-            [InlineKeyboardButton("Indietro", callback_data=ccd("ME_MENU"))],
-            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("ME_MENU"))],
+            [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
@@ -129,8 +129,8 @@ def me_handler(bot, update):
     #
     elif action == "CO_DR":
         keyboard = [
-            [InlineKeyboardButton("Indietro", callback_data=ccd("ME_MENU"))],
-            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("ME_MENU"))],
+            [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 
         slots = int(separate_callback_data(update.callback_query.data)[2])
@@ -153,8 +153,8 @@ def me_handler(bot, update):
     #
     elif action == "CO_DR_RE":
         keyboard = [
-            [InlineKeyboardButton("Indietro", callback_data=ccd("ME_MENU"))],
-            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("ME_MENU"))],
+            [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 
         common.delete_driver(chat_id)
@@ -168,8 +168,8 @@ def me_handler(bot, update):
     #
     elif action == "CO_US_RE":
         keyboard = [
-            [InlineKeyboardButton("Indietro", callback_data=ccd("ME_MENU"))],
-            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("ME_MENU"))],
+            [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 
         user_debits = secrets.users[chat_id]["Debit"]

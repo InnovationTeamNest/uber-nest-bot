@@ -57,12 +57,12 @@ def fetch_bookings(chat_id, day):
                                       callback_data=ccd("BOOKING", "DAY", "Temporary", day))],
                 [InlineKeyboardButton("Prenota permanentemente",
                                       callback_data=ccd("BOOKING", "DAY", "Permanent", day))],
-                [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+                [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
             ]
             return "".join(text), InlineKeyboardMarkup(keyboard)
         else:
-            return text, InlineKeyboardMarkup([[InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]])
+            return text, InlineKeyboardMarkup([[InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]])
 
     else:
         return f"{day} UberNEST non è attivo.", \
-               InlineKeyboardMarkup([[InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]])
+               InlineKeyboardMarkup([[InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]])

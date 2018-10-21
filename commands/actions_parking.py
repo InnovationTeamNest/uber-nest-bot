@@ -15,7 +15,7 @@ def parcheggio(bot, update):
         return
 
     keyboard = [
-        [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+        [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
     ]
 
     day = common.today()
@@ -42,7 +42,7 @@ def confirm_parking(bot, update):
     data = separate_callback_data(update.callback_query.data)
 
     keyboard = [
-        [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+        [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
     ]
 
     location = data[2]

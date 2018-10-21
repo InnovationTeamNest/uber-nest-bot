@@ -13,18 +13,19 @@ from util.filters import create_callback_data as ccd
 def me_keyboard(chat_id):
     keyboard = []
     if chat_id in secrets.drivers:
-        money_string = "Gestire i miei debiti e crediti"
-        driver_string = "Smettere di essere un autista"
-        keyboard.append([InlineKeyboardButton("Gestire i miei viaggi", callback_data=ccd("ME", "TRIPS"))])
-        keyboard.append([InlineKeyboardButton("Modificare il numero di posti", callback_data=ccd("ME", "ED_DR_SL"))])
+        money_string = "💰 Gestire i miei debiti e crediti"
+        driver_string = "🚫 Smettere di essere un autista"
+        keyboard.append([InlineKeyboardButton("🚗 Gestire i miei viaggi", callback_data=ccd("ME", "TRIPS"))])
+        keyboard.append([InlineKeyboardButton(f"{common.emoji_numbers[secrets.drivers[chat_id]['Slots']]}"
+                                              f" Modificare il numero di posti", callback_data=ccd("ME", "ED_DR_SL"))])
     else:
-        money_string = "Gestire i miei debiti"
-        driver_string = "Diventare un autista"
+        money_string = "💸 Gestire i miei debiti"
+        driver_string = "🚗 Diventare un autista"
 
     keyboard.append([InlineKeyboardButton(money_string, callback_data=ccd("MONEY"))])
     keyboard.append([InlineKeyboardButton(driver_string, callback_data=ccd("ME", "DRIVER"))])
-    keyboard.append([InlineKeyboardButton("Cancellarmi da UberNEST", callback_data=ccd("ME", "US_RE"))])
-    keyboard.append([InlineKeyboardButton("Uscire", callback_data=ccd("EXIT"))])
+    keyboard.append([InlineKeyboardButton("❌ Cancellarmi da UberNEST", callback_data=ccd("ME", "US_RE"))])
+    keyboard.append([InlineKeyboardButton("🔚 Uscire", callback_data=ccd("EXIT"))])
 
     return InlineKeyboardMarkup(keyboard)
 
@@ -53,8 +54,8 @@ def trips_keyboard(chat_id):
             except KeyError:
                 continue
 
-    keyboard.append([InlineKeyboardButton("Indietro", callback_data=ccd("ME_MENU"))])
-    keyboard.append([InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))])
+    keyboard.append([InlineKeyboardButton("↩ Indietro", callback_data=ccd("ME_MENU"))])
+    keyboard.append([InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))])
 
     return InlineKeyboardMarkup(keyboard)
 
@@ -88,6 +89,6 @@ def booking_keyboard(mode, day):
 
     keyboard.append([InlineKeyboardButton("Vai alla selezione giorno", callback_data=ccd("BOOKING", "NEW", mode))])
     keyboard.append([InlineKeyboardButton(f"Vai a /{day[:-1].lower()}ì", callback_data=ccd("SHOW_BOOKINGS", day))])
-    keyboard.append([InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))])
+    keyboard.append([InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))])
 
     return InlineKeyboardMarkup(keyboard)

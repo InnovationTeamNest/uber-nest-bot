@@ -16,10 +16,10 @@ def trips_handler(bot, update):
 
     if action == "NEW_TRIP":  # Chiamata sul bottone "Nuovo viaggio"
         keyboard = [
-            [InlineKeyboardButton("per Povo", callback_data=ccd("NEWTRIP", "DAY", "Salita")),
-             InlineKeyboardButton("per il NEST", callback_data=ccd("NEWTRIP", "DAY", "Discesa"))],
-            [InlineKeyboardButton("Indietro", callback_data=ccd("ME", "TRIPS"))],
-            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+            [InlineKeyboardButton("🎒 per Povo", callback_data=ccd("NEWTRIP", "DAY", "Salita")),
+             InlineKeyboardButton("🏡 per il NEST", callback_data=ccd("NEWTRIP", "DAY", "Discesa"))],
+            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("ME", "TRIPS"))],
+            [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 
         bot.edit_message_text(chat_id=chat_id,
@@ -38,28 +38,32 @@ def trips_handler(bot, update):
         trip = secrets.groups[direction][day][chat_id]
 
         if trip["Suspended"]:
-            suspend_string = "Annullare la sospensione"
+            suspend_string = "✔ Annullare la sospensione"
             text_string = " - 🚫 Sospeso"
             keyboard = []
         else:
-            suspend_string = "Sospendere il viaggio"
+            suspend_string = "🚫 Sospendere il viaggio"
             text_string = ""
             keyboard = [
-                [InlineKeyboardButton("Modificare l'ora",
+                [InlineKeyboardButton("🕓 Modificare l'ora",
                                       callback_data=ccd("TRIPS", "EDIT_TRIP_HOUR", direction, day))],
-                [InlineKeyboardButton("Modificare i passeggeri",
+                [InlineKeyboardButton("👥 Modificare i passeggeri",
                                       callback_data=ccd("TRIPS", "EDIT_PASS", direction, day))]
             ]
 
         keyboard += [
             [InlineKeyboardButton(suspend_string, callback_data=ccd("TRIPS", "SUS_TRIP", direction, day))],
-            [InlineKeyboardButton("Cancellare il viaggio", callback_data=ccd("TRIPS", "REMOVE_TRIP", direction, day))],
-            [InlineKeyboardButton("Tornare indietro", callback_data=ccd("ME", "TRIPS"))],
-            [InlineKeyboardButton("Uscire", callback_data=ccd("EXIT"))]
+            [InlineKeyboardButton("❌ Cancellare il viaggio", callback_data=ccd("TRIPS", "REMOVE_TRIP", direction, day))],
+            [InlineKeyboardButton("↩ Tornare indietro", callback_data=ccd("ME", "TRIPS"))],
+            [InlineKeyboardButton("🔚 Uscire", callback_data=ccd("EXIT"))]
         ]
-        temporary_passengers = ','.join(secrets.users[user]['Name'] for user in trip['Temporary'])
-        permanent_passengers = ','.join(secrets.users[user]['Name'] for user in trip['Permanent'])
-        suspended_passengers = ','.join(secrets.users[user]['Name'] for user in trip['SuspendedUsers'])
+
+        temporary_passengers = ','.join(f"[{secrets.users[user]['Name']}](tg://user?id={user})"
+                                        for user in trip['Temporary'])
+        permanent_passengers = ','.join(f"[{secrets.users[user]['Name']}](tg://user?id={user})"
+                                        for user in trip['Permanent'])
+        suspended_passengers = ','.join(f"[{secrets.users[user]['Name']}](tg://user?id={user})"
+                                        for user in trip['SuspendedUsers'])
 
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
@@ -67,11 +71,12 @@ def trips_handler(bot, update):
                                    f"\n\n🗓 {day}"
                                    f"\n{common.dir_name(direction)}"
                                    f"\n🕓 {trip['Time']}"
-                                   f"\n👥 temporanei: {temporary_passengers}"
-                                   f"\n👥 permanenti: {permanent_passengers}"
-                                   f"\n👥 sospesi: {suspended_passengers}"
+                                   f"\n👥 (_temporanei_) {temporary_passengers}"
+                                   f"\n👥 (_permanenti_) {permanent_passengers}"
+                                   f"\n👥 (_sospesi_) {suspended_passengers}"
                                    f"\n\nCosa vuoi fare?",
-                              reply_markup=InlineKeyboardMarkup(keyboard))
+                              reply_markup=InlineKeyboardMarkup(keyboard),
+                              parse_mode="Markdown")
     #
     # SUS_TRIP = SUSPEND_TRIP. Questa parte sospende temporaneamente (per una settimana) un viaggio,
     # rendendolo invisibile all'utente finale e bloccando presenti e future prenotazioni. La sospensione
@@ -83,8 +88,8 @@ def trips_handler(bot, update):
         direction, day = data[2:4]
 
         keyboard = [
-            [InlineKeyboardButton("Sì", callback_data=ccd("TRIPS", "CO_SUS_TRIP", direction, day)),
-             InlineKeyboardButton("No", callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))]
+            [InlineKeyboardButton("✔ Sì", callback_data=ccd("TRIPS", "CO_SUS_TRIP", direction, day)),
+             InlineKeyboardButton("❌ No", callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))]
         ]
 
         if secrets.groups[direction][day][chat_id]["Suspended"]:
@@ -111,8 +116,8 @@ def trips_handler(bot, update):
             message = "Viaggio sospeso con successo."
 
         keyboard = [
-            [InlineKeyboardButton("Indietro", callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))],
-            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))],
+            [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 
         bot.edit_message_text(chat_id=chat_id,
@@ -135,8 +140,8 @@ def trips_handler(bot, update):
              for i in range(7, 14, 1)],
             [InlineKeyboardButton(str(i), callback_data=ccd("TRIPS", "EDIT_TRIP_MIN", direction, day, i))
              for i in range(14, 21, 1)],
-            [InlineKeyboardButton("Indietro", callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))],
-            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))],
+            [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 
         bot.edit_message_text(chat_id=chat_id,
@@ -153,8 +158,8 @@ def trips_handler(bot, update):
              for i in range(0, 30, 5)],
             [InlineKeyboardButton(str(i), callback_data=ccd("TRIPS", "CO_EDIT_TRIP", direction, day, hour, i))
              for i in range(30, 60, 5)],
-            [InlineKeyboardButton("Indietro", callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))],
-            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))],
+            [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 
         bot.edit_message_text(chat_id=chat_id,
@@ -171,15 +176,17 @@ def trips_handler(bot, update):
         trip["Time"] = str(time)
 
         keyboard = [
-            [InlineKeyboardButton("Indietro", callback_data=ccd("TRIPS"))],
-            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("TRIPS"))],
+            [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 
         for user_group in trip["Permanent"], trip["Temporary"]:
             for user in user_group:
                 bot.send_message(chat_id=user,
-                                 text=f"{secrets.users[chat_id]['Name']} ha spostato l'orario del viaggio di "
-                                      f"{day} {common.dir_name(direction)} alle {str(time)}.")
+                                 text=f"[{secrets.users[chat_id]['Name']}](tg://user?id={chat_id})"
+                                      f" ha spostato l'orario del viaggio di "
+                                      f"{day} {common.dir_name(direction)} alle {str(time)}.",
+                                 parse_mode="Markdown")
 
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
@@ -216,9 +223,9 @@ def trips_handler(bot, update):
                         for user in suspended_users]
 
         keyboard = user_lines + [
-            [InlineKeyboardButton("Nuovo passeggero", callback_data=ccd("ADD_PASS", "SELECT", direction, day, "0"))],
-            [InlineKeyboardButton("Indietro", callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))],
-            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+            [InlineKeyboardButton("➕ Nuovo passeggero", callback_data=ccd("ADD_PASS", "SELECT", direction, day, "0"))],
+            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))],
+            [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 
         bot.edit_message_text(chat_id=chat_id,
@@ -232,8 +239,8 @@ def trips_handler(bot, update):
         direction, day, user, mode = data[2:6]
 
         keyboard = [
-            [InlineKeyboardButton("Sì", callback_data=ccd("TRIPS", "CO_RE_PA", direction, day, user, mode)),
-             InlineKeyboardButton("No", callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))]
+            [InlineKeyboardButton("✔ Sì", callback_data=ccd("TRIPS", "CO_RE_PA", direction, day, user, mode)),
+             InlineKeyboardButton("❌ No", callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))]
         ]
 
         bot.edit_message_text(chat_id=chat_id,
@@ -247,8 +254,8 @@ def trips_handler(bot, update):
         secrets.groups[direction][day][chat_id][mode].remove(user)
 
         keyboard = [
-            [InlineKeyboardButton("Indietro", callback_data=ccd("ME", "TRIPS"))],
-            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("ME", "TRIPS"))],
+            [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 
         bot.edit_message_text(chat_id=chat_id,
@@ -258,17 +265,18 @@ def trips_handler(bot, update):
 
         bot.send_message(chat_id=user,
                          text=f"Sei stato rimosso dal seguente viaggio: "
-                              f"\n\n🚗 {secrets.users[chat_id]['Name']}"
+                              f"\n\n🚗 [{secrets.users[chat_id]['Name']}](tg://user?id={chat_id})"
                               f"\n🗓 {day}"
                               f"\n🕓 {secrets.groups[direction][day][chat_id]['Time']}"
-                              f"\n{common.dir_name(direction)}")
+                              f"\n{common.dir_name(direction)}",
+                         parse_mode="Markdown")
     # Comando chiamato quando si clicca su "Rimuovi viaggio" nella vista viaggio
     elif action == "REMOVE_TRIP":
         direction, day = data[2:4]
 
         keyboard = [
-            [InlineKeyboardButton("Sì", callback_data=ccd("TRIPS", "CO_RE_TR", direction, day)),
-             InlineKeyboardButton("No", callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))]
+            [InlineKeyboardButton("✔ Sì", callback_data=ccd("TRIPS", "CO_RE_TR", direction, day)),
+             InlineKeyboardButton("❌ No", callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))]
         ]
 
         bot.edit_message_text(chat_id=chat_id,
@@ -282,8 +290,8 @@ def trips_handler(bot, update):
         del secrets.groups[direction][day][chat_id]
 
         keyboard = [
-            [InlineKeyboardButton("Indietro", callback_data=ccd("ME", "TRIPS"))],
-            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("ME", "TRIPS"))],
+            [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 
         bot.edit_message_text(chat_id=chat_id,
@@ -337,8 +345,8 @@ def add_passenger(bot, update):
             )
 
         keyboard.append(page_buttons)
-        keyboard.append([InlineKeyboardButton("Indietro", callback_data=ccd("TRIPS", "EDIT_PASS", direction, day))])
-        keyboard.append([InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))])
+        keyboard.append([InlineKeyboardButton("↩ Indietro", callback_data=ccd("TRIPS", "EDIT_PASS", direction, day))])
+        keyboard.append([InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))])
 
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
@@ -349,12 +357,12 @@ def add_passenger(bot, update):
         direction, day, user = data[2:5]
 
         keyboard = [
-            [InlineKeyboardButton("Temporanea", callback_data=ccd("ADD_PASS", "CONFIRM",
+            [InlineKeyboardButton("🔂 Temporanea", callback_data=ccd("ADD_PASS", "CONFIRM",
                                                                   direction, day, user, "Temporary"))],
-            [InlineKeyboardButton("Permanente", callback_data=ccd("ADD_PASS", "CONFIRM",
+            [InlineKeyboardButton("🔁 Permanente", callback_data=ccd("ADD_PASS", "CONFIRM",
                                                                   direction, day, user, "Permanent"))],
-            [InlineKeyboardButton("Indietro", callback_data=ccd("ADD_PASS", "SELECT", direction, day, "0"))],
-            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("ADD_PASS", "SELECT", direction, day, "0"))],
+            [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 
         bot.edit_message_text(chat_id=chat_id,
@@ -366,8 +374,8 @@ def add_passenger(bot, update):
         direction, day, user, mode = data[2:6]
 
         keyboard = [
-            [InlineKeyboardButton("Indietro", callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))],
-            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))],
+            [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 
         trip = secrets.groups[direction][day][chat_id]
@@ -390,12 +398,13 @@ def add_passenger(bot, update):
             trip[mode].append(str(user))
 
             bot.send_message(chat_id=user,
-                             text=f"{secrets.users[chat_id]['Name']}"
+                             text=f"[{secrets.users[chat_id]['Name']}](tg://user?id={chat_id})"
                                   f" ha effettuato una nuova prenotazione a tuo nome nel suo viaggio: "
                                   f"\n\n🗓 {day}"
                                   f"\n🕓 {trip['Time']}"
                                   f"\n{common.dir_name(direction)}"
-                                  f"\n{common.mode_name(mode)}")
+                                  f"\n{common.mode_name(mode)}",
+                             parse_mode="Markdown")
 
             bot.edit_message_text(chat_id=chat_id,
                                   message_id=update.callback_query.message.message_id,
@@ -429,8 +438,8 @@ def newtrip_handler(bot, update):
             keyboard.append(InlineKeyboardButton(day[:2], callback_data=ccd("NEWTRIP", "HOUR", day, *data)))
 
         keyboard = [keyboard,
-                    [InlineKeyboardButton("Indietro", callback_data=ccd("TRIPS"))],
-                    [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]]
+                    [InlineKeyboardButton("↩ Indietro", callback_data=ccd("TRIPS"))],
+                    [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]]
 
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
@@ -447,8 +456,8 @@ def newtrip_handler(bot, update):
              for i in range(7, 14, 1)],
             [InlineKeyboardButton(str(i), callback_data=ccd("NEWTRIP", "MINUTE", str(i), *data))
              for i in range(14, 21, 1)],
-            [InlineKeyboardButton("Indietro", callback_data=ccd("NEWTRIP", "MINUTE", *data[1:]))],
-            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("NEWTRIP", "MINUTE", *data[1:]))],
+            [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 
         bot.edit_message_text(chat_id=chat_id,
@@ -466,8 +475,8 @@ def newtrip_handler(bot, update):
              for i in range(0, 30, 5)],
             [InlineKeyboardButton(str(i), callback_data=ccd("NEWTRIP", "CONFIRM", str(i), *data))
              for i in range(30, 60, 5)],
-            [InlineKeyboardButton("Indietro", callback_data=ccd("NEWTRIP", "CONFIRM", *data[1:]))],
-            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("NEWTRIP", "CONFIRM", *data[1:]))],
+            [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 
         bot.edit_message_text(chat_id=chat_id,
@@ -483,8 +492,8 @@ def newtrip_handler(bot, update):
         time = f"{hour.zfill(2)}:{minute.zfill(2)}"
 
         keyboard = [
-            [InlineKeyboardButton("Indietro", callback_data=ccd("TRIPS"))],
-            [InlineKeyboardButton("Esci", callback_data=ccd("EXIT"))]
+            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("TRIPS"))],
+            [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 
         secrets.groups[direction][str(day)][str(chat_id)] = {"Time": str(time),

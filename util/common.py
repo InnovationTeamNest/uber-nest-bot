@@ -22,6 +22,9 @@ booking_end = datetime.time(23, 50)
 # Costo di ogni viaggio
 trip_price = 0.50
 
+# Emoji usate per gli slots dell'autista
+emoji_numbers = ["0️⃣","1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣"]
+
 # Il bot va disattivato dall'ultima settimana di dicembre (22/12) al 6/1, e nell'estate
 no_trip_days = [
     datetime.date(2018, 11, 1),
@@ -143,7 +146,7 @@ def get_debits(input_debitor):
 
 def alert_suspension(bot, direction, day, driver):
     trip = secrets.groups[direction][day][driver]
-    driver_name = secrets.users[driver]["Name"]
+    driver_name = f"[{secrets.users[driver]['Name']}](tg://user?id={driver})"
 
     permanent_users = trip["Permanent"]
     temporary_users = trip["Temporary"]
@@ -152,14 +155,17 @@ def alert_suspension(bot, direction, day, driver):
         for user in permanent_users:
             bot.send_message(chat_id=user,
                              text=f"Attenzione! {driver_name} ha sospeso il viaggio di {day}"
-                                  f" {dir_name(direction)}. Non verrai addebitato per questa volta.")
+                                  f" {dir_name(direction)}. Non verrai addebitato per questa volta.",
+                             parse_mode="Markdown")
         for user in temporary_users:
             bot.send_message(chat_id=user,
                              text=f"Attenzione! {driver_name} ha sospeso il viaggio di {day}"
                                   f" {dir_name(direction)}."
-                                  f" La tua prenotazione scalerà alla settimana successiva.")
+                                  f" La tua prenotazione scalerà alla settimana successiva.",
+                             parse_mode="Markdown")
     else:
         for user in (permanent_users + temporary_users):
             bot.send_message(chat_id=user,
                              text=f"Attenzione! {driver_name} ha annullato la sospensione del viaggio di {day}"
-                                  f" {dir_name(direction)}.")
+                                  f" {dir_name(direction)}.",
+                             parse_mode="Markdown")
