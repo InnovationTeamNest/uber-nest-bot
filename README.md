@@ -6,9 +6,9 @@ This is the code powering [@ubernestbot](https://t.me/ubernestbot).
 
 The Bot's purpose is to effortlessly mantain car sharing tasks within a small community (NEST, in this case).
 
-## Sample secret_data.py file
+## Sample secrets.py file
 
-In order to make the bot work, a file named secret_data.py must be placed inside the root folder. It must contain:
+In order to make the bot work, a file named secrets.py must be placed inside the root folder. It must contain:
 
 ```python
 # The Telegram token from BotFather:
@@ -42,4 +42,3 @@ Feel free to contribute by forking the project and issuing a pull request. Any c
 ## To-Do
 
 * Insert information about implemented functionality
-* Port the whole project to Python 3 (Standard GAE Environment)
