@@ -43,6 +43,8 @@ def inline_handler(bot, update):
         # Azione in partenxza da /parcheggio
         elif identifier == "CONFIRM_PARK":
             actions_parking.confirm_parking(bot, update)
+        elif identifier == "SEND_LOCATION":
+            actions_parking.send_location(bot, update)
         # Azione in partenza da /prenota e da /settimana /lunedi etc
         elif identifier == "SHOW_BOOKINGS":
             actions_show_bookings.show_bookings(bot, update)

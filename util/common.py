@@ -23,7 +23,7 @@ booking_end = datetime.time(23, 50)
 trip_price = 0.50
 
 # Emoji usate per gli slots dell'autista
-emoji_numbers = ["0️⃣","1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣"]
+emoji_numbers = ["0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣"]
 
 # Il bot va disattivato dall'ultima settimana di dicembre (22/12) al 6/1, e nell'estate
 no_trip_days = [
@@ -32,16 +32,35 @@ no_trip_days = [
 ]  # Festa dei Santi e Morti
 
 # Posizioni di parcheggio possibili
-locations = [
-    "Vietnam",
-    "Povo 2 (fronte entrata)",
-    "Povo 1 (parcheggio VIP)"
-    "Povo 1 (cima scale)",
-    "Povo 1 (fronte entrata)",
-    "Povo 0",
-    "Mesiano (fuori)",
-    "Mesiano (fronte entrata)"
-]
+locations = {
+    "Vietnam": {
+        "Location": (46.068628, 11.150435)
+    },
+    "Povo 2 (fronte entrata)": {
+        "Location": (46.067849, 11.150428)
+    },
+    "Povo 1 (parcheggio VIP)": {
+        "Location": (46.066634, 11.149003)
+    },
+
+    "Povo 1 (cima scale)": {
+        "Location": (46.066888, 11.150411)
+    },
+
+    "Povo 1 (fronte entrata)": {
+        "Location": (46.066861, 11.149995)
+    },
+
+    "Povo 0": {
+        "Location": (46.065242, 11.150481)
+    },
+    "Mesiano (fuori)": {
+        "Location": (46.067176, 11.139021)
+    },
+    "Mesiano (fronte entrata)": {
+        "Location": (46.065315, 11.138967)
+    },
+}
 
 
 # Questi metodi gestiscono i giorni in formato stringa
@@ -112,6 +131,17 @@ def search_by_booking(person):
             for driver in secrets.groups[direction][day]
             for mode in secrets.groups[direction][day][driver]
             if (mode == "Permanent" or mode == "Temporary" or mode == "SuspendedUsers")
+            and person in secrets.groups[direction][day][driver][mode]]
+
+
+# Questo metodo è una variazione del precedente e ritorna
+# solo le prenotazioni di un dato giorno non sospese
+def sbp_day_nosusp(person, day):
+    return [(direction, driver, mode, secrets.groups[direction][day][driver]["Time"])
+            for direction in ("Salita", "Discesa")
+            for driver in secrets.groups[direction][day]
+            for mode in secrets.groups[direction][day][driver]
+            if (mode == "Permanent" or mode == "Temporary")
             and person in secrets.groups[direction][day][driver][mode]]
 
 

@@ -99,7 +99,7 @@ def me_handler(bot, update):
                         f" L'operazione è reversibile, ma tutte le tue prenotazioni e viaggi"
                         f" verranno cancellati per sempre."]
 
-        if debitors != []:
+        if debitors:
             message_text.append(f"\n\nATTENZIONE! Hai debiti con le seguenti persone,"
                                 f" in caso di cancellazione dal sistema"
                                 f" verranno avvisate dei tuoi debiti non saldati!\n\n{''.join(debitors)}")

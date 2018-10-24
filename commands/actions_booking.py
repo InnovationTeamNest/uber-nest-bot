@@ -22,9 +22,9 @@ def prenota(bot, update):
 
 
 def prenota_cmd(bot, update):
-    chat_id = update.message.chat_id
+    chat_id = str(update.message.chat_id)
 
-    if str(chat_id) in secrets.users:
+    if chat_id in secrets.users:
         keyboard = [[InlineKeyboardButton("🔂 Prenotare una-tantum",
                                           callback_data=ccd("BOOKING", "NEW", "Temporary"))],
                     [InlineKeyboardButton("🔁 Prenotare in maniera permanente",
@@ -42,9 +42,9 @@ def prenota_cmd(bot, update):
 
 
 def prenota_cq(bot, update):
-    chat_id = update.callback_query.from_user.id
+    chat_id = str(update.callback_query.from_user.id)
 
-    if str(chat_id) in secrets.users:
+    if chat_id in secrets.users:
         keyboard = [[InlineKeyboardButton("🔂 Prenotare una-tantum",
                                           callback_data=ccd("BOOKING", "NEW", "Temporary"))],
                     [InlineKeyboardButton("🔁 Prenotare in maniera permanente",
@@ -158,6 +158,8 @@ def booking_handler(bot, update):
 
             if "Location" in trip:
                 location = trip["Location"]
+                user_keyboard.insert(0, [InlineKeyboardButton("📍 Mostra sulla mappa",
+                                                              callback_data=("SEND_LOCATION", location))])
             elif direction == "Salita":
                 location = "Macchinette"
             else:
@@ -411,7 +413,7 @@ def edit_booking(bot, update):
                          text=f"Una prenotazione al tuo viaggio è stata cancellata:"
                               f"\n\n👤 [{secrets.users[chat_id]['Name']}](tg://user?id={chat_id})"
                               f"\n🗓 {day}"
-                              f"\n{common.dir_name(direction)}.",
+                              f"\n{common.dir_name(direction)}",
                          parse_mode="Markdown")
 
 
@@ -432,7 +434,7 @@ def alert_user(bot, update):
                               parse_mode="Markdown",
                               reply_markup=None,
                               text="Hai una nuova prenotazione: " \
-                                   f"\n\n👤: [{secrets.users[chat_id]['Name']}](tg://user?id={chat_id}) "
+                                   f"\n\n👤: [{secrets.users[user]['Name']}](tg://user?id={user}) "
                                    f"({slots} posti rimanenti)"
                                    f"\n🗓 {day}"
                                    f"\n🕓 {secrets.groups[direction][day][chat_id]['Time']}"

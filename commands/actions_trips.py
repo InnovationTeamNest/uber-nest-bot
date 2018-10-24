@@ -170,10 +170,9 @@ def trips_handler(bot, update):
     # Metodo chiamato per la conferma dell'orario appena modificato.
     elif action == "CO_EDIT_TRIP":
         direction, day, hour, minute = data[2:6]
-        time = f"{hour.zfill(2)}:{minute.zfill(2)}"
+        trip = secrets.groups[direction][str(day)][chat_id]
 
-        trip = secrets.groups[direction][str(day)][str(chat_id)]
-        trip["Time"] = str(time)
+        time = trip["Time"] = f"{hour.zfill(2)}:{minute.zfill(2)}"
 
         keyboard = [
             [InlineKeyboardButton("↩ Indietro", callback_data=ccd("TRIPS"))],
@@ -185,13 +184,13 @@ def trips_handler(bot, update):
                 bot.send_message(chat_id=user,
                                  text=f"[{secrets.users[chat_id]['Name']}](tg://user?id={chat_id})"
                                       f" ha spostato l'orario del viaggio di "
-                                      f"{day} {common.dir_name(direction)} alle {str(time)}.",
+                                      f"{day} {common.dir_name(direction)} alle {time}.",
                                  parse_mode="Markdown")
 
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
                               text=f"Nuovo orario di partenza:\n{day} alle "
-                                   f"{str(time)} {common.dir_name(direction)}",
+                                   f"{time} {common.dir_name(direction)}",
                               reply_markup=InlineKeyboardMarkup(keyboard))
     #
     # I seguenti comandi sono utilizzati per modificare la lista dei viaggitori di un
@@ -496,7 +495,7 @@ def newtrip_handler(bot, update):
             [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 
-        secrets.groups[direction][str(day)][str(chat_id)] = {"Time": str(time),
+        secrets.groups[direction][day][chat_id] = {"Time": time,
                                                              "Permanent": [],
                                                              "Temporary": [],
                                                              "SuspendedUsers": [],
@@ -505,7 +504,7 @@ def newtrip_handler(bot, update):
         user_text = f"Viaggio aggiunto con successo:" \
                     f"\n\n{common.dir_name(direction)}" \
                     f"\n🗓 {day}" \
-                    f"\n🕓 {str(time)}"
+                    f"\n🕓 {time}"
 
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
