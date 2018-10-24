@@ -53,8 +53,8 @@ def inline_handler(bot, update):
             actions_trips.trips_handler(bot, update)
         elif identifier == "ADD_PASS":
             actions_trips.add_passenger(bot, update)
-        elif identifier == "NEWTRIP":
-            actions_trips.newtrip_handler(bot, update)
+        elif identifier == "ADD_TRIP":
+            actions_trips.add_trip(bot, update)
         # Azioni in partenza da /me
         elif identifier == "ME":
             actions_me.me_handler(bot, update)
@@ -67,14 +67,17 @@ def inline_handler(bot, update):
     except telegram.error.TimedOut as ex:
         log.error(ex)
         bot.answer_callback_query(callback_query_id=update.callback_query.id,
-                                  text="I server di Telegram sono impegnati in questo momento. "
-                                       "Riprova a cliccare.")
+                                  text="I server di Telegram sono sotto carico. Riprova tra qualche momento.")
         return
     except telegram.error.BadRequest as ex:
         log.error(ex)
         bot.answer_callback_query(callback_query_id=update.callback_query.id,
                                   text="Errore nella richiesta. Per favore, contatta il creatore del bot.")
         return
+    except telegram.error.NetworkError as ex:
+        log.error(ex)
+        bot.answer_callback_query(callback_query_id=update.callback_query.id,
+                                  text="I server di Telegram sono sotto carico. Riprova tra qualche momento.")
 
     # Rimuovo il messaggio di caricamento
     bot.answer_callback_query(callback_query_id=update.callback_query.id)

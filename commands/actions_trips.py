@@ -14,10 +14,15 @@ def trips_handler(bot, update):
     action = data[1]
     chat_id = str(update.callback_query.message.chat_id)
 
-    if action == "NEW_TRIP":  # Chiamata sul bottone "Nuovo viaggio"
+    #
+    # Chiamata sul bottone "Nuovo viaggio"
+    # Tutte le richieste di questo bottone verranno indirizzate al metodo add_trip()
+    # presente più avanti nel file.
+    #
+    if action == "ADD":
         keyboard = [
-            [InlineKeyboardButton("🎒 per Povo", callback_data=ccd("NEWTRIP", "DAY", "Salita")),
-             InlineKeyboardButton("🏡 per il NEST", callback_data=ccd("NEWTRIP", "DAY", "Discesa"))],
+            [InlineKeyboardButton("🎒 per Povo", callback_data=ccd("ADD_TRIP", "DAY", "Salita")),
+             InlineKeyboardButton("🏡 per il NEST", callback_data=ccd("ADD_TRIP", "DAY", "Discesa"))],
             [InlineKeyboardButton("↩ Indietro", callback_data=ccd("ME", "TRIPS"))],
             [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
@@ -53,7 +58,8 @@ def trips_handler(bot, update):
 
         keyboard += [
             [InlineKeyboardButton(suspend_string, callback_data=ccd("TRIPS", "SUS_TRIP", direction, day))],
-            [InlineKeyboardButton("❌ Cancellare il viaggio", callback_data=ccd("TRIPS", "REMOVE_TRIP", direction, day))],
+            [InlineKeyboardButton("❌ Cancellare il viaggio",
+                                  callback_data=ccd("TRIPS", "REMOVE_TRIP", direction, day))],
             [InlineKeyboardButton("↩ Tornare indietro", callback_data=ccd("ME", "TRIPS"))],
             [InlineKeyboardButton("🔚 Uscire", callback_data=ccd("EXIT"))]
         ]
@@ -175,7 +181,7 @@ def trips_handler(bot, update):
         time = trip["Time"] = f"{hour.zfill(2)}:{minute.zfill(2)}"
 
         keyboard = [
-            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("TRIPS"))],
+            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("ME", "TRIPS"))],
             [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 
@@ -357,9 +363,9 @@ def add_passenger(bot, update):
 
         keyboard = [
             [InlineKeyboardButton("🔂 Temporanea", callback_data=ccd("ADD_PASS", "CONFIRM",
-                                                                  direction, day, user, "Temporary"))],
+                                                                     direction, day, user, "Temporary"))],
             [InlineKeyboardButton("🔁 Permanente", callback_data=ccd("ADD_PASS", "CONFIRM",
-                                                                  direction, day, user, "Permanent"))],
+                                                                     direction, day, user, "Permanent"))],
             [InlineKeyboardButton("↩ Indietro", callback_data=ccd("ADD_PASS", "SELECT", direction, day, "0"))],
             [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
@@ -420,24 +426,24 @@ def add_passenger(bot, update):
 # Questo metodo viene chiamato da trips_handler().
 # Da questo metodo è possibile inserire per intero un nuovo viaggio di un autista.
 #
-def newtrip_handler(bot, update):
+def add_trip(bot, update):
     data = separate_callback_data(update.callback_query.data)
     chat_id = str(update.callback_query.message.chat_id)
     mode = data[1]
 
     #
     # Metodo per l'inserimento del giorno
-    # Dati in entrata: "NEWTRIP", "DAY", direction
+    # Dati in entrata: "ADD_TRIP", "DAY", direction
     #
     if mode == "DAY":
-        data = data[2:]
+        direction = data[2:]
         keyboard = []
 
         for day in common.work_days:
-            keyboard.append(InlineKeyboardButton(day[:2], callback_data=ccd("NEWTRIP", "HOUR", day, *data)))
+            keyboard.append(InlineKeyboardButton(day[:2], callback_data=ccd("ADD_TRIP", "HOUR", day, direction)))
 
         keyboard = [keyboard,
-                    [InlineKeyboardButton("↩ Indietro", callback_data=ccd("TRIPS"))],
+                    [InlineKeyboardButton("↩ Indietro", callback_data=ccd("TRIPS", "ADD"))],
                     [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]]
 
         bot.edit_message_text(chat_id=chat_id,
@@ -446,16 +452,17 @@ def newtrip_handler(bot, update):
                               reply_markup=InlineKeyboardMarkup(keyboard))
     #
     # Metodo per l'inserimento dell'ora
-    # Dati in entrata: "NEWTRIP", "HOUR", day, direction
+    # Dati in entrata: "ADD_TRIP", "HOUR", day, direction
     #
     elif mode == "HOUR":
-        data = data[2:]
+        day, direction = data[2:]
+
         keyboard = [
-            [InlineKeyboardButton(str(i).zfill(2), callback_data=ccd("NEWTRIP", "MINUTE", str(i), *data))
+            [InlineKeyboardButton(str(i).zfill(2), callback_data=ccd("ADD_TRIP", "MINUTE", str(i), day, direction))
              for i in range(7, 14, 1)],
-            [InlineKeyboardButton(str(i), callback_data=ccd("NEWTRIP", "MINUTE", str(i), *data))
+            [InlineKeyboardButton(str(i), callback_data=ccd("ADD_TRIP", "MINUTE", str(i), day, direction))
              for i in range(14, 21, 1)],
-            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("NEWTRIP", "MINUTE", *data[1:]))],
+            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("ADD_TRIP", "DAY", direction))],
             [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 
@@ -465,16 +472,17 @@ def newtrip_handler(bot, update):
                               reply_markup=InlineKeyboardMarkup(keyboard))
     #
     # Metodo per l'inserimento dei minuti
-    # Dati in entrata: "NEWTRIP", "HOUR", hour, day, direction
+    # Dati in entrata: "ADD_TRIP", "HOUR", hour, day, direction
     #
     elif mode == "MINUTE":
-        data = data[2:]
+        hour, day, direction = data[2:]
         keyboard = [
-            [InlineKeyboardButton(str(i).zfill(2), callback_data=ccd("NEWTRIP", "CONFIRM", str(i), *data))
+            [InlineKeyboardButton(str(i).zfill(2),
+                                  callback_data=ccd("ADD_TRIP", "CONFIRM", str(i), hour, day, direction))
              for i in range(0, 30, 5)],
-            [InlineKeyboardButton(str(i), callback_data=ccd("NEWTRIP", "CONFIRM", str(i), *data))
+            [InlineKeyboardButton(str(i), callback_data=ccd("ADD_TRIP", "CONFIRM", str(i), hour, day, direction))
              for i in range(30, 60, 5)],
-            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("NEWTRIP", "CONFIRM", *data[1:]))],
+            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("ADD_TRIP", "HOUR", day, direction))],
             [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 
@@ -484,22 +492,22 @@ def newtrip_handler(bot, update):
                               reply_markup=InlineKeyboardMarkup(keyboard))
     #
     # Metodo di conferma finale
-    # Dati in entrata: "NEWTRIP", "CONFIRM", minute, hour, day, direction
+    # Dati in entrata: "ADD_TRIP", "CONFIRM", minute, hour, day, direction
     #
     elif mode == "CONFIRM":
         minute, hour, day, direction = data[2:]
         time = f"{hour.zfill(2)}:{minute.zfill(2)}"
 
         keyboard = [
-            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("TRIPS"))],
+            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("ADD_TRIP", "MINUTE", hour, day, direction))],
             [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 
         secrets.groups[direction][day][chat_id] = {"Time": time,
-                                                             "Permanent": [],
-                                                             "Temporary": [],
-                                                             "SuspendedUsers": [],
-                                                             "Suspended": False}
+                                                   "Permanent": [],
+                                                   "Temporary": [],
+                                                   "SuspendedUsers": [],
+                                                   "Suspended": False}
 
         user_text = f"Viaggio aggiunto con successo:" \
                     f"\n\n{common.dir_name(direction)}" \

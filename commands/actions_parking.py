@@ -23,8 +23,8 @@ def parcheggio(bot, update):
 
     if common.is_weekday(day):
         if chat_id in trip and not trip[chat_id]["Suspended"]:
-            for item in common.locations:
-                keyboard.insert(0, [InlineKeyboardButton(item, callback_data=ccd("CONFIRM_PARK", item))])
+            for location in common.locations:
+                keyboard.insert(0, [InlineKeyboardButton(location, callback_data=ccd("CONFIRM_PARK", location))])
 
             if "Location" in trip[chat_id]:
                 message = f"La posizione di ritrovo corrente è settata a: {trip[chat_id]['Location']}." \
@@ -44,10 +44,10 @@ def confirm_parking(bot, update):
     chat_id = str(update.callback_query.message.chat_id)
     data = separate_callback_data(update.callback_query.data)
 
-    location = data[2]
+    location = data[1]
 
     keyboard = [
-        [InlineKeyboardButton("📍 Mostra sulla mappa", callback_data=("SEND_LOCATION", location))],
+        [InlineKeyboardButton("📍 Mostra sulla mappa", callback_data=ccd("SEND_LOCATION", location))],
         [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
     ]
 
@@ -72,7 +72,7 @@ def send_location(bot, update):
     chat_id = str(update.callback_query.message.chat_id)
     data = separate_callback_data(update.callback_query.data)
 
-    location = data[2]
+    location = data[1]
 
     latitude, longitude = common.locations[location]["Location"]
 

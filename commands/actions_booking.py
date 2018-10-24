@@ -159,7 +159,7 @@ def booking_handler(bot, update):
             if "Location" in trip:
                 location = trip["Location"]
                 user_keyboard.insert(0, [InlineKeyboardButton("📍 Mostra sulla mappa",
-                                                              callback_data=("SEND_LOCATION", location))])
+                                                              callback_data=ccd("SEND_LOCATION", location))])
             elif direction == "Salita":
                 location = "Macchinette"
             else:

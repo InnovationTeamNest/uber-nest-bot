@@ -35,7 +35,7 @@ def me_keyboard(chat_id):
 # oppure SOSP se il viaggio risulta sospeso.
 #
 def trips_keyboard(chat_id):
-    keyboard = [[InlineKeyboardButton("Aggiungi un nuovo viaggio", callback_data=ccd("TRIPS", "NEW_TRIP"))]]
+    keyboard = [[InlineKeyboardButton("Aggiungi un nuovo viaggio", callback_data=ccd("TRIPS", "ADD"))]]
 
     for day in common.work_days:
         for direction in "Salita", "Discesa":
