@@ -46,17 +46,17 @@ def fetch_bookings(chat_id, day):
 
                     # Aggiungo ogni viaggio trovato alla lista
                     text.append(f"\n🚗 [{secrets.users[driver]['Name']}](tg://user?id={driver})"
-                                " - 🕓 *{time}*:"
-                                f"\n👥 {', '.join(people)}\n")
+                                f" - 🕓 *{time}*:"
+                                f"\n👥 _{', '.join(people)}_\n")
             else:
                 text.append("\n🚶🏻‍♂ Nessuna persona in viaggio oggi.")
 
         if chat_id in secrets.users and common.booking_time():
             # Permetto l'uso della tastiera solo ai registrati
             keyboard = [
-                [InlineKeyboardButton("Prenota una tantum",
+                [InlineKeyboardButton("🔂 Prenota una tantum",
                                       callback_data=ccd("BOOKING", "DAY", "Temporary", day))],
-                [InlineKeyboardButton("Prenota permanentemente",
+                [InlineKeyboardButton("🔁 Prenota permanentemente",
                                       callback_data=ccd("BOOKING", "DAY", "Permanent", day))],
                 [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
             ]

@@ -166,7 +166,7 @@ def booking_handler(bot, update):
                 location = "Non definita"
 
             driver_keyboard = [
-                [InlineKeyboardButton("Conferma",
+                [InlineKeyboardButton("✔ Conferma",
                                       callback_data=ccd("ALERT_USER", "CO_BO",
                                                         direction, day, chat_id, mode, slots))]
             ]
@@ -259,7 +259,7 @@ def edit_booking(bot, update):
     elif action == "ACTION":
         direction, day, driver, mode = data[2:]
         keyboard = [
-            [InlineKeyboardButton("Annulla prenotazione",
+            [InlineKeyboardButton("❌ Annulla prenotazione",
                                   callback_data=ccd("EDIT_BOOK", "DELETION", direction, day, driver, mode))],
             [InlineKeyboardButton("↩ Indietro", callback_data=ccd("EDIT_BOOK", "LIST"))],
             [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
