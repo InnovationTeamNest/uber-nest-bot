@@ -47,7 +47,7 @@ def fetch_bookings(chat_id, day):
                     # Aggiungo ogni viaggio trovato alla lista
                     text.append(f"\n🚗 [{secrets.users[driver]['Name']}](tg://user?id={driver})"
                                 f" - 🕓 *{time}*:"
-                                f"\n👥 _{', '.join(people)}_\n")
+                                f"\n👥 {', '.join(people)}\n")
             else:
                 text.append("\n🚶🏻‍♂ Nessuna persona in viaggio oggi.")
 
