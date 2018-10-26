@@ -66,11 +66,14 @@ def dispatcher_setup():
 def process(update, counter=0):
     try:
         dispatcher.process_update(update)
-    except Exception as ex:
+    except NameError as ex:
         dispatcher_setup()
-
         if counter < common.MAX_ATTEMPTS:
             time.sleep(2 ** counter)
             process(update, counter + 1)
         else:
-            log.info("Failed to initialize Webhook instance", ex)
+            log.critical("Failed to initialize Webhook instance")
+            log.critical(ex)
+    except Exception as ex:
+        log.error("An exception occurred during handling of the update.")
+        log.critical(ex)

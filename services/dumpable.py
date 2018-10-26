@@ -48,8 +48,8 @@ def print_data():
     """Prints to the Cloud Console Logs the current dataset"""
     client = datastore.Client()
     data = client.get(client.key('Data', 1))
-    log.info("Stored data: ", str(data['drivers']), str(data['users']), str(data['groups']))
-    log.info("Internal data: ", str(secrets.drivers), str(secrets.users), str(secrets.groups))
+    log.info("Stored data: " + str(data['drivers']) + str(data['users']) + str(data['groups']))
+    log.info("Internal data: " + str(secrets.drivers) + str(secrets.users) + str(secrets.groups))
 
 
 def empty_datastore():
