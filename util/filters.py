@@ -3,11 +3,10 @@
 import logging as log
 
 import telegram
-
-
 # Questi comandi vengono usati dalla modalità inline per redirezionare correttamente i comandi.
 # Il metodo cancel_handler viene usato nel caso in cui si voglia troncare la catena di query.
 # Infine, create e separate_callback_data vengono usate per creare le stringhe d'identificazione.
+from telegram import ReplyKeyboardRemove
 
 
 def inline_handler(bot, update):
@@ -87,7 +86,7 @@ def cancel_handler(bot, update):
     bot.edit_message_text(chat_id=update.callback_query.from_user.id,
                           message_id=update.callback_query.message.message_id,
                           text="Operazione annullata.",
-                          reply_markup=None)
+                          reply_markup=ReplyKeyboardRemove())
 
 
 def create_callback_data(*args):

@@ -9,9 +9,14 @@ app = Flask(__name__)
 
 
 @app.before_first_request
-def init():
-    # Inizializzo il logging
+def first_request():
+    import webhook
     log.basicConfig(level=log.DEBUG, format=' - %(levelname)s - %(name)s - %(message)s')
+    webhook.BotUtils()
+    # Rinnovo la posizione del webhook
+    webhook.BotUtils.set_webhook()
+    # Infine faccio il setup del Dispatcher
+    webhook.dispatcher_setup()
 
 
 @app.route('/', methods=['GET'])
@@ -22,15 +27,12 @@ def index():
 @app.route('/set_webhook', methods=['GET'])
 def webhook():
     if 'X-Appengine-Cron' in request.headers:
-        from webhook import dispatcher_setup, bot
-        # Ogni volta che si carica una nuova versione, bisogna rifare il setup del bot!
-        # Ciò viene automatizzato nelle richieste provenienti esclusivamente da Telegram.
-        res = dispatcher_setup()
-        if res:
-            return "Success!", 200
-        else:
-            log.error("Errore nel reset del Webhook!")
-            return "Webhook setup failed...", 500
+        import webhook
+        # Rinnovo la posizione del webhook
+        webhook.BotUtils.set_webhook()
+        # Infine faccio il setup del Dispatcher
+        webhook.dispatcher_setup()
+        return "Success!", 200
     else:
         return "Access denied", 403
 
@@ -39,14 +41,15 @@ def webhook():
 def update():
     import telegram
     from services.dumpable import dump_data
-    from webhook import bot, process
+    from webhook import process, BotUtils
 
+    # Evoco il bot
     # De-Jsonizzo l'update
-    update = telegram.Update.de_json(request.get_json(force=True), bot)
+    t_update = telegram.Update.de_json(request.get_json(force=True), BotUtils.bot)
     # Loggo il contenuto dell'update
-    log.info(update)
+    log.info(t_update)
     # Faccio processare al dispatcher l'update
-    process(update)
+    process(t_update)
     # Infine salvo eventuali dati modificati
     dump_data()
 

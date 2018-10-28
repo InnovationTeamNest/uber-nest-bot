@@ -3,14 +3,14 @@
 import datetime
 import logging as log
 
-import telegram
-
 import secrets
 from util import common
 
 
 def remind():
-    bot = telegram.Bot(secrets.bot_token)
+    from webhook import BotUtils
+    bot = BotUtils.bot
+
     today = datetime.datetime.today()
 
     if 0 <= (today.weekday() + 1) % 7 <= 4 and (today + datetime.timedelta(days=1)).date() \

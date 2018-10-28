@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardRemove
 
 import secrets
 import util.common as common
@@ -145,7 +145,7 @@ def booking_handler(bot, update):
 
         # Caso in cui tutti gli slot sono occupati
         elif occupied_slots >= total_slots:
-            user_text = "Macchina piena, vai a piedi LOL"
+            user_text = "Macchina piena, vai a piedi LOL."
 
         # Caso in cui lo stolto passeggero si era già prenotato
         elif chat_id in trip["Temporary"] or chat_id in trip["Permanent"] or chat_id in trip["SuspendedUsers"]:
@@ -432,7 +432,7 @@ def alert_user(bot, update):
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
                               parse_mode="Markdown",
-                              reply_markup=None,
+                              reply_markup=ReplyKeyboardRemove(),
                               text="Hai una nuova prenotazione: " \
                                    f"\n\n👤: [{secrets.users[user]['Name']}](tg://user?id={user}) "
                                    f"({slots} posti rimanenti)"

@@ -13,7 +13,8 @@ def process_day():
     e addebitandogli il prezzo impostato in common.trip_price. Se il viaggio è temporaneo, vengono
     anche rimossi.
     """
-    from webhook import bot
+    from webhook import BotUtils
+    bot = BotUtils.bot
 
     today = datetime.datetime.today()
     day = common.day_to_string(today.weekday() - 1)
@@ -98,7 +99,8 @@ def weekly_report():
     un messaggio con il riepilogo di soldi che devono dare. Se l'utente è anche un autista, riceverà anche
     un messaggio con i crediti.
     """
-    from webhook import bot
+    from webhook import BotUtils
+    bot = BotUtils.bot
 
     for user in secrets.users:
         # Invio dei debiti per tutti gli utenti

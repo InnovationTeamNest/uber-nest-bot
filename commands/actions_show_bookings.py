@@ -61,7 +61,9 @@ def fetch_bookings(chat_id, day):
                 [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
             ]
         else:
-            keyboard = [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
+            keyboard = [
+                [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
+            ]
 
         return "".join(text), InlineKeyboardMarkup(keyboard)
 
