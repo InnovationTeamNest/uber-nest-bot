@@ -5,7 +5,7 @@ from queue import Queue
 from threading import Thread
 
 from telegram import Bot
-from telegram.ext import Dispatcher, CommandHandler, MessageHandler, CallbackQueryHandler, Filters
+from telegram.ext import Dispatcher, CommandHandler, MessageHandler, CallbackQueryHandler, Filters, InlineQueryHandler
 
 import secrets
 from util import common
@@ -30,7 +30,7 @@ class BotUtils:
 
 
 def dispatcher_setup():
-    from commands import actions, actions_booking, actions_me, actions_parking
+    from commands import actions, actions_booking, actions_me, actions_parking, actions_inline
     from util import filters
     from services import dumpable
 
@@ -76,7 +76,9 @@ def dispatcher_setup():
 
     # Filtri per tutto il resto
     dispatcher.add_handler(MessageHandler(Filters.text & Filters.private, filters.text_filter))
-    dispatcher.add_handler(CallbackQueryHandler(filters.inline_handler))
+    dispatcher.add_handler(CallbackQueryHandler(filters.callback_query_handler))
+    dispatcher.add_error_handler(error_handler)
+    dispatcher.add_handler(InlineQueryHandler(actions_inline.inline_handler))
 
 
 def process(update, counter=0):
@@ -90,6 +92,55 @@ def process(update, counter=0):
         else:
             log.critical("Failed to initialize Dispatcher instance")
             log.critical(ex)
-    except Exception as ex:
-        log.error("An exception occurred during handling of the update.")
-        log.critical(ex)
+
+
+def error_handler(bot, update, error):
+    from telegram.error import (TelegramError, Unauthorized, BadRequest,
+                                TimedOut, ChatMigrated, NetworkError)
+
+    try:
+        raise error
+    except TimedOut as ex:
+        log.error(ex)
+        if update.callback_query:
+            bot.answer_callback_query(callback_query_id=update.callback_query.id,
+                                      text="I server di Telegram sono sotto carico. Riprova tra qualche momento.")
+        else:
+            bot.send_message(chat_id=update.message.chat_id,
+                             text="I server di Telegram sono sotto carico. Riprova tra qualche momento.")
+
+    except BadRequest as ex:
+        log.error(ex)
+        if update.callback_query:
+            bot.answer_callback_query(callback_query_id=update.callback_query.id,
+                                      text="Errore nella richiesta. Per favore, contatta il creatore del bot.")
+        else:
+            bot.send_message(chat_id=update.message.chat_id,
+                             text="Errore nella richiesta. Per favore, contatta il creatore del bot.")
+
+    except NetworkError as ex:
+        log.error(ex)
+        if update.callback_query:
+            bot.answer_callback_query(callback_query_id=update.callback_query.id,
+                                      text="I server di Telegram sono sotto carico. Riprova tra qualche momento.")
+        else:
+            bot.send_message(chat_id=update.message.chat_id,
+                             text="I server di Telegram sono sotto carico. Riprova tra qualche momento.")
+
+    except Unauthorized as ex:
+        log.error(ex)
+        bot.send_message(chat_id=secrets.group_chat_id,
+                         text="Avviso automatico: Un utente iscritto a UberNEST ha bloccato"
+                              "il Bot. L'utente in questione è pregato di sbloccarlo al più presto.")
+
+    except ChatMigrated as ex:
+        pass  # TODO Implement
+
+    except TelegramError as ex:
+        log.error(ex)
+        if update.callback_query:
+            bot.answer_callback_query(callback_query_id=update.callback_query.id)
+
+        bot.send_message(chat_id=update.message.chat_id,
+                         text="I server di Telegram hanno riscontrato un errore. Riprova tra qualche "
+                              "minuto; se l'errore persiste, contatta il creatore del Bot.")

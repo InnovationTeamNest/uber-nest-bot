@@ -25,7 +25,7 @@ def dump_data():
         client.put(data)
         return True
     else:
-        log.info("Trying to save empty data!")
+        log.critical("Trying to save empty data!")
         return False
 
 

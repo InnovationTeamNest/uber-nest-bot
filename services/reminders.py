@@ -21,15 +21,15 @@ def remind():
             try:
                 remind_user(bot, chat_id)
             except Exception as ex:
-                log.error(f"Failed to alert {chat_id}")
-                log.error(ex)
+                log.critical(f"Failed to alert {chat_id}")
+                log.critical(ex)
 
             if chat_id in secrets.drivers:
                 try:
                     remind_driver(bot, chat_id)
                 except Exception as ex:
-                    log.error(f"Failed to alert driver {chat_id}")
-                    log.error(ex)
+                    log.critical(f"Failed to alert driver {chat_id}")
+                    log.critical(ex)
 
 
 def remind_driver(bot, chat_id):

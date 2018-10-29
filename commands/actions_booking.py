@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardRemove
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 import secrets
 import util.common as common
@@ -44,23 +44,18 @@ def prenota_cmd(bot, update):
 def prenota_cq(bot, update):
     chat_id = str(update.callback_query.from_user.id)
 
-    if chat_id in secrets.users:
-        keyboard = [[InlineKeyboardButton("🔂 Prenotare una-tantum",
-                                          callback_data=ccd("BOOKING", "NEW", "Temporary"))],
-                    [InlineKeyboardButton("🔁 Prenotare in maniera permanente",
-                                          callback_data=ccd("BOOKING", "NEW", "Permanent"))],
-                    [InlineKeyboardButton("📚 Gestire le mie prenotazioni",
-                                          callback_data=ccd("EDIT_BOOK", "LIST"))],
-                    [InlineKeyboardButton("🔚 Uscire", callback_data=ccd("EXIT"))]]
+    keyboard = [[InlineKeyboardButton("🔂 Prenotare una-tantum",
+                                      callback_data=ccd("BOOKING", "NEW", "Temporary"))],
+                [InlineKeyboardButton("🔁 Prenotare in maniera permanente",
+                                      callback_data=ccd("BOOKING", "NEW", "Permanent"))],
+                [InlineKeyboardButton("📚 Gestire le mie prenotazioni",
+                                      callback_data=ccd("EDIT_BOOK", "LIST"))],
+                [InlineKeyboardButton("🔚 Uscire", callback_data=ccd("EXIT"))]]
 
-        bot.edit_message_text(chat_id=chat_id,
-                              message_id=update.callback_query.message.message_id,
-                              text="Cosa vuoi fare?",
-                              reply_markup=InlineKeyboardMarkup(keyboard))
-    else:
-        bot.edit_message_text(chat_id=chat_id,
-                              message_id=update.callback_query.message.message_id,
-                              text="Per effettuare una prenotazione, registrati con /registra.")
+    bot.edit_message_text(chat_id=chat_id,
+                          message_id=update.callback_query.message.message_id,
+                          text="Cosa vuoi fare?",
+                          reply_markup=InlineKeyboardMarkup(keyboard))
 
 
 def booking_handler(bot, update):
@@ -145,7 +140,7 @@ def booking_handler(bot, update):
 
         # Caso in cui tutti gli slot sono occupati
         elif occupied_slots >= total_slots:
-            user_text = "Macchina piena, vai a piedi LOL."
+            user_text = "Macchina piena, vai a piedi LOL. 🚶🏻‍♂️"
 
         # Caso in cui lo stolto passeggero si era già prenotato
         elif chat_id in trip["Temporary"] or chat_id in trip["Permanent"] or chat_id in trip["SuspendedUsers"]:
@@ -167,8 +162,7 @@ def booking_handler(bot, update):
 
             driver_keyboard = [
                 [InlineKeyboardButton("✔ Conferma",
-                                      callback_data=ccd("ALERT_USER", "CO_BO",
-                                                        direction, day, chat_id, mode, slots))]
+                                      callback_data=ccd("ALERT_USER", "CO_BO", direction, day, chat_id, mode))]
             ]
 
             user_text = f"Prenotazione completata. Dati del viaggio:" \
@@ -178,7 +172,7 @@ def booking_handler(bot, update):
                         f"\n{common.dir_name(direction)}" \
                         f"\n{common.mode_name(mode)}" \
                         f"\n📍 {location}" \
-                        f"\n\nRiceverai una conferma dall'autista il prima possibile."
+                        f"\n\nLa prenotazione sarà resa valida al momento della conferma dall'autista."
 
             driver_text = "Hai una nuova prenotazione: " \
                           f"\n\n👤: [{secrets.users[chat_id]['Name']}](tg://user?id={chat_id}) " \
@@ -307,14 +301,14 @@ def edit_booking(bot, update):
         ]
 
         if mode == "Permanent":
-            message = "Si ricorda che la sospensione di una prenotazione è valida per" \
-                      " una sola settimana.\n\nSei sicuro di voler sospendere questo viaggio?"
+            message = "Si ricorda che la sospensione di una prenotazione è valida per una sola settimana." \
+                      "\n\nSei sicuro di voler sospendere questo viaggio?"
 
         elif mode == "SuspendedUsers":
             message = "Vuoi rendere di nuovo operativa questa prenotazione?"
 
         else:
-            message = ""
+            message = "Errore fatale nel Bot. Contatta il creatore del bot al più presto."
 
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
@@ -368,8 +362,9 @@ def edit_booking(bot, update):
                              f" di {day.lower()} {common.dir_name(direction)}."
 
         else:
-            user_message = driver_message = "Qualcuno ha cercato di sospendere una prenotazione temporanea." \
-                                            " Contatta il creatore del bot al più presto."
+            user_message = "Errore fatale nel Bot. Contatta il creatore del bot al più presto."
+            driver_message = "Errore: un tuo passeggero ha cercato di sospendere " \
+                             "una prenotazione temporanea. Contatta il creatore del bot al più presto."
 
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
@@ -423,21 +418,37 @@ def alert_user(bot, update):
     action = data[1]
 
     if action == "CO_BO":
-        direction, day, user, mode, slots = data[2:]  # Utente della prenotazione
-        secrets.groups[direction][day][chat_id][mode].append(user)
+        direction, day, user, mode = data[2:]  # Utente della prenotazione
 
-        bot.send_message(chat_id=user, parse_mode="Markdown",
-                         text=f"[{secrets.users[chat_id]['Name']}](tg://user?id={chat_id})"
-                              f" ha confermato la tua prenotazione.")
+        trip = secrets.groups[direction][day][chat_id]
+        occupied_slots = len(trip["Permanent"]) + len(trip["Temporary"])
+        total_slots = secrets.drivers[chat_id]["Slots"]
+
+        if occupied_slots < total_slots:
+            if user not in trip[mode]:
+                trip[mode].append(user)
+                edited_text = "Hai una nuova prenotazione: " \
+                              f"\n\n👤: [{secrets.users[user]['Name']}](tg://user?id={user}) ✔" \
+                              f"(*{total_slots - occupied_slots - 1} posti rimanenti*)" \
+                              f"\n🗓 {day}" \
+                              f"\n🕓 {secrets.groups[direction][day][chat_id]['Time']}" \
+                              f"\n{common.dir_name(direction)}" \
+                              f"\n{common.mode_name(mode)}" \
+                              f".\n\nPrenotazione confermata con successo."
+                booker_text = f"[{secrets.users[chat_id]['Name']}](tg://user?id={chat_id})" \
+                              f" ha confermato la tua prenotazione."
+            else:
+                edited_text = "⚠ Attenzione, questa persona è già prenotata con te in questo viaggio."
+                booker_text = "⚠ Ti sei già prenotato in questa data con questa persona!"
+        else:
+            edited_text = "⚠ Attenzione, hai esaurito i posti disponibili per questo viaggio. Non è" \
+                          " possibile confermarlo."
+            booker_text = f"⚠ Mi dispiace, ma qualcun'altro si è prenotato prima di te. Contatta " \
+                          f"[{secrets.users[chat_id]['Name']}](tg://user?id={chat_id}) per disponibilità posti."
+
+        bot.send_message(chat_id=user, parse_mode="Markdown", text=booker_text)
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
                               parse_mode="Markdown",
-                              reply_markup=ReplyKeyboardRemove(),
-                              text="Hai una nuova prenotazione: " \
-                                   f"\n\n👤: [{secrets.users[user]['Name']}](tg://user?id={user}) "
-                                   f"({slots} posti rimanenti)"
-                                   f"\n🗓 {day}"
-                                   f"\n🕓 {secrets.groups[direction][day][chat_id]['Time']}"
-                                   f"\n{common.dir_name(direction)}"
-                                   f"\n{common.mode_name(mode)}"
-                                   f".\n\nPrenotazione confermata con successo.")
+                              reply_markup=None,
+                              text=edited_text)

@@ -112,7 +112,7 @@ def weekly_report():
                     message.append(f"\n{secrets.users[name]['Name']} - {str(value)} EUR")
                 bot.send_message(chat_id=user, text="".join(message))
         except Exception as ex:
-            log.info(f"Failed to alert user {user}")
+            log.critical(f"Failed to alert user {user}")
             log.critical(ex)
 
         # Invio dei crediti per ogni singolo autista
@@ -125,5 +125,5 @@ def weekly_report():
                         message.append(f"\n{secrets.users[name]['Name']} - {str(value)} EUR")
                     bot.send_message(chat_id=user, text="".join(message))
         except Exception as ex:
-            log.info(f"Failed to alert driver {user}")
+            log.critical(f"Failed to alert driver {user}")
             log.critical(ex)
