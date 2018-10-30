@@ -60,7 +60,7 @@ def remind_driver(bot, chat_id):
 
 def remind_user(bot, chat_id):
     """Questo comando verrà eseguito alle 23:30 di ogni giorno feriale"""
-    bookings = common.sbp_day_nosusp(chat_id, common.tomorrow())
+    bookings = common.get_bookings_day_nosusp(chat_id, common.tomorrow())
 
     message = []
     for item in bookings:

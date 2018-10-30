@@ -51,7 +51,7 @@ def fetch_bookings(chat_id, day):
             else:
                 text.append("\n🚶🏻‍♂ Nessuna persona in viaggio oggi.")
 
-        if chat_id in secrets.users and common.booking_time():
+        if chat_id in secrets.users and common.is_booking_time():
             # Permetto l'uso della tastiera solo ai registrati
             keyboard = [
                 [InlineKeyboardButton("🔂 Prenota una tantum",
@@ -68,6 +68,8 @@ def fetch_bookings(chat_id, day):
         return "".join(text), InlineKeyboardMarkup(keyboard)
 
     else:
-        return f"{day} UberNEST non è attivo.", \
-               InlineKeyboardMarkup([[
-                   InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]])
+        keyboard = [
+            [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
+        ]
+
+        return f"{day} UberNEST non è attivo.", InlineKeyboardMarkup(keyboard)

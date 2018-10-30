@@ -74,7 +74,7 @@ def booking_handler(bot, update):
     # in common.py per evitare prenotazioni notturne assurde.
     #
     if action == "NEW":
-        if common.booking_time():
+        if common.is_booking_time():
             mode = data[2]
 
             if mode == "Temporary":
@@ -212,7 +212,7 @@ def edit_booking(bot, update):
     #  sottoforma di bottoni all'utente.
     #
     if action == "LIST":
-        bookings = common.search_by_booking(chat_id)
+        bookings = common.get_bookings(chat_id)
 
         keyboard = [
             [InlineKeyboardButton("↩ Indietro", callback_data=ccd("BOOKING_MENU"))],

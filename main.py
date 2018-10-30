@@ -67,10 +67,6 @@ def data():
 
 @app.route('/localscripts', methods=['GET'])
 def script():
-    # get_data()
-    # print_data()
-    # dump_data()
-
     return "", 403
 
 

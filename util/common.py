@@ -31,6 +31,10 @@ no_trip_days = [
     datetime.date(2018, 11, 2)
 ]  # Festa dei Santi e Morti
 
+# Url immagini
+povo_url = "https://www.science.unitn.it/cisca/avvisi/titolo2.jpg"
+nest_url = "http://giornaletrentino.it/image/policy:1.937279:1502009929/image/image.jpg"
+
 # Posizioni di parcheggio possibili
 locations = {
     "Vietnam": {
@@ -42,15 +46,12 @@ locations = {
     "Povo 1 (parcheggio VIP)": {
         "Location": (46.066634, 11.149003)
     },
-
     "Povo 1 (cima scale)": {
         "Location": (46.066888, 11.150411)
     },
-
     "Povo 1 (fronte entrata)": {
         "Location": (46.066861, 11.149995)
     },
-
     "Povo 0": {
         "Location": (46.065242, 11.150481)
     },
@@ -98,7 +99,7 @@ def is_dst():
     return pytz.timezone("Europe/Rome").localize(datetime.datetime.now()).dst() == datetime.timedelta(0, 3600)
 
 
-def booking_time():
+def is_booking_time():
     """Controlla che l'orario attuale sia compreso all'interno degli orari di prenotazioni definiti sopra"""
     return booking_start <= now_time() <= booking_end
 
@@ -123,7 +124,7 @@ def mode_name(mode):
         return " - "
 
 
-def search_by_booking(person):
+def get_bookings(person):
     """Ritorna tutte le prenotazioni di una certa persona"""
     return [(direction, day, driver, mode, secrets.groups[direction][day][driver]["Time"])
             for direction in ("Salita", "Discesa")
@@ -136,7 +137,7 @@ def search_by_booking(person):
 
 # Questo metodo è una variazione del precedente e ritorna
 # solo le prenotazioni di un dato giorno non sospese
-def sbp_day_nosusp(person, day):
+def get_bookings_day_nosusp(person, day):
     return [(direction, driver, mode, secrets.groups[direction][day][driver]["Time"])
             for direction in ("Salita", "Discesa")
             for driver in secrets.groups[direction][day]

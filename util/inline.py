@@ -4,29 +4,24 @@ from telegram import InlineQueryResultArticle, InputTextMessageContent
 import secrets
 from util import common
 
-povo_url = "https://www.science.unitn.it/cisca/avvisi/titolo2.jpg"
-nest_url = "http://giornaletrentino.it/image/policy:1.937279:1502009929/image/image.jpg"
-
 
 def inline_handler(bot, update):
-    query = update.inline_query.query
+    query = update.inline_query.query.lower()
     chat_id = str(update.inline_query.from_user.id)
     if not query or chat_id not in secrets.users:
         return
 
-    results = list()
+    results = []
 
     for day in common.work_days:
         for direction in "Salita", "Discesa":
             for driver in secrets.groups[direction][day]:
                 driver_name = secrets.users[driver]['Name']
-                if query.lower() in day.lower() or query.lower() in driver_name.lower():
-                    # Bla Bla Bla Bla
+                if query in day.lower() or query in driver_name.lower():
+                    # Visualizzo solo le query contenenti giorno o autista
                     trip = secrets.groups[direction][day][driver]
-                    people = ', '.join([f"{secrets.users[user]['Name']}"
-                                        for mode in trip
-                                        if mode == "Temporary" or mode == "Permanent"
-                                        for user in trip[mode]])
+                    people = ', '.join([f"{secrets.users[user]['Name']}" for mode in trip
+                                        if mode == "Temporary" or mode == "Permanent" for user in trip[mode]])
                     results.append(
                         InlineQueryResultArticle(
                             id=f"{direction}{day}{driver}",
@@ -37,9 +32,10 @@ def inline_handler(bot, update):
                                 f"\n🗓 {day}"
                                 f"\n🕓 {trip['Time']}"
                                 f"\n{common.dir_name(direction)}"
-                                f"\n👥 {people}"),
+                                f"\n👥 {people}"
+                            ),
                             hide_url=True,
-                            thumb_url=povo_url if direction == "Salita" else nest_url,
+                            thumb_url=common.povo_url if direction == "Salita" else common.nest_url,
                             thumb_height=40,
                             thumb_width=40
                         )
