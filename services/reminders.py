@@ -44,10 +44,10 @@ def remind_driver(bot, chat_id):
                 message.append("⚠ Sommario dei tuoi viaggi di domani:")
 
             trip = trip[chat_id]
-            permanent_people = ",".join(f"[{secrets.users[user]['Name']}](tg://user?id={user})"
-                                        for user in trip["Permanent"])
-            temporary_people = ",".join(f"[{secrets.users[user]['Name']}](tg://user?id={user})"
-                                        for user in trip["Temporary"])
+            permanent_people = ", ".join(f"[{secrets.users[user]['Name']}](tg://user?id={user})"
+                                         for user in trip["Permanent"])
+            temporary_people = ", ".join(f"[{secrets.users[user]['Name']}](tg://user?id={user})"
+                                         for user in trip["Temporary"])
 
             message.append(f"\n\n🕓 {trip['Time']}"
                            f"\n{common.dir_name(direction)}"

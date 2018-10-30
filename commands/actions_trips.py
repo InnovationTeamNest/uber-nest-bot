@@ -64,12 +64,12 @@ def trips_handler(bot, update):
             [InlineKeyboardButton("🔚 Uscire", callback_data=ccd("EXIT"))]
         ]
 
-        temporary_passengers = ','.join(f"[{secrets.users[user]['Name']}](tg://user?id={user})"
-                                        for user in trip['Temporary'])
-        permanent_passengers = ','.join(f"[{secrets.users[user]['Name']}](tg://user?id={user})"
-                                        for user in trip['Permanent'])
-        suspended_passengers = ','.join(f"[{secrets.users[user]['Name']}](tg://user?id={user})"
-                                        for user in trip['SuspendedUsers'])
+        temporary_passengers = ", ".join(f"[{secrets.users[user]['Name']}](tg://user?id={user})"
+                                         for user in trip['Temporary'])
+        permanent_passengers = ", ".join(f"[{secrets.users[user]['Name']}](tg://user?id={user})"
+                                         for user in trip['Permanent'])
+        suspended_passengers = ", ".join(f"[{secrets.users[user]['Name']}](tg://user?id={user})"
+                                         for user in trip['SuspendedUsers'])
 
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
