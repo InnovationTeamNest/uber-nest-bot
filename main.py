@@ -24,17 +24,17 @@ def index():
     return "UberNEST Bot is running!", 200
 
 
-@app.route('/set_webhook', methods=['GET'])
-def webhook():
-    if 'X-Appengine-Cron' in request.headers:
-        import webhook
-        # Rinnovo la posizione del webhook
-        webhook.BotUtils.set_webhook()
-        # Infine faccio il setup del Dispatcher
-        webhook.dispatcher_setup()
-        return "Success!", 200
-    else:
-        return "Access denied", 403
+# @app.route('/set_webhook', methods=['GET'])
+# def webhook():
+#     if 'X-Appengine-Cron' in request.headers:
+#         import webhook
+#         # Rinnovo la posizione del webhook
+#         webhook.BotUtils.set_webhook()
+#         # Infine faccio il setup del Dispatcher
+#         webhook.dispatcher_setup()
+#         return "Success!", 200
+#     else:
+#         return "Access denied", 403
 
 
 @app.route('/' + bot_token, methods=['POST'])

@@ -23,7 +23,11 @@ class BotUtils:
 
     @staticmethod
     def start_thread():
-        BotUtils.thread.start()
+        try:
+            BotUtils.thread.start()
+        except RuntimeError as ex:
+            log.critical(ex)
+            log.critical("Tried to start an active Thread!")
 
     @staticmethod
     def set_webhook():

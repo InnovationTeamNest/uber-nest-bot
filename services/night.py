@@ -19,7 +19,7 @@ def process_day():
     today = datetime.datetime.today()
     day = common.day_to_string(today.weekday() - 1)
 
-    if 1 <= today.weekday() <= 5 and (today - datetime.timedelta(days=1)).date() not in common.no_trip_days:
+    if 1 <= today.weekday() <= 5:
         for direction in "Salita", "Discesa":
             trips = secrets.groups[direction][day]
             for driver in trips:
@@ -39,7 +39,7 @@ def process_day():
                                                   f"{common.mode_name(mode)} è di nuovo valida.")
 
                 # Caso normale, i passeggeri vanno addebitati
-                else:
+                elif (today - datetime.timedelta(days=1)).date() not in common.no_trip_days:
                     # Prima addebito tutti gli utenti
                     for mode in "Temporary", "Permanent":
                         for user in trips[driver][mode]:
