@@ -26,11 +26,13 @@ def prenota_cmd(bot, update):
 
     if chat_id in secrets.users:
         keyboard = [[InlineKeyboardButton("🔂 Prenotare una-tantum",
-                                          callback_data=ccd("BOOKING", "NEW", "Temporary"))],
+                                          callback_data=ccd("BOOKING", "DAY", "Temporary", common.tomorrow()))],
                     [InlineKeyboardButton("🔁 Prenotare in maniera permanente",
-                                          callback_data=ccd("BOOKING", "NEW", "Permanent"))],
+                                          callback_data=ccd("BOOKING", "DAY", "Permanent", common.tomorrow()))],
                     [InlineKeyboardButton("📚 Gestire le mie prenotazioni",
                                           callback_data=ccd("EDIT_BOOK", "LIST"))],
+                    [InlineKeyboardButton("ℹ Informarmi sulle modalità di prenotazione",
+                                          callback_data=ccd("INFO_BOOK"))],
                     [InlineKeyboardButton("🔚 Uscire", callback_data=ccd("EXIT"))]]
 
         bot.send_message(chat_id=chat_id,
@@ -45,16 +47,45 @@ def prenota_cq(bot, update):
     chat_id = str(update.callback_query.from_user.id)
 
     keyboard = [[InlineKeyboardButton("🔂 Prenotare una-tantum",
-                                      callback_data=ccd("BOOKING", "NEW", "Temporary"))],
+                                      callback_data=ccd("BOOKING", "DAY", "Temporary", common.tomorrow()))],
                 [InlineKeyboardButton("🔁 Prenotare in maniera permanente",
-                                      callback_data=ccd("BOOKING", "NEW", "Permanent"))],
+                                      callback_data=ccd("BOOKING", "DAY", "Permanent", common.tomorrow()))],
                 [InlineKeyboardButton("📚 Gestire le mie prenotazioni",
                                       callback_data=ccd("EDIT_BOOK", "LIST"))],
+                [InlineKeyboardButton("ℹ Informarmi sulle modalità di prenotazione",
+                                      callback_data=ccd("INFO_BOOK"))],
                 [InlineKeyboardButton("🔚 Uscire", callback_data=ccd("EXIT"))]]
 
     bot.edit_message_text(chat_id=chat_id,
                           message_id=update.callback_query.message.message_id,
                           text="Cosa vuoi fare?",
+                          reply_markup=InlineKeyboardMarkup(keyboard))
+
+
+def info_booking(bot, update):
+    """
+    Fornisce delle semplici informazioni all'utente riguardo il funzionamento delle prenotazioni.
+    """
+    chat_id = str(update.callback_query.from_user.id)
+
+    text = "Prenotazione *Temporanea (una-tantum)*:" \
+           "\nLe prenotazioni una-tantum valgono per una singola volta . Una volta completato il" \
+           " viaggio, vengono automaticamente cancellate ed addebitate il giorno dopo la prenotazione." \
+           " E' possibile prenotarsi a un viaggio già avvenuto nella stessa giornata, ma verrà addebitato" \
+           " comunque e non sarà valido per la settimana successiva." \
+           "\n\nPrenotazione *Permanente*" \
+           "\nLe prenotazioni permanenti valgono dal momento della prenotazione fino alla" \
+           " cancellazione del viaggio o della prenotazione, ogni settimana. Verranno" \
+           " addebitate anche per i viaggi prenotati per la giornata corrente."
+
+    keyboard = [
+        [InlineKeyboardButton("↩ Indietro", callback_data=ccd("BOOKING_MENU"))],
+        [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
+    ]
+
+    bot.edit_message_text(chat_id=chat_id,
+                          message_id=update.callback_query.message.message_id,
+                          text=text,
                           reply_markup=InlineKeyboardMarkup(keyboard))
 
 
@@ -67,38 +98,23 @@ def booking_handler(bot, update):
     chat_id = str(update.callback_query.message.chat_id)
 
     #
-    # Dati in entrata ("BOOKING", "NEW", mode)
-    # Questo metodo viene automaticamente chiamato con la modalità preselezionata. I viaggi mostrati sono
-    # comunque uguali e differiscono solo per la callback_query a loro assegnata. Il messaggio di avviso invece
-    # cambia a seconda della modalità scelta. Infine, il menù è limitato a un uso entro un range orario definito
-    # in common.py per evitare prenotazioni notturne assurde.
-    #
-    if action == "NEW":
+    # Dati in entrata ("BOOKING", "DAY", mode, day)
+    # Questo menù viene chiamato rispettivamente dal metodo sopra (BOOKING) e dai visualizzatori
+    # delle prenotazioni dei singoli giorni (/lunedi, /martedi, etc...).
+    if action == "DAY":
+        mode, day = data[2:4]
+
+        if day not in common.work_days:
+            # Caso in cui siamo di sabato o domenica
+            day = common.work_days[0]
+
         if common.is_booking_time():
-            mode = data[2]
-
-            if mode == "Temporary":
-                text = "Si ricorda che le prenotazioni una-tantum vengono automaticamente cancellate ed" \
-                       " addebitate il giorno dopo la prenotazione. E' possibile prenotarsi a un viaggio" \
-                       " già avvenuto, ma verrà addebitato comunque."
-            elif mode == "Permanent":
-                text = "Si ricorda che le prenotazioni permanenti verranno addebitate anche per i viaggi" \
-                       " prenotati per la giornata corrente."
-            else:
-                text = ""
-
-            user_keyboard = [
-                [InlineKeyboardButton(day[:2],  # Abbreviazione del giorno
-                                      callback_data=ccd("BOOKING", "DAY", mode, day))
-                 for day in common.work_days],
-                [InlineKeyboardButton("↩ Indietro", callback_data=ccd("BOOKING_MENU"))],
-                [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
-            ]
-
             bot.edit_message_text(chat_id=chat_id,
                                   message_id=update.callback_query.message.message_id,
-                                  text=f"{text}\n\nScegli la data della prenotazione.",
-                                  reply_markup=InlineKeyboardMarkup(user_keyboard))
+                                  text=f"🗓 {day}"
+                                       f"\n{common.mode_name(mode)}"
+                                       f"\n\nSeleziona il viaggio da prenotare.",
+                                  reply_markup=booking_keyboard(mode, day))
         else:
             bot.edit_message_text(chat_id=chat_id,
                                   message_id=update.callback_query.message.message_id,
@@ -106,16 +122,6 @@ def booking_handler(bot, update):
                                        f" tramite UberNEST solo dalle "
                                        f"{common.booking_start.strftime('%H:%M')}"
                                        f" alle {common.booking_end.strftime('%H:%M')}.")
-    #
-    # Dati in entrata ("BOOKING", "DAY", mode, day)
-    # Questo menù viene chiamato rispettivamente dal metodo sopra (BOOKING/NEW) e dai visualizzatori
-    # delle prenotazioni dei singoli giorni (/lunedi, /martedi, etc...).
-    elif action == "DAY":
-        mode, day = data[2:4]
-        bot.edit_message_text(chat_id=chat_id,
-                              message_id=update.callback_query.message.message_id,
-                              text=f"Viaggi disponibili per {day.lower()}:",
-                              reply_markup=booking_keyboard(mode, day))
     #
     # Dati in entrata ("BOOKING", "CONFIRM", direction, day, driver, mode)
     # Messaggio finale di conferma all'utente e all'autista. Il metodo calcola se la prenotazione scelta è

@@ -53,6 +53,8 @@ def callback_query_handler(bot, update):
             actions_booking.booking_handler(bot, update)
         elif identifier == "EDIT_BOOK":
             actions_booking.edit_booking(bot, update)
+        elif identifier == "INFO_BOOK":
+            actions_booking.info_booking(bot, update)
         elif identifier == "ALERT_USER":
             actions_booking.alert_user(bot, update)
         # Azione in partenxza da /parcheggio

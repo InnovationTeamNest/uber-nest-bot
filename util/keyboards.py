@@ -87,7 +87,16 @@ def booking_keyboard(mode, day):
                                       f"{common.dir_name(direction)}",
                                       callback_data=ccd("BOOKING", "CONFIRM", direction, day, driver, mode))])
 
-    keyboard.append([InlineKeyboardButton("Vai alla selezione giorno", callback_data=ccd("BOOKING", "NEW", mode))])
+    day_subkeyboard = []
+    for wkday in common.work_days:
+        text = "☑" if wkday == day else wkday[:2]
+        day_subkeyboard.append(InlineKeyboardButton(text, callback_data=ccd("BOOKING", "DAY", mode, wkday)))
+
+    alternate_text = "🔂 Cambia metodo (Temp.)" if mode == "Permanent" else "🔁 Cambia metodo (Perm.)"
+    alternate_payload = "Temporary" if mode == "Permanent" else "Permanent"
+    keyboard.append(day_subkeyboard)
+    keyboard.append([InlineKeyboardButton(alternate_text,
+                                          callback_data=ccd("BOOKING", "DAY", alternate_payload, day))])
     keyboard.append([InlineKeyboardButton(f"Vai a /{day[:-1].lower()}ì", callback_data=ccd("SHOW_BOOKINGS", day))])
     keyboard.append([InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))])
 

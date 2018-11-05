@@ -2,12 +2,10 @@
 
 import logging as log
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-
 import secrets
 from commands.actions_show_bookings import fetch_bookings
 from util import common
-from util.filters import ReplyStatus, create_callback_data
+from util.filters import ReplyStatus
 
 
 #
@@ -39,13 +37,10 @@ def help(bot, update):
                         "\n🚗 /parcheggio - Registra il tuo parcheggio di oggi."
                         "\n\n🗓 /oggi - Visualizza le prenotazioni per oggi."
                         "\n🗓 /domani - Visualizza le prenotazioni per domani."
-                        "\n📅 /settimana - Visualizza le prenotazioni per la settimana."
-                        "\n\n/lunedi - /martedi - /mercoledi"
+                        "\n\n📅 /lunedi - /martedi - /mercoledi"
                         "\n/giovedi - /venerdi - Visualizza le prenotazioni dei singoli giorni.")
         else:
             text.append("\n🖊 /registra - Inizia a usare UberNEST registrandoti al sistema.")
-
-
 
         bot.send_message(chat_id=update.message.chat_id, text="".join(text))
     else:
@@ -53,14 +48,12 @@ def help(bot, update):
                          text="Per informazioni, scrivimi /help in privato su @ubernestbot.")
 
 
+# @Deprecated
 def info(bot, update):
     bot.send_message(chat_id=update.message.chat_id,
-                     text="UberNEST Bot v2.0 - sviluppata dal"
-                          " NEST Innovation Team. Contatta @mfranzil per suggerimenti,"
-                          " proposte, bug o per partecipare attivamente allo"
-                          " sviluppo del bot.\n\nUberNEST è una piattaforma creata da"
-                          " Paolo Teta e Filippo Spaggiari nel 2017 come forma di"
-                          " car-sharing per gli studenti di Povo residenti al NEST.")
+                     text="Attenzione! Questo comando è stato deprecato"
+                          " e verrà rimosso a partire dal 01/12/2018."
+                          "\nControlla le informazioni nella Bio.")
 
 
 def oggi(bot, update):
@@ -105,20 +98,13 @@ def venerdi(bot, update):
     bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard, parse_mode="Markdown")
 
 
+# @Deprecated
 def settimana(bot, update):
-    if str(update.message.chat_id) in secrets.users:
-        keyboard = []
-
-        for day in common.work_days:
-            keyboard.append(InlineKeyboardButton(day[:2], callback_data=create_callback_data("SHOW_BOOKINGS", day)))
-
-        bot.send_message(chat_id=update.message.chat_id,
-                         text="Scegli il giorno di cui visualizzare le prenotazioni.",
-                         reply_markup=InlineKeyboardMarkup([keyboard]))
-    else:
-        bot.send_message(chat_id=update.message.chat_id,
-                         text="Attenzione! Stai cercando di effettuare un operazione riservata"
-                              " agli utenti registrati. Per favore, registrati con /registra.")
+    bot.send_message(chat_id=update.message.chat_id,
+                     text="Attenzione! Questo comando è stato deprecato"
+                          " e verrà rimosso a partire dal 01/12/2018."
+                          "\nUsa /oggi, /domani oppure / seguito da un"
+                          " giorno qualsiasi e naviga con i comandi presenti.")
 
 
 def registra(bot, update):

@@ -51,19 +51,29 @@ def fetch_bookings(chat_id, day):
             else:
                 text.append("\n🚶🏻‍♂ Nessuna persona in viaggio oggi.")
 
-        if chat_id in secrets.users and common.is_booking_time():
-            # Permetto l'uso della tastiera solo ai registrati
-            keyboard = [
-                [InlineKeyboardButton("🔂 Prenota una tantum",
-                                      callback_data=ccd("BOOKING", "DAY", "Temporary", day))],
-                [InlineKeyboardButton("🔁 Prenota permanentemente",
-                                      callback_data=ccd("BOOKING", "DAY", "Permanent", day))],
-                [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
-            ]
+        if chat_id in secrets.users:
+            day_subkeyboard = []
+
+            for wkday in common.work_days:
+                ccd_text = "☑" if wkday == day else wkday[:2]
+                day_subkeyboard.append(InlineKeyboardButton(ccd_text, callback_data=ccd("SHOW_BOOKINGS", wkday)))
+
+            if common.is_booking_time():
+                keyboard = [
+                    day_subkeyboard,
+                    [InlineKeyboardButton("🔂 Prenota una tantum",
+                                          callback_data=ccd("BOOKING", "DAY", "Temporary", day))],
+                    [InlineKeyboardButton("🔁 Prenota permanentemente",
+                                          callback_data=ccd("BOOKING", "DAY", "Permanent", day))],
+                    [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
+                ]
+            else:
+                keyboard = [
+                    day_subkeyboard,
+                    [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
+                ]
         else:
-            keyboard = [
-                [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
-            ]
+            keyboard = []
 
         return "".join(text), InlineKeyboardMarkup(keyboard)
 
