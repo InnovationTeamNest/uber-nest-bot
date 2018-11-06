@@ -45,8 +45,13 @@ def process_day():
                         for user in trips[driver][mode]:
                             try:
                                 secrets.users[user]["Debit"][driver] += common.trip_price
+                                if secrets.users[user]["Debit"][driver] == 0.0:
+                                    del secrets.users[user]["Debit"][driver]
                             except KeyError:
                                 secrets.users[user]["Debit"][driver] = common.trip_price
+                            except Exception as ex:
+                                log.critical(ex)
+                                log.critical(f"Failed to update credit for user {user}")
 
                             bot.send_message(chat_id=str(user),
                                              text=f"Ti sono stati addebitati {str(common.trip_price)} EUR "
