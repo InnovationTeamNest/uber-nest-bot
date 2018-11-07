@@ -72,6 +72,13 @@ def edit_money(bot, update):
     # di un viaggio), ZERO (cancella completamente il debito)
     #
 
+    edit_money_keyboard = [
+        InlineKeyboardButton(f"+ {str(common.trip_price)} EUR",
+                             callback_data=ccd("EDIT_MONEY", "ADD", user)),
+        InlineKeyboardButton(f"- {str(common.trip_price)} EUR",
+                             callback_data=ccd("EDIT_MONEY", "SUBTRACT", user))
+    ]
+
     if action == "SUBTRACT":
         secrets.users[user]["Debit"][chat_id] -= common.trip_price
         money = str(float(money) - common.trip_price)
@@ -88,23 +95,21 @@ def edit_money(bot, update):
                     f"Debito corrente: {money} EUR."
 
     elif action == "ZERO":
-        del secrets.users[user]["Debit"][chat_id]
+        secrets.users[user]["Debit"][chat_id] = 0.0
         money = "0.0"
         user_text = f"💸 [{secrets.users[chat_id]['Name']}](tg://user?id={chat_id})" \
                     f" ha azzerato il debito con te."
 
-    else: # Caso in cui l'azione è VIEW
+    else:  # Caso in cui l'azione è VIEW
         user_text = ""
 
+    if secrets.users[user]["Debit"][chat_id] == 0.0:
+        del secrets.users[user]["Debit"][chat_id]
+    else:
+        edit_money_keyboard.append(InlineKeyboardButton("Azzera", callback_data=ccd("EDIT_MONEY", "ZERO", user)))
+
     keyboard = [
-        [
-            InlineKeyboardButton(f"+ {str(common.trip_price)} EUR",
-                                 callback_data=ccd("EDIT_MONEY", "ADD", user)),
-            InlineKeyboardButton(f"- {str(common.trip_price)} EUR",
-                                 callback_data=ccd("EDIT_MONEY", "SUBTRACT", user)),
-            InlineKeyboardButton("Azzera",
-                                 callback_data=ccd("EDIT_MONEY", "ZERO", user))
-        ],
+        edit_money_keyboard,
         [InlineKeyboardButton("↩ Indietro", callback_data=ccd("MONEY"))],
         [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
     ]
