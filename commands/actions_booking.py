@@ -25,15 +25,17 @@ def prenota_cmd(bot, update):
     chat_id = str(update.message.chat_id)
 
     if chat_id in secrets.users:
-        keyboard = [[InlineKeyboardButton("🔂 Prenotare una-tantum",
-                                          callback_data=ccd("BOOKING", "DAY", "Temporary", common.tomorrow()))],
-                    [InlineKeyboardButton("🔁 Prenotare in maniera permanente",
-                                          callback_data=ccd("BOOKING", "DAY", "Permanent", common.tomorrow()))],
-                    [InlineKeyboardButton("📚 Gestire le mie prenotazioni",
-                                          callback_data=ccd("EDIT_BOOK", "LIST"))],
-                    [InlineKeyboardButton("ℹ Informarmi sulle modalità di prenotazione",
-                                          callback_data=ccd("INFO_BOOK"))],
-                    [InlineKeyboardButton("🔚 Uscire", callback_data=ccd("EXIT"))]]
+        keyboard = [
+            [InlineKeyboardButton("🔂 Prenotare una-tantum",
+                                  callback_data=ccd("BOOKING", "START", "Temporary"))],
+            [InlineKeyboardButton("🔁 Prenotare in maniera permanente",
+                                  callback_data=ccd("BOOKING", "START", "Permanent"))],
+            [InlineKeyboardButton("📚 Gestire le mie prenotazioni",
+                                  callback_data=ccd("EDIT_BOOK", "LIST"))],
+            [InlineKeyboardButton("ℹ Informarmi sulle modalità di prenotazione",
+                                  callback_data=ccd("INFO_BOOK"))],
+            [InlineKeyboardButton("🔚 Uscire", callback_data=ccd("EXIT"))]
+        ]
 
         bot.send_message(chat_id=chat_id,
                          text="Cosa vuoi fare?",
@@ -46,15 +48,17 @@ def prenota_cmd(bot, update):
 def prenota_cq(bot, update):
     chat_id = str(update.callback_query.from_user.id)
 
-    keyboard = [[InlineKeyboardButton("🔂 Prenotare una-tantum",
-                                      callback_data=ccd("BOOKING", "DAY", "Temporary", common.tomorrow()))],
-                [InlineKeyboardButton("🔁 Prenotare in maniera permanente",
-                                      callback_data=ccd("BOOKING", "DAY", "Permanent", common.tomorrow()))],
-                [InlineKeyboardButton("📚 Gestire le mie prenotazioni",
-                                      callback_data=ccd("EDIT_BOOK", "LIST"))],
-                [InlineKeyboardButton("ℹ Informarmi sulle modalità di prenotazione",
-                                      callback_data=ccd("INFO_BOOK"))],
-                [InlineKeyboardButton("🔚 Uscire", callback_data=ccd("EXIT"))]]
+    keyboard = [
+        [InlineKeyboardButton("🔂 Prenotare una-tantum",
+                              callback_data=ccd("BOOKING", "START", "Temporary"))],
+        [InlineKeyboardButton("🔁 Prenotare in maniera permanente",
+                              callback_data=ccd("BOOKING", "START", "Permanent"))],
+        [InlineKeyboardButton("📚 Gestire le mie prenotazioni",
+                              callback_data=ccd("EDIT_BOOK", "LIST"))],
+        [InlineKeyboardButton("ℹ Informarmi sulle modalità di prenotazione",
+                              callback_data=ccd("INFO_BOOK"))],
+        [InlineKeyboardButton("🔚 Uscire", callback_data=ccd("EXIT"))]
+    ]
 
     bot.edit_message_text(chat_id=chat_id,
                           message_id=update.callback_query.message.message_id,
@@ -98,10 +102,31 @@ def booking_handler(bot, update):
     chat_id = str(update.callback_query.message.chat_id)
 
     #
+    # Dati in entrata ("BOOKING", "START", mode)
+    # Questo menù viene chiamato solo dal menù /prenota e mostra solo i giorni disponibili.
+    #
+    if action == "START":
+        mode = data[2]
+
+        if common.is_booking_time():
+            bot.edit_message_text(chat_id=chat_id,
+                                  message_id=update.callback_query.message.message_id,
+                                  text=f"{common.mode_name(mode)}"
+                                       f"\n\nSeleziona il giorno della prenotazione.",
+                                  reply_markup=booking_keyboard(mode, common.today(), show_bookings=False))
+        else:
+            bot.edit_message_text(chat_id=chat_id,
+                                  message_id=update.callback_query.message.message_id,
+                                  text=f"Mi dispiace, è possibile effettuare prenotazioni"
+                                       f" tramite UberNEST solo dalle "
+                                       f"{common.booking_start.strftime('%H:%M')}"
+                                       f" alle {common.booking_end.strftime('%H:%M')}.")
+    #
     # Dati in entrata ("BOOKING", "DAY", mode, day)
     # Questo menù viene chiamato rispettivamente dal metodo sopra (BOOKING) e dai visualizzatori
     # delle prenotazioni dei singoli giorni (/lunedi, /martedi, etc...).
-    if action == "DAY":
+    #
+    elif action == "DAY":
         mode, day = data[2:4]
 
         if day not in common.work_days:

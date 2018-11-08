@@ -66,38 +66,46 @@ def trips_keyboard(chat_id):
 # Vi sono inoltre due bottoni per cambiare liberamente tra la visualizzazione prenotzione e la
 # visualizzazione giorno semplice.
 #
-def booking_keyboard(mode, day):
+def booking_keyboard(mode, day, show_bookings=True):
     keyboard = []
 
-    bookings = sorted(
-        [
-            # Restituisce una tupla del tipo (ora, guidatore, direzione, chat_id) riordinata
-            (secrets.groups[direction][day][driver]["Time"],
-             secrets.users[driver]["Name"], direction, driver)
+    if show_bookings:
+        bookings = sorted(
+            [
+                # Restituisce una tupla del tipo (ora, guidatore, direzione, chat_id) riordinata
+                (secrets.groups[direction][day][driver]["Time"],
+                 secrets.users[driver]["Name"], direction, driver)
 
-            for direction in secrets.groups
-            for driver in secrets.groups[direction][day]
-        ]
-    )
+                for direction in secrets.groups
+                for driver in secrets.groups[direction][day]
+            ]
+        )
 
-    for time, name, direction, driver in bookings:
-        if not secrets.groups[direction][day][driver]["Suspended"]:
-            keyboard.append(
-                [InlineKeyboardButton(f"🚗 {name.split(' ')[-1]} 🕓 {time} "
-                                      f"{common.dir_name(direction)}",
-                                      callback_data=ccd("BOOKING", "CONFIRM", direction, day, driver, mode))])
+        for time, name, direction, driver in bookings:
+            if not secrets.groups[direction][day][driver]["Suspended"]:
+                keyboard.append(
+                    [InlineKeyboardButton(f"🚗 {name.split(' ')[-1]} 🕓 {time} "
+                                          f"{common.dir_name(direction)}",
+                                          callback_data=ccd("BOOKING", "CONFIRM", direction, day, driver, mode))])
 
     day_subkeyboard = []
     for wkday in common.work_days:
-        text = "☑" if wkday == day else wkday[:2]
+        text = "☑" if wkday == day and show_bookings else wkday[:2]
         day_subkeyboard.append(InlineKeyboardButton(text, callback_data=ccd("BOOKING", "DAY", mode, wkday)))
 
     alternate_text = "🔂 Cambia metodo (Temp.)" if mode == "Permanent" else "🔁 Cambia metodo (Perm.)"
     alternate_payload = "Temporary" if mode == "Permanent" else "Permanent"
+    alternate_ccd = ccd("BOOKING", "DAY", alternate_payload, day) if show_bookings else \
+        ccd("BOOKING", "START", alternate_payload)
+
     keyboard.append(day_subkeyboard)
-    keyboard.append([InlineKeyboardButton(alternate_text,
-                                          callback_data=ccd("BOOKING", "DAY", alternate_payload, day))])
-    keyboard.append([InlineKeyboardButton(f"Vai a /{day[:-1].lower()}ì", callback_data=ccd("SHOW_BOOKINGS", day))])
+    keyboard.append([InlineKeyboardButton(alternate_text, callback_data=alternate_ccd)])
+
+    if show_bookings:
+        keyboard.append([InlineKeyboardButton(f"Vai a /{day[:-1].lower()}ì", callback_data=ccd("SHOW_BOOKINGS", day))])
+    else:
+        keyboard.append([InlineKeyboardButton("↩ Indietro", callback_data=ccd("BOOKING_MENU"))])
+
     keyboard.append([InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))])
 
     return InlineKeyboardMarkup(keyboard)
