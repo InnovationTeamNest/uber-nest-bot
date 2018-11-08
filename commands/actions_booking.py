@@ -90,6 +90,7 @@ def info_booking(bot, update):
     bot.edit_message_text(chat_id=chat_id,
                           message_id=update.callback_query.message.message_id,
                           text=text,
+                          parse_mode="Markdown",
                           reply_markup=InlineKeyboardMarkup(keyboard))
 
 
