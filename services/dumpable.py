@@ -45,11 +45,12 @@ def get_data():
 
 
 def print_data():
-    """Prints to the Cloud Console Logs the current dataset"""
-    client = datastore.Client()
-    data = client.get(client.key('Data', 1))
-    log.info("Stored data: " + str(data["drivers"]) + str(data["users"]) + str(data["groups"]))
-    log.info("Internal data: " + str(secrets.drivers) + str(secrets.users) + str(secrets.groups))
+    """Prints to the Cloud Console Logs the current dataset. MUST BE used after get_data"""
+    log.info("Drivers: " + str(secrets.drivers))
+    log.info("Users: " + str(secrets.users))
+    for direction in secrets.groups:
+        for day in secrets.groups[direction]:
+            log.info("Trips for " + day + " " + direction + ": " + secrets.groups[direction][day])
 
 
 def empty_datastore():
