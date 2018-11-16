@@ -50,7 +50,7 @@ def print_data():
     log.info("Users: " + str(secrets.users))
     for direction in secrets.groups:
         for day in secrets.groups[direction]:
-            log.info("Trips for " + day + " " + direction + ": " + secrets.groups[direction][day])
+            log.info(f"Trips for {day} {direction}: {secrets.groups[direction][day]}")
 
 
 def empty_datastore():

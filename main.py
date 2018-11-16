@@ -50,8 +50,14 @@ def update():
     # log.info(t_update)
     # Faccio processare al dispatcher l'update
     process(t_update)
-    # Infine salvo eventuali dati modificati
-    dump_data()
+    # Infine salvo eventuali dati modificati; ci provo finché non vengono
+    # lanciate eccezioni
+    while True:
+        try:
+            dump_data()
+        except Exception as ex:
+            continue
+        break
 
     return "See console for output", 200
 

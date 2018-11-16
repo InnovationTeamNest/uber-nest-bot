@@ -109,12 +109,16 @@ def process_money(direction, driver, trip):
                                   f"{common.dir_name(direction)}"
                                   f"; qualcun'altro ha occupato il tuo posto. "
                                   f"Contatta l'autista per risolvere il problema.")
-            messages.append("Failed to restore booking for: u{user} d{driver}  {common.dir_name(direction)}")
+            messages.append("Overbooking for: u{user} d{driver}  {common.dir_name(direction)}")
         # Caso normale, la persona è spostata su Permanent
         else:
-            trip[driver]["Permanent"].append(user)
-            trip[driver]["SuspendedUsers"].remove(user)
-            messages.append("Book restored: {driver} {common.dir_name(direction)} {user}")
+            try:
+                trip[driver]["Permanent"].append(user)
+                trip[driver]["SuspendedUsers"].remove(user)
+                messages.append("Book restored: {driver} {common.dir_name(direction)} {user}")
+            except Exception as ex:
+                log.critical(ex)
+                messages.append("Error in restoring booking for: u{user} d{driver}  {common.dir_name(direction)}")
 
             bot.send_message(chat_id=str(user),
                              text=f"La prenotazione per {day.lower()} con "

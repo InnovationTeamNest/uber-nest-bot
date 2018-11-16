@@ -42,7 +42,7 @@ def dispatcher_setup():
     # Inizio prendendo i dati da Datastore
     outcome = dumpable.get_data()
 
-    # Se non ci sono dati, provo a inviarli da quanto salvato in secrets.opy
+    # Se non ci sono dati, provo a inviarli da quanto salvato in secrets.py
     if not outcome:
         outcome = dumpable.dump_data()
 

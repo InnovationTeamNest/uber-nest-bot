@@ -478,7 +478,10 @@ def alert_user(bot, update):
             booker_text = f"⚠ Mi dispiace, ma qualcun'altro si è prenotato prima di te. Contatta " \
                           f"[{secrets.users[chat_id]['Name']}](tg://user?id={chat_id}) per disponibilità posti."
 
-        bot.send_message(chat_id=user, parse_mode="Markdown", text=booker_text)
+        bot.send_message(chat_id=user,
+                         parse_mode="Markdown",
+                         text=booker_text)
+
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
                               parse_mode="Markdown",
