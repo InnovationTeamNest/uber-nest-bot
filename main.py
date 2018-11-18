@@ -46,7 +46,6 @@ def update():
     # Evoco il bot
     # De-Jsonizzo l'update
     t_update = telegram.Update.de_json(request.get_json(force=True), BotUtils.bot)
-    # Loggo il contenuto dell'update
     # log.info(t_update)
     # Faccio processare al dispatcher l'update
     process(t_update)
