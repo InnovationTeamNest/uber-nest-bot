@@ -21,4 +21,4 @@ git add -u && \
 git commit -m "$changelog" && \
 git push
 
-gcloud app deploy --version "$version" --project "$PNAME" && y
+yes | gcloud app deploy --version "$version" --project "$PNAME"
