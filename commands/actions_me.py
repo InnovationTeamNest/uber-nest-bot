@@ -2,9 +2,9 @@
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-import secrets
-from util import common
-from util.filters import create_callback_data as ccd, separate_callback_data
+import data.data_api
+from data.data_api import is_registered, is_driver, get_all_debits, get_name, add_driver, delete_user
+from routing.filters import create_callback_data as ccd, separate_callback_data
 from util.keyboards import me_keyboard, trips_keyboard
 
 
@@ -21,14 +21,14 @@ def me(bot, update):
 def me_cmd(bot, update):
     chat_id = str(update.message.chat_id)
 
-    if chat_id in secrets.users:
+    if is_registered(chat_id):
         bot.send_message(chat_id=chat_id, text="Cosa vuoi fare?", reply_markup=me_keyboard(chat_id))
 
 
 def me_cq(bot, update):
     chat_id = str(update.callback_query.message.chat_id)
 
-    if chat_id in secrets.users:
+    if is_registered(chat_id):
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
                               text="Cosa vuoi fare?", reply_markup=me_keyboard(chat_id))
@@ -55,7 +55,7 @@ def me_handler(bot, update):
     # Da questo menù è possibile iscriversi e disiscriversi dalla modalità autista.
     #
     elif action == "DRIVER":
-        if chat_id in secrets.drivers:
+        if is_driver(chat_id):
             keyboard = [
                 [InlineKeyboardButton("✔ Sì", callback_data=ccd("ME", "CO_DR_RE")),
                  InlineKeyboardButton("❌ No", callback_data=ccd("ME_MENU"))]]
@@ -88,11 +88,11 @@ def me_handler(bot, update):
              InlineKeyboardButton("❌ No", callback_data=ccd("ME_MENU"))]
         ]
 
-        user_debits = secrets.users[chat_id]["Debit"]
+        user_debits = get_all_debits(chat_id)
         debitors = []
 
         for creditor in user_debits:
-            creditor_name = secrets.users[creditor]["Name"]
+            creditor_name = get_name(creditor)
             debitors.append(f" {creditor_name} - {str(user_debits[creditor])} EUR\n")
 
         message_text = [f"Sei sicuro di voler confermare la tua rimozione completa dal sistema?"
@@ -134,13 +134,13 @@ def me_handler(bot, update):
         ]
 
         slots = int(separate_callback_data(update.callback_query.data)[2])
-        if chat_id in secrets.drivers:
+        if is_driver(chat_id):
             bot.edit_message_text(chat_id=chat_id,
                                   message_id=update.callback_query.message.message_id,
                                   text="Numero di posti della vettura aggiornato con successo.",
                                   reply_markup=InlineKeyboardMarkup(keyboard))
         else:
-            secrets.drivers[chat_id] = {"Slots": slots}
+            add_driver(chat_id, slots)
             bot.edit_message_text(chat_id=chat_id,
                                   message_id=update.callback_query.message.message_id,
                                   text="Sei stato inserito nella lista degli autisti! Usa il menu /me per aggiungere"
@@ -157,7 +157,7 @@ def me_handler(bot, update):
             [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 
-        common.delete_driver(chat_id)
+        data.data_api.delete_driver(chat_id)
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
                               text="Sei stato rimosso con successo dall'elenco degli autisti.",
@@ -172,17 +172,15 @@ def me_handler(bot, update):
             [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 
-        user_debits = secrets.users[chat_id]["Debit"]
+        user_debits = get_all_debits(chat_id)
         for creditor in user_debits:
             bot.send_message(chat_id=creditor,
-                             text=f"ATTENZIONE! [{secrets.users[chat_id]['Name']}](tg://user?id={chat_id})"
+                             text=f"ATTENZIONE! [{get_name(chat_id)}](tg://user?id={chat_id})"
                                   f" si è cancellato da UberNEST. Ha ancora "
                                   f"{str(user_debits[creditor])} EUR di debito con te.",
                              parse_mode="Markdown")
 
-        del secrets.users[chat_id]
-        if chat_id in secrets.drivers:
-            common.delete_driver(chat_id)
+        delete_user(chat_id)
 
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,

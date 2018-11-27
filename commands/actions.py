@@ -2,10 +2,10 @@
 
 import logging as log
 
-import secrets
 from commands.actions_show_bookings import fetch_bookings
+from data.data_api import is_registered, add_user
+from routing.filters import ReplyStatus
 from util import common
-from util.filters import ReplyStatus
 
 
 #
@@ -31,7 +31,7 @@ def help(bot, update):
 
         text.append("\n\nℹ /info - Visualizza informazioni sulla versione del Bot.")
 
-        if str(update.message.chat_id) in secrets.users:
+        if is_registered(update.message.chat_id):
             text.append("\n👤 /me - Gestisci il tuo profilo."
                         "\n📚 /prenota - Gestisci le tue prenotazioni."
                         "\n🚗 /parcheggio - Registra il tuo parcheggio di oggi."
@@ -108,7 +108,7 @@ def settimana(bot, update):
 
 
 def registra(bot, update):
-    if str(update.message.chat_id) in secrets.users:
+    if is_registered(update.message.chat_id):
         bot.send_message(chat_id=update.message.chat_id,
                          text="Questo utente risulta già iscritto a sistema!")
     else:
@@ -128,7 +128,7 @@ def registra(bot, update):
 
 def response_registra(bot, update):
     user = update.message.text
-    secrets.users[str(update.message.chat_id)] = {"Name": str(user), "Debit": {}}
+    add_user(update.message.chat_id, user)
     bot.send_message(chat_id=update.message.chat_id,
                      text="Il tuo username è stato aggiunto con successo"
                           " al database. Usa i seguenti comandi:"

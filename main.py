@@ -3,14 +3,14 @@ import logging as log
 
 from flask import Flask, request
 
-from secrets import bot_token
+from data.secrets import bot_token
 
 app = Flask(__name__)
 
 
 @app.before_first_request
 def first_request():
-    import webhook
+    from routing import webhook
     log.basicConfig(level=log.DEBUG, format=' - %(levelname)s - %(name)s - %(message)s')
     webhook.BotUtils()
     # Rinnovo la posizione del webhook
@@ -40,8 +40,8 @@ def index():
 @app.route('/' + bot_token, methods=['POST'])
 def update():
     import telegram
-    from services.dumpable import dump_data
-    from webhook import process, BotUtils
+    from data.dumpable import dump_data
+    from routing.webhook import process, BotUtils
 
     # Evoco il bot
     # De-Jsonizzo l'update
@@ -63,7 +63,7 @@ def update():
 
 @app.route('/data', methods=['GET'])
 def data():
-    from services.dumpable import get_data, print_data
+    from data.dumpable import get_data, print_data
     get_data()
     print_data()
 
@@ -78,7 +78,7 @@ def script():
 @app.route('/night', methods=['GET'])
 def night():
     if 'X-Appengine-Cron' in request.headers:
-        from services.dumpable import get_data, dump_data
+        from data.dumpable import get_data, dump_data
         from services.night import process_day
 
         get_data()
@@ -93,7 +93,7 @@ def night():
 @app.route('/weekly_report', methods=['GET'])
 def weekly():
     if 'X-Appengine-Cron' in request.headers:
-        from services.dumpable import get_data, dump_data
+        from data.dumpable import get_data, dump_data
         from services.night import weekly_report
 
         get_data()
@@ -108,7 +108,7 @@ def weekly():
 @app.route('/reminders', methods=['GET'])
 def reminders():
     if 'X-Appengine-Cron' in request.headers:
-        from services.dumpable import get_data
+        from data.dumpable import get_data
         from services.reminders import remind
 
         get_data()

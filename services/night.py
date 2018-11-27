@@ -3,9 +3,11 @@
 import datetime
 import logging as log
 
-import secrets
+import data.data_api
+from data.data_api import get_trip_group, get_name, is_driver, all_users, get_slots, set_single_debit, \
+    get_single_debit, remove_single_debit
+from routing.webhook import BotUtils
 from util import common
-from webhook import BotUtils
 
 bot = BotUtils.bot
 messages = []
@@ -36,7 +38,7 @@ def process_direction(direction):
     today = datetime.datetime.today()
     day = common.day_to_string(today.weekday() - 1)
 
-    trip = secrets.groups[direction][day]
+    trip = get_trip_group(direction, day)
     for driver in trip:
         try:
             process_driver(direction, driver, trip)
@@ -74,30 +76,30 @@ def process_money(direction, driver, trip):
     for mode in "Temporary", "Permanent":
         for user in trip[driver][mode]:
             try:
-                secrets.users[user]["Debit"][driver] += common.trip_price
-                if secrets.users[user]["Debit"][driver] == 0.0:
-                    del secrets.users[user]["Debit"][driver]
+                set_single_debit(user, driver, get_single_debit(user, driver) + common.trip_price)
+                if get_single_debit(user, driver) == 0.0:
+                    remove_single_debit(user, driver)
 
                 messages.append(f"Added trip cost: {common.dir_name(direction)} ")
             except KeyError:
-                secrets.users[user]["Debit"][driver] = common.trip_price
+                set_single_debit(user, driver, common.trip_price)
             except Exception as ex:
                 log.critical(ex)
                 messages.append(f"Failed to update credit for user {user}")
 
             bot.send_message(chat_id=str(user),
                              text=f"Ti sono stati addebitati {str(common.trip_price)} EUR "
-                                  f"da {str(secrets.users[driver]['Name'])}.")
+                                  f"da {str(get_name(driver))}.")
             messages.append(f"Alerted driver for credit: u{user} d{driver} {common.dir_name(direction)}")
             bot.send_message(chat_id=str(driver),
                              text=f"Hai ora un credito di {str(common.trip_price)} EUR"
-                                  f" da parte di {str(secrets.users[user]['Name'])}.")
+                                  f" da parte di {str(get_name(user))}.")
             messages.append(f"Alerted user for debit: u{user} d{driver} {common.dir_name(direction)}")
 
     # Poi ripristino le persone sospese
     for user in trip[driver]["SuspendedUsers"]:
         occupied_slots = len(trip[driver]["Permanent"]) + len(trip[driver]["Temporary"])
-        total_slots = secrets.drivers[driver]["Slots"]
+        total_slots = get_slots(driver)
 
         # Può capitare che altre persone occupino il posto alle persone sospese.
         # Bisogna gestire questo caso avvisando l'autista e il passeggero.
@@ -105,7 +107,7 @@ def process_money(direction, driver, trip):
             bot.send_message(chat_id=str(user),
                              text=f"ATTENZIONE: Non è stato possibile ripristinare"
                                   f" la tua prenotazione di {day.lower()} con "
-                                  f"{secrets.users[driver]['Name']} "
+                                  f"{get_name(driver)} "
                                   f"{common.dir_name(direction)}"
                                   f"; qualcun'altro ha occupato il tuo posto. "
                                   f"Contatta l'autista per risolvere il problema.")
@@ -122,12 +124,12 @@ def process_money(direction, driver, trip):
 
             bot.send_message(chat_id=str(user),
                              text=f"La prenotazione per {day.lower()} con "
-                                  f"{secrets.users[driver]['Name']} "
+                                  f"{get_name(driver)} "
                                   f"{common.dir_name(direction)} è di nuovo operativa.")
             messages.append(f"Alerted user for booking restored: u{user} d{driver} {common.dir_name(direction)}")
             bot.send_message(chat_id=str(driver),
                              text="La prenotazione di "
-                                  f"{secrets.users[user]['Name']} per {day.lower()} "
+                                  f"{get_name(user)} per {day.lower()} "
                                   f"{common.dir_name(direction)} è stata ripristinata.")
             messages.append(f"Alerted driver for booking restored: u{user} d{driver}  {common.dir_name(direction)}")
 
@@ -163,7 +165,7 @@ def process_suspended_trip(direction, driver, trip):
     for mode in "Temporary", "Permanent":
         for user in trip[driver][mode]:
             bot.send_message(chat_id=user,
-                             text=f"Il viaggio di {secrets.users[driver]['Name']}"
+                             text=f"Il viaggio di {get_name(driver)}"
                                   f" per {day.lower()} {common.dir_name(direction)}"
                                   f" è di nuovo operativo. La tua prenotazione "
                                   f"{common.mode_name(mode)} è di nuovo valida.")
@@ -175,17 +177,15 @@ def weekly_report():
     un messaggio con il riepilogo di soldi che devono dare. Se l'utente è anche un autista, riceverà anche
     un messaggio con i crediti.
     """
-    from webhook import BotUtils
-    bot = BotUtils.bot
 
-    for user in secrets.users:
+    for user in all_users():
         # Invio dei debiti per tutti gli utenti
         try:
-            debits = common.get_debits(user)
+            debits = data.data_api.get_debit_tuple(user)
             if debits:
                 message = ["Riepilogo settimanale dei debiti:\n"]
                 for name, value in debits:
-                    message.append(f"\n{secrets.users[name]['Name']} - {str(value)} EUR")
+                    message.append(f"\n{get_name(name)} - {str(value)} EUR")
                 bot.send_message(chat_id=user, text="".join(message))
         except Exception as ex:
             messages.append(f"Failed to alert user {user}")
@@ -193,12 +193,12 @@ def weekly_report():
 
         # Invio dei crediti per ogni singolo autista
         try:
-            if user in secrets.drivers:
-                credits = common.get_credits(user)
-                if credits:
+            if is_driver(user):
+                credits_ = data.data_api.get_credits(user)
+                if credits_:
                     message = ["Riepilogo settimanale dei crediti:\n"]
-                    for name, value in credits:
-                        message.append(f"\n{secrets.users[name]['Name']} - {str(value)} EUR")
+                    for name, value in credits_:
+                        message.append(f"\n{get_name(name)} - {str(value)} EUR")
                     bot.send_message(chat_id=user, text="".join(message))
         except Exception as ex:
             messages.append(f"Failed to alert driver {user}")

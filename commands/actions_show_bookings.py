@@ -1,8 +1,8 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-import secrets
+from data.data_api import get_trip, get_name, is_registered, get_all_trips_fixed_direction
+from routing.filters import separate_callback_data, create_callback_data as ccd
 from util import common
-from util.filters import separate_callback_data, create_callback_data as ccd
 
 
 def show_bookings(bot, update):
@@ -26,32 +26,25 @@ def fetch_bookings(chat_id, day):
         for direction in "Salita", "Discesa":
             text.append(f"\n\n{common.dir_name(direction)}\n")
 
-            bookings = sorted([
-                (
-                    secrets.groups[direction][day][driver]["Time"],  # Orario di partenza
-                    driver  # Chat ID dell'autista
-                )
-                for driver in secrets.groups[direction][day]
-                if not secrets.groups[direction][day][driver]["Suspended"]
-            ])
+            bookings = get_all_trips_fixed_direction(direction, day)
 
             if len(bookings) > 0:
                 for time, driver in bookings:
-                    trip = secrets.groups[direction][day][driver]
+                    trip = get_trip(direction, day, driver)
                     # Raccolgo in una list comprehension le persone che partecipano al viaggio
-                    people = [f"[{secrets.users[user]['Name']}](tg://user?id={user})"
+                    people = [f"[{get_name(user)}](tg://user?id={user})"
                               for mode in trip
                               if mode == "Temporary" or mode == "Permanent"
                               for user in trip[mode]]
 
                     # Aggiungo ogni viaggio trovato alla lista
-                    text.append(f"\n🚗 [{secrets.users[driver]['Name']}](tg://user?id={driver})"
+                    text.append(f"\n🚗 [{get_name(driver)}](tg://user?id={driver})"
                                 f" - 🕓 *{time}*:"
                                 f"\n👥 {', '.join(people)}\n")
             else:
                 text.append("\n🚶🏻‍♂ Nessuna persona in viaggio oggi.")
 
-        if chat_id in secrets.users:
+        if is_registered(chat_id):
             day_subkeyboard = []
 
             for wkday in common.work_days:

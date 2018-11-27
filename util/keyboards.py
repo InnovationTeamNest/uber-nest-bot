@@ -2,21 +2,22 @@
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-import secrets
-from util import common
-from util.filters import create_callback_data as ccd
-
-
+import data.data_api
 #
 # Tastiera chiamata dal menù /me. Cambia a seconda che il guidatore è un autista o meno.
 #
+from data.data_api import is_driver, get_slots, get_trip, is_suspended
+from routing.filters import create_callback_data as ccd
+from util import common
+
+
 def me_keyboard(chat_id):
     keyboard = []
-    if chat_id in secrets.drivers:
+    if is_driver(chat_id):
         money_string = "💰 Gestire i miei debiti e crediti"
         driver_string = "🚫 Smettere di essere un autista"
         keyboard.append([InlineKeyboardButton("🚗 Gestire i miei viaggi", callback_data=ccd("ME", "TRIPS"))])
-        keyboard.append([InlineKeyboardButton(f"{common.emoji_numbers[secrets.drivers[chat_id]['Slots']]}"
+        keyboard.append([InlineKeyboardButton(f"{common.emoji_numbers[get_slots(chat_id)]}"
                                               f" Modificare il numero di posti", callback_data=ccd("ME", "ED_DR_SL"))])
     else:
         money_string = "💸 Gestire i miei debiti"
@@ -40,7 +41,7 @@ def trips_keyboard(chat_id):
     for day in common.work_days:
         for direction in "Salita", "Discesa":
             try:
-                group = secrets.groups[direction][day][chat_id]
+                group = get_trip(direction, day, chat_id)
 
                 if group["Suspended"]:
                     counter = "SOSP."
@@ -70,19 +71,10 @@ def booking_keyboard(mode, day, show_bookings=True):
     keyboard = []
 
     if show_bookings:
-        bookings = sorted(
-            [
-                # Restituisce una tupla del tipo (ora, guidatore, direzione, chat_id) riordinata
-                (secrets.groups[direction][day][driver]["Time"],
-                 secrets.users[driver]["Name"], direction, driver)
-
-                for direction in secrets.groups
-                for driver in secrets.groups[direction][day]
-            ]
-        )
+        bookings = data.data_api.get_all_trips_day(day)
 
         for time, name, direction, driver in bookings:
-            if not secrets.groups[direction][day][driver]["Suspended"]:
+            if not is_suspended(direction, day, driver):
                 keyboard.append(
                     [InlineKeyboardButton(f"🚗 {name.split(' ')[-1]} 🕓 {time} "
                                           f"{common.dir_name(direction)}",
