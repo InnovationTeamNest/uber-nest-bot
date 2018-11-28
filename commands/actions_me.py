@@ -2,8 +2,7 @@
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-import data.data_api
-from data.data_api import is_registered, is_driver, get_all_debits, get_name, add_driver, delete_user
+from data.data_api import is_registered, is_driver, get_all_debits, get_name, add_driver, delete_user, delete_driver
 from routing.filters import create_callback_data as ccd, separate_callback_data
 from util.keyboards import me_keyboard, trips_keyboard
 
@@ -157,7 +156,7 @@ def me_handler(bot, update):
             [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 
-        data.data_api.delete_driver(chat_id)
+        delete_driver(chat_id)
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
                               text="Sei stato rimosso con successo dall'elenco degli autisti.",

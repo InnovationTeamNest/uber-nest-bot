@@ -42,6 +42,17 @@ def all_users():
     return users.keys()
 
 
+def delete_user(chat_id):
+    """
+    Wipes a user from the system, including driver data if present
+    :param chat_id: The chat_id to delete.
+    :return:
+    """
+    del users[chat_id]
+    if is_driver(chat_id):
+        delete_driver(chat_id)
+
+
 # Debiti
 
 
@@ -56,35 +67,62 @@ def get_single_debit(chat_id, creditor):
 
 
 def set_single_debit(chat_id, creditor, value):
+    """
+    Sets a debit to an arbitrary velue
+    :param chat_id: The debitor
+    :param creditor: The creditor
+    :param value: The value to be placed
+    :return:
+    """
     users[chat_id]["Debit"][creditor] = value
 
 
 def get_all_debits(chat_id):
+    """
+    Returns all the debits, given a single user
+    :param chat_id: The chat_id to get the debits from.
+    :return: A dictionary with keys containing chat_ids and values containing debits
+    """
     return users[chat_id]["Debit"]
 
 
 def remove_single_debit(chat_id, creditor):
+    """
+    Wipes a debit from a user's debit list.
+    :param chat_id: The chat_id of the debitor.
+    :param creditor: The creditor to delete from the list.
+    :return:
+    """
     del users[chat_id]["Debit"][creditor]
-
-
-def delete_user(chat_id):
-    del users[chat_id]
-    if is_driver(chat_id):
-        delete_driver(chat_id)
-
 
 # Autisti
 
 
 def add_driver(chat_id, slots):
+    """
+    Adds a currently registered user to the driver list.
+    :param chat_id: The chat_id to add.
+    :param slots:T The amount of seats, driver excluded
+    :return:
+    """
     drivers[chat_id] = {"Slots": slots}
 
 
 def is_driver(chat_id):
+    """
+    Checks whether a registered user is also a driver.
+    :param chat_id: The chat_id to check.
+    :return: True if the user is registered.
+    """
     return chat_id in drivers
 
 
 def delete_driver(chat_id):
+    """
+    Wipes a driver from the driver list.
+    :param chat_id: The chat_id to remove.
+    :return:
+    """
     del drivers[chat_id]
 
     for direction in groups:
@@ -98,6 +136,11 @@ def delete_driver(chat_id):
 
 
 def get_slots(chat_id):
+    """
+    Returns the number of slots, given a driver.
+    :param chat_id: The chat_id of the driver.
+    :return: An integer, representing the number of available slots.
+    """
     return drivers[chat_id]["Slots"]
 
 
@@ -105,10 +148,19 @@ def get_slots(chat_id):
 
 
 def get_trip_group(direction, day):
+    """
+    Returns all the trips for a given tuple (direction, day).
+    :param direction: "Salita" or "Discesa".
+    :param day: A day spanning the whole work week ("Lunedì"-"Venerdì")
+    :return: A dictionary containing entries for each trip.
+    """
     return groups[direction][day]
 
 
 def all_directions():
+    """
+    :return: Returns all the available directions.
+    """
     return groups.keys()
 
 
@@ -116,6 +168,14 @@ def all_directions():
 
 
 def new_trip(direction, day, driver, time):
+    """
+    Adds a new trip to the system.
+    :param direction: "Salita" or "Discesa".
+    :param day: A day spanning the whole work week ("Lunedì"-"Venerdì").
+    :param driver: The chat_id of the driver.
+    :param time: The time of departure.
+    :return:
+    """
     groups[direction][day][driver] = {"Time": time,
                                       "Permanent": [],
                                       "Temporary": [],
@@ -124,34 +184,95 @@ def new_trip(direction, day, driver, time):
 
 
 def get_trip(direction, day, driver):
+    """
+    Returns a dictionary entry for a given trip.
+    :param direction: "Salita" or "Discesa".
+    :param day: A day spanning the whole work week ("Lunedì"-"Venerdì").
+    :param driver: The chat_id of the driver.
+    :return: A dictionary entry for the requested trip.
+    """
     return groups[direction][day][driver]
 
 
 def get_time(direction, day, driver):
+    """
+    Returns the time of departure of a given trip.
+    :param direction: "Salita" or "Discesa".
+    :param day: A day spanning the whole work week ("Lunedì"-"Venerdì").
+    :param driver: The chat_id of the driver.
+    :return: A string representing the departure time, formatted as %H:%M (24h)
+    """
     return groups[direction][day][driver]["Time"]
 
 
 def is_suspended(direction, day, driver):
+    """
+    REturns whether a given trip is suspended.
+    :param direction: "Salita" or "Discesa".
+    :param day: A day spanning the whole work week ("Lunedì"-"Venerdì").
+    :param driver: The chat_id of the driver.
+    :return: True if the trip is suspended.
+    """
     return groups[direction][day][driver]["Suspended"]
 
 
 def suspend_trip(direction, day, driver):
+    """
+    Suspends a given trip.
+    :param direction: "Salita" or "Discesa".
+    :param day: A day spanning the whole work week ("Lunedì"-"Venerdì").
+    :param driver: The chat_id of the driver.
+    :return:
+    """
     groups[direction][day][driver]["Suspended"] = True
 
 
 def unsuspend_trip(direction, day, driver):
+    """
+    Removes a trip from its suspension.
+    :param direction: "Salita" or "Discesa".
+    :param day: A day spanning the whole work week ("Lunedì"-"Venerdì").
+    :param driver: The chat_id of the driver.
+    :return:
+    """
     groups[direction][day][driver]["Suspended"] = False
 
 
 def add_passenger(direction, day, driver, mode, chat_id):
+    """
+    Adds a passenger to a given trip.
+    :param direction: "Salita" or "Discesa".
+    :param day: A day spanning the whole work week ("Lunedì"-"Venerdì").
+    :param driver: The chat_id of the driver.
+    :param mode: The mode to register the booking as.
+    :param chat_id: The chat_id of the passenger.
+    :return:
+    """
     groups[direction][day][driver][mode].append(chat_id)
 
 
 def remove_passenger(direction, day, driver, mode, chat_id):
+    """
+    Removes a passenger from a given trip.
+    :param direction: "Salita" or "Discesa".
+    :param day: A day spanning the whole work week ("Lunedì"-"Venerdì").
+    :param driver: The chat_id of the driver.
+    :param mode: The mode the booking was registered as.
+    :param chat_id: The chat_id of the passenger.
+    :raises: KeyError
+    :return:
+    """
     groups[direction][day][driver][mode].remove(chat_id)
 
 
 def remove_trip(direction, day, driver):
+    """
+    Removes a trip from the system.
+    :param direction: "Salita" or "Discesa".
+    :param day: A day spanning the whole work week ("Lunedì"-"Venerdì").
+    :param driver: The chat_id of the driver.
+    :return:
+    """
     del groups[direction][day][driver]
 
 

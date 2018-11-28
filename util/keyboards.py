@@ -2,15 +2,14 @@
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-import data.data_api
-#
-# Tastiera chiamata dal menù /me. Cambia a seconda che il guidatore è un autista o meno.
-#
-from data.data_api import is_driver, get_slots, get_trip, is_suspended
+from data.data_api import is_driver, get_slots, get_trip, is_suspended, get_all_trips_day
 from routing.filters import create_callback_data as ccd
 from util import common
 
 
+#
+# Tastiera chiamata dal menù /me. Cambia a seconda che il guidatore è un autista o meno.
+#
 def me_keyboard(chat_id):
     keyboard = []
     if is_driver(chat_id):
@@ -71,7 +70,7 @@ def booking_keyboard(mode, day, show_bookings=True):
     keyboard = []
 
     if show_bookings:
-        bookings = data.data_api.get_all_trips_day(day)
+        bookings = get_all_trips_day(day)
 
         for time, name, direction, driver in bookings:
             if not is_suspended(direction, day, driver):

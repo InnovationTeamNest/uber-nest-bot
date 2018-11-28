@@ -3,9 +3,8 @@
 import datetime
 import logging as log
 
-import data.data_api
 from data.data_api import get_trip_group, get_name, is_driver, all_users, get_slots, set_single_debit, \
-    get_single_debit, remove_single_debit
+    get_single_debit, remove_single_debit, get_debit_tuple, get_credits
 from routing.webhook import BotUtils
 from util import common
 
@@ -27,7 +26,7 @@ def process_day():
                 process_direction(direction)
             except Exception as ex:
                 log.critical(ex)
-                messages.append(f"Critical exception in {direction}")
+                messages.append(f"⚠ Exception in {direction}")
                 continue
 
     for item in messages:
@@ -44,7 +43,7 @@ def process_direction(direction):
             process_driver(direction, driver, trip)
         except Exception as ex:
             log.critical(ex)
-            messages.append(f"Exception in: {direction}/{driver}")
+            messages.append(f"⚠ Exception in: {direction}/{driver}")
             continue
 
 
@@ -57,7 +56,7 @@ def process_driver(direction, driver, trip):
             process_suspended_trip(direction, driver, trip)
         except Exception as ex:
             log.critical(ex)
-            messages.append(f"Exception in suspension removal: {direction}/{driver}")
+            messages.append(f"⚠ Exception in suspension removal: {direction}/{driver}")
 
     # Caso normale, i passeggeri vanno addebitati
     elif (today - datetime.timedelta(days=1)).date() not in common.no_trip_days:
@@ -65,7 +64,7 @@ def process_driver(direction, driver, trip):
             process_money(direction, driver, trip)
         except Exception as ex:
             log.critical(ex)
-            messages.append(f"Exception in debt processing: {direction}/{driver}")
+            messages.append(f"⚠ Exception in debit processing: {direction}/{driver}")
 
 
 def process_money(direction, driver, trip):
@@ -80,21 +79,21 @@ def process_money(direction, driver, trip):
                 if get_single_debit(user, driver) == 0.0:
                     remove_single_debit(user, driver)
 
-                messages.append(f"Added trip cost: {common.dir_name(direction)} ")
+                messages.append(f"Added debit to u{user} from d{driver} {direction} ")
             except KeyError:
                 set_single_debit(user, driver, common.trip_price)
             except Exception as ex:
                 log.critical(ex)
-                messages.append(f"Failed to update credit for user {user}")
+                messages.append(f"⚠ Failed to update debits for u{user} from d{driver} {direction}")
 
             bot.send_message(chat_id=str(user),
                              text=f"Ti sono stati addebitati {str(common.trip_price)} EUR "
                                   f"da {str(get_name(driver))}.")
-            messages.append(f"Alerted driver for credit: u{user} d{driver} {common.dir_name(direction)}")
+            messages.append(f"Alerted driver for credit: u{user} d{driver} {direction}")
             bot.send_message(chat_id=str(driver),
                              text=f"Hai ora un credito di {str(common.trip_price)} EUR"
                                   f" da parte di {str(get_name(user))}.")
-            messages.append(f"Alerted user for debit: u{user} d{driver} {common.dir_name(direction)}")
+            messages.append(f"Alerted user for debit: u{user} d{driver} {direction}")
 
     # Poi ripristino le persone sospese
     for user in trip[driver]["SuspendedUsers"]:
@@ -111,45 +110,45 @@ def process_money(direction, driver, trip):
                                   f"{common.dir_name(direction)}"
                                   f"; qualcun'altro ha occupato il tuo posto. "
                                   f"Contatta l'autista per risolvere il problema.")
-            messages.append(f"Overbooking for: u{user} d{driver}  {common.dir_name(direction)}")
+            messages.append(f"Overbooking for: u{user} d{driver}  {direction}")
         # Caso normale, la persona è spostata su Permanent
         else:
             try:
                 trip[driver]["Permanent"].append(user)
                 trip[driver]["SuspendedUsers"].remove(user)
-                messages.append(f"Book restored: {driver} {common.dir_name(direction)} {user}")
+                messages.append(f"Booking restored: u{user} d{driver} {direction}")
             except Exception as ex:
                 log.critical(ex)
-                messages.append(f"Error in restoring booking for: u{user} d{driver}  {common.dir_name(direction)}")
+                messages.append(f"⚠ Error in restoring booking for: u{user} d{driver} {direction}")
 
             bot.send_message(chat_id=str(user),
                              text=f"La prenotazione per {day.lower()} con "
                                   f"{get_name(driver)} "
                                   f"{common.dir_name(direction)} è di nuovo operativa.")
-            messages.append(f"Alerted user for booking restored: u{user} d{driver} {common.dir_name(direction)}")
+            messages.append(f"Alerted user for booking restored: u{user} d{driver} {direction}")
             bot.send_message(chat_id=str(driver),
                              text="La prenotazione di "
                                   f"{get_name(user)} per {day.lower()} "
                                   f"{common.dir_name(direction)} è stata ripristinata.")
-            messages.append(f"Alerted driver for booking restored: u{user} d{driver}  {common.dir_name(direction)}")
+            messages.append(f"Alerted driver for booking restored: u{user} d{driver} {direction}")
 
     # Elimino eventuali persone temporanee
     try:
         trip[driver]["Temporary"] = []
-        messages.append(f"Emptied temporary users: {driver} {common.dir_name(direction)}")
+        messages.append(f"Emptied temporary users: {driver} {direction}")
     except Exception as ex:
         log.critical(ex)
-        messages.append(f"Failed to empty temporary users {driver} {common.dir_name(direction)}")
+        messages.append(f"⚠ Failed to empty temporary users {driver} {direction}")
 
     # Cancello l'eventuale ritrovo del giorno
     try:
         del trip[driver]["Location"]
-        messages.append(f"Removed location: {driver} {common.dir_name(direction)}")
+        messages.append(f"Removed location: {driver} {direction}")
     except KeyError:
         pass
     except Exception as ex:
         log.critical(ex)
-        messages.append(f"Failed to remove location {driver} {common.dir_name(direction)}")
+        messages.append(f"⚠ Failed to remove location {driver} {direction}")
 
 
 def process_suspended_trip(direction, driver, trip):
@@ -160,7 +159,7 @@ def process_suspended_trip(direction, driver, trip):
     bot.send_message(chat_id=driver,
                      text=f"Il tuo viaggio di {day.lower()} "
                           f"{common.dir_name(direction)} è stato ripristinato.")
-    messages.append(f"Restored: {common.dir_name(direction)} {driver}")
+    messages.append(f"Restored trip: {direction} {driver}")
 
     for mode in "Temporary", "Permanent":
         for user in trip[driver][mode]:
@@ -169,7 +168,7 @@ def process_suspended_trip(direction, driver, trip):
                                   f" per {day.lower()} {common.dir_name(direction)}"
                                   f" è di nuovo operativo. La tua prenotazione "
                                   f"{common.mode_name(mode)} è di nuovo valida.")
-            messages.append(f"Reminder sent:a {common.dir_name(direction)} {user}")
+            messages.append(f"Reminder sent for restored trip: u{user} d{driver} {direction}")
 
 
 def weekly_report():
@@ -181,7 +180,7 @@ def weekly_report():
     for user in all_users():
         # Invio dei debiti per tutti gli utenti
         try:
-            debits = data.data_api.get_debit_tuple(user)
+            debits = get_debit_tuple(user)
             if debits:
                 message = ["Riepilogo settimanale dei debiti:\n"]
                 for name, value in debits:
@@ -194,7 +193,7 @@ def weekly_report():
         # Invio dei crediti per ogni singolo autista
         try:
             if is_driver(user):
-                credits_ = data.data_api.get_credits(user)
+                credits_ = get_credits(user)
                 if credits_:
                     message = ["Riepilogo settimanale dei crediti:\n"]
                     for name, value in credits_:

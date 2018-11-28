@@ -3,9 +3,8 @@ import math
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-import data.data_api
-from data.data_api import get_name, is_driver, set_single_debit, get_single_debit, \
-    remove_single_debit
+from data.data_api import (get_name, is_driver, set_single_debit, get_single_debit,
+                           remove_single_debit, get_debit_tuple, get_credits, get_new_debitors)
 from routing.filters import create_callback_data as ccd, separate_callback_data
 from util import common
 from util.common import PAGE_SIZE
@@ -22,7 +21,7 @@ def check_money(bot, update):
     message = []
 
     # Prima raccolgo sottoforma di stringa i debiti (per tutti gli utenti)
-    debit_list = data.data_api.get_debit_tuple(chat_id)
+    debit_list = get_debit_tuple(chat_id)
 
     if len(debit_list) > 0:
         people = []
@@ -40,7 +39,7 @@ def check_money(bot, update):
     if is_driver(chat_id):
         keyboard.insert(0, [InlineKeyboardButton("➕ Aggiungi un nuovo debitore", callback_data=ccd("NEW_DEBITOR", 0))])
 
-        credit_list = data.data_api.get_credits(chat_id)
+        credit_list = get_credits(chat_id)
         if len(credit_list) > 0:
             for debitor_id, value in credit_list:
                 keyboard.insert(0, [InlineKeyboardButton(f"{get_name(debitor_id)} 💶 {str(value)} EUR",
@@ -141,7 +140,7 @@ def new_debitor(bot, update):
     page = int(separate_callback_data(update.callback_query.data)[1])
 
     keyboard = []
-    users = data.data_api.get_new_debitors(chat_id)
+    users = get_new_debitors(chat_id)
 
     for index in range(PAGE_SIZE * page, PAGE_SIZE * (page + 1), 1):
         try:

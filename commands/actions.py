@@ -3,7 +3,8 @@
 import logging as log
 
 from commands.actions_show_bookings import fetch_bookings
-from data.data_api import is_registered, add_user
+from data.data_api import is_registered, add_user, delete_user
+from data.secrets import owner_id
 from routing.filters import ReplyStatus
 from util import common
 
@@ -121,7 +122,7 @@ def registra(bot, update):
         bot.send_message(chat_id=update.message.chat_id,
                          text="Inserire nome e cognome, che verranno mostrati"
                               " sia agli autisti sia ai passeggeri. Ogni violazione di"
-                              " queste regole verrà punita con la rimo<zione dal"
+                              " queste regole verrà punita con la rimozione dal"
                               " sistema.")
         ReplyStatus.response_mode = 1
 
@@ -135,5 +136,15 @@ def response_registra(bot, update):
                           "\n\n/me per gestire il tuo profilo, gestire i debiti"
                           " e i crediti e diventare autista di UberNEST."
                           "\n/prenota per effettuare e disdire prenotazioni.")
+    bot.send_message(chat_id=owner_id,
+                     text=f"Nuovo utente iscritto a sistema: {user} con"
+                          f" chat_id {update.message.chat_id}")
     log.info(f"Nuovo utente iscritto: {user}")
     ReplyStatus.response_mode = 0
+
+
+def ban_user(bot, update, args):
+    if update.message.chat_id == owner_id:
+        user = args[0]
+        delete_user(user)
+        bot.send_message(chat_id=user, text="Sei stato bannato da UberNEST Bot.")
