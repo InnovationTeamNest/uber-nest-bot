@@ -62,22 +62,6 @@ def dispatcher_setup():
     dispatcher.add_handler(MessageHandler(~ Filters.private, filters.public_filter))
     dispatcher.add_handler(MessageHandler(Filters.text & Filters.private, filters.text_filter))
 
-    # Azioni in partenza da actions.py
-    dispatcher.add_handler(CommandHandler("start", actions.start))
-    dispatcher.add_handler(CommandHandler("help", actions.help))
-    dispatcher.add_handler(CommandHandler("info", actions.info))
-    dispatcher.add_handler(CommandHandler("oggi", actions.oggi))
-    dispatcher.add_handler(CommandHandler("domani", actions.domani))
-    dispatcher.add_handler(CommandHandler("settimana", actions.settimana))
-    dispatcher.add_handler(CommandHandler("registra", actions.registra))
-
-    # Azioni dei giorni singoli in partenza da actions.py
-    dispatcher.add_handler(CommandHandler("lunedi", actions.lunedi))
-    dispatcher.add_handler(CommandHandler("martedi", actions.martedi))
-    dispatcher.add_handler(CommandHandler("mercoledi", actions.mercoledi))
-    dispatcher.add_handler(CommandHandler("giovedi", actions.giovedi))
-    dispatcher.add_handler(CommandHandler("venerdi", actions.venerdi))
-
     # Azioni in partenza da actions_me
     dispatcher.add_handler(CommandHandler("me", actions_me.me))
 
@@ -86,6 +70,24 @@ def dispatcher_setup():
 
     # Azioni in partenza da actions_parking
     dispatcher.add_handler(CommandHandler("parcheggio", actions_parking.parcheggio))
+
+    # Azioni in partenza da actions.py
+    dispatcher.add_handler(CommandHandler("start", actions.start))
+    dispatcher.add_handler(CommandHandler("help", actions.help))
+    dispatcher.add_handler(CommandHandler("info", actions.info))
+    dispatcher.add_handler(CommandHandler("oggi", actions.oggi))
+    dispatcher.add_handler(CommandHandler("domani", actions.domani))
+    dispatcher.add_handler(CommandHandler("settimana", actions.settimana))
+    dispatcher.add_handler(CommandHandler("registra", actions.registra))
+    dispatcher.add_handler(CommandHandler("ban", actions.ban_user, pass_args=True))
+
+    # Azioni dei giorni singoli in partenza da actions.py
+    dispatcher.add_handler(CommandHandler("lunedi", actions.lunedi))
+    dispatcher.add_handler(CommandHandler("martedi", actions.martedi))
+    dispatcher.add_handler(CommandHandler("mercoledi", actions.mercoledi))
+    dispatcher.add_handler(CommandHandler("giovedi", actions.giovedi))
+    dispatcher.add_handler(CommandHandler("venerdi", actions.venerdi))
+
 
 
 def process(update, counter=0):

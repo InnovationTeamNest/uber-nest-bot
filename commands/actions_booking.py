@@ -4,7 +4,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 import util.common as common
 from data.data_api import is_registered, get_trip, get_slots, get_name, is_suspended, get_time, remove_passenger, \
-    add_passenger
+    add_passenger, get_bookings
 from routing.filters import create_callback_data as ccd, separate_callback_data
 from util.keyboards import booking_keyboard
 
@@ -241,7 +241,7 @@ def edit_booking(bot, update):
     #  sottoforma di bottoni all'utente.
     #
     if action == "LIST":
-        bookings = data.data_api.get_bookings(chat_id)
+        bookings = get_bookings(chat_id)
 
         keyboard = [
             [InlineKeyboardButton("↩ Indietro", callback_data=ccd("BOOKING_MENU"))],

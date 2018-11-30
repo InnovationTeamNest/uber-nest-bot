@@ -3,9 +3,8 @@ import math
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-from data.data_api import (get_trip, get_name, is_suspended, unsuspend_trip,
-                           suspend_trip, remove_passenger, get_time,
-                           remove_trip, get_slots, new_trip)
+from data.data_api import get_trip, get_name, is_suspended, unsuspend_trip, suspend_trip, remove_passenger, get_time, \
+    remove_trip, get_slots, new_trip, get_new_passengers
 from routing.filters import separate_callback_data, create_callback_data as ccd
 from util import common
 from util.common import dir_name
@@ -133,7 +132,7 @@ def trips_handler(bot, update):
                               message_id=update.callback_query.message.message_id,
                               text=message,
                               reply_markup=InlineKeyboardMarkup(keyboard))
-        data.data_api.alert_suspension(bot, direction, day, chat_id)
+        alert_suspension(bot, direction, day, chat_id)
     #
     # Questi tre pezzi di codice vengono chiamate quando l'utente clicca su "Modifica l'ora" (in EDIT_TRIP).
     # Vengono eseguiti necessariamente in sequenza. Attenzione a fare modifiche per evitare di sforare il
@@ -327,7 +326,7 @@ def add_passenger(bot, update):
 
         keyboard = []
         page = int(page)
-        users = data.data_api.get_user_id_tuples_newpass(chat_id)
+        users = get_new_passengers(chat_id)
 
         for index in range(common.PAGE_SIZE * page, common.PAGE_SIZE * (page + 1), 1):
             try:

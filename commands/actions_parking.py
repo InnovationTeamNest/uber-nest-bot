@@ -11,7 +11,7 @@ def parcheggio(bot, update):
     chat_id = str(update.message.chat_id)
 
     # Controllo per evitare che i non autisti usino il comando
-    if is_driver(chat_id):
+    if not is_driver(chat_id):
         return
 
     keyboard = [

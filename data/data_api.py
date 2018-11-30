@@ -32,7 +32,7 @@ def get_name(chat_id):
     :param chat_id: The chat_id to check.
     :return: A string representing the relative username
     """
-    return users[chat_id]
+    return users[chat_id]["Name"]
 
 
 def all_users():
