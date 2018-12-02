@@ -98,10 +98,16 @@ def edit_money(bot, update):
         user_text = f"💸 [{get_name(chat_id)}](tg://user?id={chat_id})" \
                     f" ha azzerato il debito con te."
 
-    else:  # Caso in cui l'azione è VIEW
+    elif action == "VIEW":
+        quick_debit_edit(user, chat_id, "0")
+        money = "0.0"
         user_text = ""
 
-    if get_single_debit(user, chat_id) == 0.0:
+    else:
+        user_text = "Sembra che questo messaggio sia stato inavvertitamente mandato.\n" \
+                    "Contatta il creatore del bot per segnalare il problema."
+
+    if get_single_debit(user, chat_id) == 0.0 and action != "VIEW":
         remove_single_debit(user, chat_id)
     else:
         edit_money_keyboard.append(InlineKeyboardButton("Azzera", callback_data=ccd("EDIT_MONEY", "ZERO", user)))
