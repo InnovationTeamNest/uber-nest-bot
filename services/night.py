@@ -4,7 +4,7 @@ import datetime
 import logging as log
 
 from data.data_api import get_trip_group, get_name, is_driver, all_users, get_slots, set_single_debit, \
-    get_single_debit, remove_single_debit, get_debit_tuple, get_credits
+    get_single_debit, remove_single_debit, get_debit_tuple, get_credits, quick_debit_edit
 from routing.webhook import BotUtils
 from util import common
 
@@ -75,23 +75,25 @@ def process_money(direction, driver, trip):
     for mode in "Temporary", "Permanent":
         for user in trip[driver][mode]:
             try:
-                set_single_debit(user, driver, get_single_debit(user, driver) + common.trip_price)
-                if get_single_debit(user, driver) == 0.0:
+                new_debit = quick_debit_edit(user, driver, "+")
+
+                if new_debit == 0:
                     remove_single_debit(user, driver)
 
                 messages.append(f"Added debit to u{user} from d{driver} {direction} ")
-            except KeyError:
-                set_single_debit(user, driver, common.trip_price)
             except Exception as ex:
                 log.critical(ex)
                 messages.append(f"⚠ Failed to update debits for u{user} from d{driver} {direction}")
 
             bot.send_message(chat_id=str(user),
-                             text=f"Ti sono stati addebitati {str(common.trip_price)} EUR "
+                             text=f"Ti sono stati addebitati"
+                                  f" {str(common.trip_price)} EUR "
                                   f"da {str(get_name(driver))}.")
             messages.append(f"Alerted driver for credit: u{user} d{driver} {direction}")
+
             bot.send_message(chat_id=str(driver),
-                             text=f"Hai ora un credito di {str(common.trip_price)} EUR"
+                             text=f"Hai ora un credito di "
+                                  f"{str(common.trip_price)} EUR"
                                   f" da parte di {str(get_name(user))}.")
             messages.append(f"Alerted user for debit: u{user} d{driver} {direction}")
 
@@ -126,6 +128,7 @@ def process_money(direction, driver, trip):
                                   f"{get_name(driver)} "
                                   f"{common.dir_name(direction)} è di nuovo operativa.")
             messages.append(f"Alerted user for booking restored: u{user} d{driver} {direction}")
+
             bot.send_message(chat_id=str(driver),
                              text="La prenotazione di "
                                   f"{get_name(user)} per {day.lower()} "

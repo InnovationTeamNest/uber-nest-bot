@@ -4,7 +4,7 @@ import math
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 from data.data_api import (get_name, is_driver, set_single_debit, get_single_debit,
-                           remove_single_debit, get_debit_tuple, get_credits, get_new_debitors)
+                           remove_single_debit, get_debit_tuple, get_credits, get_new_debitors, quick_debit_edit)
 from routing.filters import create_callback_data as ccd, separate_callback_data
 from util import common
 from util.common import PAGE_SIZE
@@ -80,22 +80,20 @@ def edit_money(bot, update):
     ]
 
     if action == "SUBTRACT":
-        set_single_debit(user, chat_id, get_single_debit(user, chat_id) - common.trip_price)
-        money = str(float(money) - common.trip_price)
+        money = str(quick_debit_edit(user, chat_id, "-"))
 
         user_text = f"💶 Hai saldato {str(common.trip_price)} EUR con " \
                     f"[{get_name(chat_id)}](tg://user?id={chat_id}). " \
                     f"Debito corrente : {money} EUR."
 
     elif action == "ADD":
-        set_single_debit(user, chat_id, get_single_debit(user, chat_id) + common.trip_price)
-        money = str(float(money) + common.trip_price)
+        money = str(quick_debit_edit(user, chat_id, "+"))
         user_text = f"💶 [{get_name(chat_id)}](tg://user?id={chat_id})" \
                     f" ti ha addebitato {str(common.trip_price)} EUR. " \
                     f"Debito corrente: {money} EUR."
 
     elif action == "ZERO":
-        set_single_debit(user, chat_id, 0.0)
+        quick_debit_edit(user, chat_id, "0")
         money = "0.0"
         user_text = f"💸 [{get_name(chat_id)}](tg://user?id={chat_id})" \
                     f" ha azzerato il debito con te."

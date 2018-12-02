@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from data.dataset import drivers, users, groups
-from util.common import work_days
+from util.common import work_days, trip_price
 
 
 # Utenti
@@ -63,7 +63,10 @@ def get_single_debit(chat_id, creditor):
     :param creditor: The creditor
     :return: The value owed
     """
-    return users[chat_id]["Debit"][creditor]
+    try:
+        return users[chat_id]["Debit"][creditor]
+    except KeyError:
+        return None
 
 
 def set_single_debit(chat_id, creditor, value):
@@ -75,6 +78,39 @@ def set_single_debit(chat_id, creditor, value):
     :return:
     """
     users[chat_id]["Debit"][creditor] = value
+
+
+def quick_debit_edit(chat_id, creditor, mode):
+    """
+    Quick edit mode for any debit. Gets the added/subtracted value from common.py. Available options:
+    +, addition
+    -, subtraction
+    0, removal
+    :param chat_id: The debitor
+    :param creditor: The creditor
+    :param mode: The mode to operate with
+    :return:
+    """
+
+    if mode == "+":
+        try:
+            users[chat_id]["Debit"][creditor] += trip_price
+        except KeyError:
+            users[chat_id]["Debit"][creditor] = trip_price
+
+    elif mode == "-":
+        try:
+            users[chat_id]["Debit"][creditor] -= trip_price
+        except KeyError:
+            users[chat_id]["Debit"][creditor] = -trip_price
+
+    elif mode == "0":
+        users[chat_id]["Debit"][creditor] = 0
+
+    else:
+        raise ValueError
+
+    return users[chat_id]["Debit"][creditor]
 
 
 def get_all_debits(chat_id):
@@ -94,6 +130,7 @@ def remove_single_debit(chat_id, creditor):
     :return:
     """
     del users[chat_id]["Debit"][creditor]
+
 
 # Autisti
 
@@ -191,7 +228,10 @@ def get_trip(direction, day, driver):
     :param driver: The chat_id of the driver.
     :return: A dictionary entry for the requested trip.
     """
-    return groups[direction][day][driver]
+    try:
+        return groups[direction][day][driver]
+    except KeyError:
+        return None
 
 
 def get_time(direction, day, driver):
@@ -202,7 +242,10 @@ def get_time(direction, day, driver):
     :param driver: The chat_id of the driver.
     :return: A string representing the departure time, formatted as %H:%M (24h)
     """
-    return groups[direction][day][driver]["Time"]
+    try:
+        return groups[direction][day][driver]["Time"]
+    except KeyError:
+        return None
 
 
 def is_suspended(direction, day, driver):
@@ -213,7 +256,10 @@ def is_suspended(direction, day, driver):
     :param driver: The chat_id of the driver.
     :return: True if the trip is suspended.
     """
-    return groups[direction][day][driver]["Suspended"]
+    try:
+        return groups[direction][day][driver]["Suspended"]
+    except KeyError:
+        return None
 
 
 def suspend_trip(direction, day, driver):

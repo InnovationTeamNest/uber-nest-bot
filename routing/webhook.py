@@ -48,7 +48,7 @@ def dispatcher_setup():
 
     # Se non ci sono manco quelli, non ha senso far partire il bot
     if not outcome:
-        raise SystemError
+        raise SystemExit
 
     # Inizializzo il dispatcher
     BotUtils.start_thread()
