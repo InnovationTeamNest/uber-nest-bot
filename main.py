@@ -40,8 +40,12 @@ def index():
 @app.route('/' + bot_token, methods=['POST'])
 def update():
     import telegram
-    from data.dumpable import dump_data
+    from data.dumpable import dump_data, empty_dataset, get_data
     from routing.webhook import process, BotUtils
+
+    if empty_dataset():
+        log.critical("Operating with an empty dataset! Restoring...")
+        get_data()
 
     # Evoco il bot
     # De-Jsonizzo l'update
@@ -51,12 +55,12 @@ def update():
     process(t_update)
     # Infine salvo eventuali dati modificati; ci provo finché non vengono
     # lanciate eccezioni
-    while True:
-        try:
-            dump_data()
-        except Exception as ex:
-            continue
-        break
+    # while True:
+    try:
+        dump_data()
+        log.info("Dumping data to database")
+    except Exception as ex:
+        log.critical("Failed to save data!")
 
     return "See console for output", 200
 

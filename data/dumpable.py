@@ -30,17 +30,26 @@ def dump_data():
 
 
 def get_data():
-    import json
     """Gets the data from Cloud Datastore"""
-    if not empty_datastore():
-        client = datastore.Client()
-        data = client.get(client.key('Data', 1))
+    if not empty_dataset():
+        return False
 
-        dataset.groups = json.loads(data["groups"])
-        dataset.users = json.loads(data["users"])
-        dataset.drivers = json.loads(data["drivers"])
+    import json
+    try:
+        client = datastore.Client()
+        json_data = client.get(client.key("Data", 1))
+
+        dataset.groups = json.loads(json_data["groups"])
+        dataset.users = json.loads(json_data["users"])
+        dataset.drivers = json.loads(json_data["drivers"])
+
+        log.info(str(json_data["groups"]))
+        log.info(str(json_data["users"]))
+        log.info(str(json_data["drivers"]))
+
         return True
-    else:
+    except Exception as ex:
+        log.critical(ex)
         return False
 
 

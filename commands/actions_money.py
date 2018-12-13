@@ -80,36 +80,36 @@ def edit_money(bot, update):
     ]
 
     if action == "SUBTRACT":
-        money = str(quick_debit_edit(user, chat_id, "-"))
+        money = quick_debit_edit(user, chat_id, "-")
 
         user_text = f"💶 Hai saldato {str(common.trip_price)} EUR con " \
                     f"[{get_name(chat_id)}](tg://user?id={chat_id}). " \
                     f"Debito corrente : {money} EUR."
 
     elif action == "ADD":
-        money = str(quick_debit_edit(user, chat_id, "+"))
+        money = quick_debit_edit(user, chat_id, "+")
         user_text = f"💶 [{get_name(chat_id)}](tg://user?id={chat_id})" \
                     f" ti ha addebitato {str(common.trip_price)} EUR. " \
                     f"Debito corrente: {money} EUR."
 
     elif action == "ZERO":
-        quick_debit_edit(user, chat_id, "0")
-        money = "0.0"
+        remove_single_debit(user, chat_id)
+        money = 0
         user_text = f"💸 [{get_name(chat_id)}](tg://user?id={chat_id})" \
                     f" ha azzerato il debito con te."
 
+    elif action == "NEW":
+        money = 0
+        user_text = ""
+
     elif action == "VIEW":
-        quick_debit_edit(user, chat_id, "0")
-        money = "0.0"
         user_text = ""
 
     else:
         user_text = "Sembra che questo messaggio sia stato inavvertitamente mandato.\n" \
                     "Contatta il creatore del bot per segnalare il problema."
 
-    if get_single_debit(user, chat_id) == 0.0 and action != "VIEW":
-        remove_single_debit(user, chat_id)
-    else:
+    if money != 0:
         edit_money_keyboard.append(InlineKeyboardButton("Azzera", callback_data=ccd("EDIT_MONEY", "ZERO", user)))
 
     keyboard = [
@@ -124,7 +124,7 @@ def edit_money(bot, update):
                                f"\n💶 *{money} EUR*", reply_markup=InlineKeyboardMarkup(keyboard),
                           parse_mode="Markdown")
 
-    if not action == "VIEW":
+    if action == "ADD" or action == "ZERO" or action == "SUBTRACT":
         bot.send_message(chat_id=user, text=user_text,
                          parse_mode="Markdown")
 
@@ -149,7 +149,7 @@ def new_debitor(bot, update):
     for index in range(PAGE_SIZE * page, PAGE_SIZE * (page + 1), 1):
         try:
             name, name_chat_id = users[index]
-            keyboard.append([InlineKeyboardButton(name, callback_data=ccd("EDIT_MONEY", "VIEW", name_chat_id))])
+            keyboard.append([InlineKeyboardButton(name, callback_data=ccd("EDIT_MONEY", "NEW", name_chat_id))])
         except IndexError:
             break
 
