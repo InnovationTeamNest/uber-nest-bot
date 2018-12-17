@@ -51,7 +51,7 @@ def trips_keyboard(chat_id):
                     [InlineKeyboardButton(f"{day}: {group['Time']}"
                                           f" {common.dir_name(direction)} ({counter})",
                                           callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))])
-            except KeyError:
+            except Exception:  # Viaggio non segnato...
                 continue
 
     keyboard.append([InlineKeyboardButton("↩ Indietro", callback_data=ccd("ME_MENU"))])

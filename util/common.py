@@ -4,6 +4,8 @@ import datetime
 
 import pytz
 
+sessione = True
+
 PAGE_SIZE = 5  # Numero di bottoni per pagina (in caso di visualizzazione di utenti multipli)
 MAX_ATTEMPTS = 5  # Tentativi massimi di processo del webhook
 

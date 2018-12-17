@@ -3,8 +3,8 @@
 import datetime
 import logging as log
 
-from data.data_api import get_trip_group, get_name, is_driver, all_users, get_slots, set_single_debit, \
-    get_single_debit, remove_single_debit, get_debit_tuple, get_credits, quick_debit_edit
+from data.data_api import get_trip_group, get_name, is_driver, all_users, get_slots, remove_single_debit, \
+    get_debit_tuple, get_credits, quick_debit_edit
 from routing.webhook import BotUtils
 from util import common
 
@@ -65,6 +65,13 @@ def process_driver(direction, driver, trip):
         except Exception as ex:
             log.critical(ex)
             messages.append(f"⚠ Exception in debit processing: {direction}/{driver}")
+
+        if common.sessione:
+            try:
+                del trip[driver]
+            except Exception as ex:
+                log.critical(ex)
+                messages.append(f"⚠ Exception in trip removal: {direction}/{driver}")
 
 
 def process_money(direction, driver, trip):
