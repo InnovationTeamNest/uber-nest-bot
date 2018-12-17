@@ -38,6 +38,8 @@ def process_direction(direction):
     day = common.day_to_string(today.weekday() - 1)
 
     trip = get_trip_group(direction, day)
+    messages.append(str(trip))
+
     for driver in trip:
         try:
             process_driver(direction, driver, trip)
