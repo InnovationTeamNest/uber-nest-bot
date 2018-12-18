@@ -1,3 +1,5 @@
+import datetime
+
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 from data.data_api import get_trip, get_name, is_registered, get_all_trips_fixed_direction
@@ -17,6 +19,39 @@ def show_bookings(bot, update):
                           text=message,
                           reply_markup=keyboard,
                           parse_mode="Markdown")
+
+
+def fetch_sessione():
+    text = ["Riepilogo viaggi:"]
+    today_number = datetime.datetime.today().weekday()
+
+    for item in range(len(common.work_days)):
+        _day = (item + today_number) % len(common.work_days)
+
+        for direction in "Salita", "Discesa":
+            bookings = get_all_trips_fixed_direction(direction, _day)
+
+            if len(bookings) > 0:
+                text.append(f"\n\n🗓 Viaggi di {common.days[_day].lower()} {datetime.datetime.today().day}")
+                for time, driver in bookings:
+                    trip = get_trip(direction, _day, driver)
+                    # Raccolgo in una list comprehension le persone che partecipano al viaggio
+                    people = [f"[{get_name(user)}](tg://user?id={user})" for user in trip["Temporary"]]
+
+                    # Aggiungo ogni viaggio trovato alla lista
+                    text.append(f"\n🚗 [{get_name(driver)}](tg://user?id={driver}) "
+                                f"(*{time}*, {common.dir_name(direction)}): {', '.join(people)}\n")
+            else:
+                text.append(f"\n\n😱 Nessuno in viaggio per "
+                            f"{common.days[_day].lower()} {datetime.datetime.today().day}.")
+
+    keyboard = [
+        [InlineKeyboardButton("🔂 Prenota",
+                              callback_data=ccd("BOOKING", "DAY", "Temporary", "Lunedì"))],
+        [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
+    ]
+
+    return "".join(text), InlineKeyboardMarkup(keyboard)
 
 
 def fetch_bookings(chat_id, day):

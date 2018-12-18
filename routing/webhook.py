@@ -77,10 +77,8 @@ def dispatcher_setup():
     # Azioni in partenza da actions.py
     dispatcher.add_handler(CommandHandler("start", actions.start))
     dispatcher.add_handler(CommandHandler("help", actions.help))
-    dispatcher.add_handler(CommandHandler("info", actions.info))
     dispatcher.add_handler(CommandHandler("oggi", actions.oggi))
     dispatcher.add_handler(CommandHandler("domani", actions.domani))
-    dispatcher.add_handler(CommandHandler("settimana", actions.settimana))
     dispatcher.add_handler(CommandHandler("registra", actions.registra))
     dispatcher.add_handler(CommandHandler("ban", actions.ban_user, pass_args=True))
 

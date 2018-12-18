@@ -2,7 +2,7 @@
 
 import logging as log
 
-from commands.actions_show_bookings import fetch_bookings
+from commands.actions_show_bookings import fetch_bookings, fetch_sessione
 from data.data_api import is_registered, add_user, delete_user
 from data.secrets import owner_id
 from routing.filters import ReplyStatus
@@ -35,11 +35,16 @@ def help(bot, update):
         if is_registered(update.message.chat_id):
             text.append("\n👤 /me - Gestisci il tuo profilo."
                         "\n📚 /prenota - Gestisci le tue prenotazioni."
-                        "\n🚗 /parcheggio - Registra il tuo parcheggio di oggi."
-                        "\n\n🗓 /oggi - Visualizza le prenotazioni per oggi."
-                        "\n🗓 /domani - Visualizza le prenotazioni per domani."
-                        "\n\n📅 /lunedi - /martedi - /mercoledi"
-                        "\n/giovedi - /venerdi - Visualizza le prenotazioni dei singoli giorni.")
+                        "\n🚗 /parcheggio - Registra il tuo parcheggio di oggi.")
+
+            if common.sessione:
+                text.append("\n🗓 /oggi - Visualizza i viaggi disponibili.")
+            else:
+                text.append(
+                    "\n\n🗓 /oggi - Visualizza le prenotazioni per oggi."
+                    "\n🗓 /domani - Visualizza le prenotazioni per domani."
+                    "\n\n📅 /lunedi - /martedi - /mercoledi"
+                    "\n/giovedi - /venerdi - Visualizza le prenotazioni dei singoli giorni.")
         else:
             text.append("\n🖊 /registra - Inizia a usare UberNEST registrandoti al sistema.")
 
@@ -49,63 +54,53 @@ def help(bot, update):
                          text="Per informazioni, scrivimi /help in privato su @ubernestbot.")
 
 
-# @Deprecated
-def info(bot, update):
-    bot.send_message(chat_id=update.message.chat_id,
-                     text="Attenzione! Questo comando è stato deprecato"
-                          " e verrà rimosso a partire dal 01/12/2018."
-                          "\nControlla le informazioni nella Bio.")
-
-
 def oggi(bot, update):
-    message, keyboard = fetch_bookings(str(update.message.chat_id), common.today())
+    message, keyboard = fetch_bookings(str(update.message.chat_id), common.today()) if not common.sessione \
+        else fetch_sessione()
 
     bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard, parse_mode="Markdown")
 
 
 def domani(bot, update):
-    message, keyboard = fetch_bookings(str(update.message.chat_id), common.tomorrow())
+    message, keyboard = fetch_bookings(str(update.message.chat_id), common.tomorrow()) if not common.sessione \
+        else fetch_sessione()
 
     bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard, parse_mode="Markdown")
 
 
 def lunedi(bot, update):
-    message, keyboard = fetch_bookings(str(update.message.chat_id), "Lunedì")
+    message, keyboard = fetch_bookings(str(update.message.chat_id), "Lunedì") if not common.sessione \
+        else fetch_sessione()
 
     bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard, parse_mode="Markdown")
 
 
 def martedi(bot, update):
-    message, keyboard = fetch_bookings(str(update.message.chat_id), "Martedì")
+    message, keyboard = fetch_bookings(str(update.message.chat_id), "Martedì") if not common.sessione \
+        else fetch_sessione()
 
     bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard, parse_mode="Markdown")
 
 
 def mercoledi(bot, update):
-    message, keyboard = fetch_bookings(str(update.message.chat_id), "Mercoledì")
+    message, keyboard = fetch_bookings(str(update.message.chat_id), "Mercoledì") if not common.sessione \
+        else fetch_sessione()
 
     bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard, parse_mode="Markdown")
 
 
 def giovedi(bot, update):
-    message, keyboard = fetch_bookings(str(update.message.chat_id), "Giovedì")
+    message, keyboard = fetch_bookings(str(update.message.chat_id), "Giovedì") if not common.sessione \
+        else fetch_sessione()
 
     bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard, parse_mode="Markdown")
 
 
 def venerdi(bot, update):
-    message, keyboard = fetch_bookings(str(update.message.chat_id), "Venerdì")
+    message, keyboard = fetch_bookings(str(update.message.chat_id), "Venerdì") if not common.sessione \
+        else fetch_sessione()
 
     bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard, parse_mode="Markdown")
-
-
-# @Deprecated
-def settimana(bot, update):
-    bot.send_message(chat_id=update.message.chat_id,
-                     text="Attenzione! Questo comando è stato deprecato"
-                          " e verrà rimosso a partire dal 01/12/2018."
-                          "\nUsa /oggi, /domani oppure / seguito da un"
-                          " giorno qualsiasi e naviga con i comandi presenti.")
 
 
 def registra(bot, update):
