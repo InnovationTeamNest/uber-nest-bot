@@ -40,7 +40,7 @@ def process_direction(direction):
     trip = get_trip_group(direction, day)
     messages.append(str(trip))
 
-    for driver in trip:
+    for driver in list(trip):
         try:
             process_driver(direction, driver, trip)
         except Exception as ex:
@@ -68,12 +68,12 @@ def process_driver(direction, driver, trip):
             log.critical(ex)
             messages.append(f"⚠ Exception in debit processing: {direction}/{driver}")
 
-        if common.sessione:
-            try:
-                del trip[driver]
-            except Exception as ex:
-                log.critical(ex)
-                messages.append(f"⚠ Exception in trip removal: {direction}/{driver}")
+    if common.sessione:
+        try:
+            del trip[driver]
+        except Exception as ex:
+            log.critical(ex)
+            messages.append(f"⚠ Exception in trip removal: {direction}/{driver}")
 
 
 def process_money(direction, driver, trip):
