@@ -6,7 +6,7 @@ import util.common as common
 from data.data_api import is_registered, get_trip, get_slots, get_name, is_suspended, get_time, remove_passenger, \
     add_passenger, get_bookings
 from routing.filters import create_callback_data as ccd, separate_callback_data
-from util.keyboards import booking_keyboard
+from util.keyboards import booking_keyboard, booking_menu_keyboard
 
 
 def prenota(bot, update):
@@ -26,24 +26,9 @@ def prenota_cmd(bot, update):
     chat_id = str(update.message.chat_id)
 
     if is_registered(chat_id):
-        keyboard = [
-            [InlineKeyboardButton("🔂 Prenotare una-tantum",
-                                  callback_data=ccd("BOOKING", "START", "Temporary"))],
-            [InlineKeyboardButton("🔁 Prenotare in maniera permanente",
-                                  callback_data=ccd("BOOKING", "START", "Permanent"))],
-            [InlineKeyboardButton("📚 Gestire le mie prenotazioni",
-                                  callback_data=ccd("EDIT_BOOK", "LIST"))],
-            [InlineKeyboardButton("ℹ Informarmi sulle modalità",
-                                  callback_data=ccd("INFO_BOOK"))],
-            [InlineKeyboardButton("🔚 Uscire", callback_data=ccd("EXIT"))]
-        ]
-
-        if common.sessione:
-            del keyboard[1]
-
         bot.send_message(chat_id=chat_id,
                          text="Cosa vuoi fare?",
-                         reply_markup=InlineKeyboardMarkup(keyboard))
+                         reply_markup=booking_menu_keyboard())
     else:
         bot.send_message(chat_id=chat_id,
                          text="Per effettuare una prenotazione, registrati con /registra.")
@@ -52,25 +37,10 @@ def prenota_cmd(bot, update):
 def prenota_cq(bot, update):
     chat_id = str(update.callback_query.from_user.id)
 
-    keyboard = [
-        [InlineKeyboardButton("🔂 Prenotare una-tantum",
-                              callback_data=ccd("BOOKING", "START", "Temporary"))],
-        [InlineKeyboardButton("🔁 Prenotare in maniera permanente",
-                              callback_data=ccd("BOOKING", "START", "Permanent"))],
-        [InlineKeyboardButton("📚 Gestire le mie prenotazioni",
-                              callback_data=ccd("EDIT_BOOK", "LIST"))],
-        [InlineKeyboardButton("ℹ Informarmi sulle modalità",
-                              callback_data=ccd("INFO_BOOK"))],
-        [InlineKeyboardButton("🔚 Uscire", callback_data=ccd("EXIT"))]
-    ]
-
-    if common.sessione:
-        del keyboard[1]
-
     bot.edit_message_text(chat_id=chat_id,
                           message_id=update.callback_query.message.message_id,
                           text="Cosa vuoi fare?",
-                          reply_markup=InlineKeyboardMarkup(keyboard))
+                          reply_markup=booking_menu_keyboard())
 
 
 def info_booking(bot, update):

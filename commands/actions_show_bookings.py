@@ -26,15 +26,15 @@ def fetch_sessione():
     today_number = datetime.datetime.today().weekday()
 
     for item in range(len(common.work_days)):
-        _day = (item + today_number) % len(common.work_days)
+        day = (item + today_number) % len(common.work_days)
 
         for direction in "Salita", "Discesa":
-            bookings = get_all_trips_fixed_direction(direction, _day)
+            bookings = get_all_trips_fixed_direction(direction, day)
 
             if len(bookings) > 0:
-                text.append(f"\n\n🗓 Viaggi di {common.days[_day].lower()} {datetime.datetime.today().day}")
+                text.append(f"\n\n🗓 Viaggi di {common.days[day].lower()} {datetime.datetime.today().day}")
                 for time, driver in bookings:
-                    trip = get_trip(direction, _day, driver)
+                    trip = get_trip(direction, day, driver)
                     # Raccolgo in una list comprehension le persone che partecipano al viaggio
                     people = [f"[{get_name(user)}](tg://user?id={user})" for user in trip["Temporary"]]
 
@@ -43,7 +43,7 @@ def fetch_sessione():
                                 f"(*{time}*, {common.dir_name(direction)}): {', '.join(people)}\n")
             else:
                 text.append(f"\n\n😱 Nessuno in viaggio per "
-                            f"{common.days[_day].lower()} {datetime.datetime.today().day}.")
+                            f"{common.days[day].lower()} {datetime.datetime.today().day}.")
 
     keyboard = [
         [InlineKeyboardButton("🔂 Prenota",

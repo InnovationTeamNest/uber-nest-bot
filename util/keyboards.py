@@ -120,3 +120,28 @@ def booking_keyboard(mode, day, show_bookings=True):
     keyboard.append([InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))])
 
     return InlineKeyboardMarkup(keyboard)
+
+
+def booking_menu_keyboard():
+    if common.sessione:
+        return InlineKeyboardMarkup([
+            [InlineKeyboardButton("🔂 Prenotare",
+                                  callback_data=ccd("BOOKING", "START", "Temporary"))],
+            [InlineKeyboardButton("📚 Gestire le mie prenotazioni",
+                                  callback_data=ccd("EDIT_BOOK", "LIST"))],
+            [InlineKeyboardButton("ℹ Informarmi sulle modalità",
+                                  callback_data=ccd("INFO_BOOK"))],
+            [InlineKeyboardButton("🔚 Uscire", callback_data=ccd("EXIT"))]
+        ])
+    else:
+        return InlineKeyboardMarkup([
+            [InlineKeyboardButton("🔂 Prenotare una-tantum",
+                                  callback_data=ccd("BOOKING", "START", "Temporary"))],
+            [InlineKeyboardButton("🔁 Prenotare in maniera permanente",
+                                  callback_data=ccd("BOOKING", "START", "Permanent"))],
+            [InlineKeyboardButton("📚 Gestire le mie prenotazioni",
+                                  callback_data=ccd("EDIT_BOOK", "LIST"))],
+            [InlineKeyboardButton("ℹ Informarmi sulle modalità",
+                                  callback_data=ccd("INFO_BOOK"))],
+            [InlineKeyboardButton("🔚 Uscire", callback_data=ccd("EXIT"))]
+        ])

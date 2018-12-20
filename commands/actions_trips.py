@@ -368,17 +368,22 @@ def add_passenger(bot, update):
     elif action == "MODE":
         direction, day, user = data[2:5]
 
-        keyboard = [
-            [InlineKeyboardButton("🔂 Temporanea", callback_data=ccd("ADD_PASS", "CONFIRM",
-                                                                     direction, day, user, "Temporary"))],
-            [InlineKeyboardButton("🔁 Permanente", callback_data=ccd("ADD_PASS", "CONFIRM",
-                                                                     direction, day, user, "Permanent"))],
-            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("ADD_PASS", "SELECT", direction, day, "0"))],
-            [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
-        ]
-
         if common.sessione:
-            del keyboard[1]  # TODO renderla un po' elegante...
+            keyboard = [
+                [InlineKeyboardButton("🔂 Temporanea", callback_data=ccd("ADD_PASS", "CONFIRM",
+                                                                         direction, day, user, "Temporary"))],
+                [InlineKeyboardButton("↩ Indietro", callback_data=ccd("ADD_PASS", "SELECT", direction, day, "0"))],
+                [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
+            ]
+        else:
+            keyboard = [
+                [InlineKeyboardButton("🔂 Temporanea", callback_data=ccd("ADD_PASS", "CONFIRM",
+                                                                         direction, day, user, "Temporary"))],
+                [InlineKeyboardButton("🔁 Permanente", callback_data=ccd("ADD_PASS", "CONFIRM",
+                                                                         direction, day, user, "Permanent"))],
+                [InlineKeyboardButton("↩ Indietro", callback_data=ccd("ADD_PASS", "SELECT", direction, day, "0"))],
+                [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
+            ]
 
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
