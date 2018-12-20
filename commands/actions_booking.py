@@ -33,10 +33,13 @@ def prenota_cmd(bot, update):
                                   callback_data=ccd("BOOKING", "START", "Permanent"))],
             [InlineKeyboardButton("📚 Gestire le mie prenotazioni",
                                   callback_data=ccd("EDIT_BOOK", "LIST"))],
-            [InlineKeyboardButton("ℹ Informarmi sulle modalità di prenotazione",
+            [InlineKeyboardButton("ℹ Informarmi sulle modalità",
                                   callback_data=ccd("INFO_BOOK"))],
             [InlineKeyboardButton("🔚 Uscire", callback_data=ccd("EXIT"))]
         ]
+
+        if common.sessione:
+            del keyboard[1]
 
         bot.send_message(chat_id=chat_id,
                          text="Cosa vuoi fare?",
@@ -56,10 +59,13 @@ def prenota_cq(bot, update):
                               callback_data=ccd("BOOKING", "START", "Permanent"))],
         [InlineKeyboardButton("📚 Gestire le mie prenotazioni",
                               callback_data=ccd("EDIT_BOOK", "LIST"))],
-        [InlineKeyboardButton("ℹ Informarmi sulle modalità di prenotazione",
+        [InlineKeyboardButton("ℹ Informarmi sulle modalità",
                               callback_data=ccd("INFO_BOOK"))],
         [InlineKeyboardButton("🔚 Uscire", callback_data=ccd("EXIT"))]
     ]
+
+    if common.sessione:
+        del keyboard[1]
 
     bot.edit_message_text(chat_id=chat_id,
                           message_id=update.callback_query.message.message_id,
@@ -73,15 +79,19 @@ def info_booking(bot, update):
     """
     chat_id = str(update.callback_query.from_user.id)
 
-    text = "Prenotazione *Temporanea (una-tantum)*:" \
-           "\nLe prenotazioni una-tantum valgono per una singola volta . Una volta completato il" \
-           " viaggio, vengono automaticamente cancellate ed addebitate il giorno dopo la prenotazione." \
-           " E' possibile prenotarsi a un viaggio già avvenuto nella stessa giornata, ma verrà addebitato" \
-           " comunque e non sarà valido per la settimana successiva." \
-           "\n\nPrenotazione *Permanente*" \
-           "\nLe prenotazioni permanenti valgono dal momento della prenotazione fino alla" \
-           " cancellazione del viaggio o della prenotazione, ogni settimana. Verranno" \
-           " addebitate anche per i viaggi prenotati per la giornata corrente."
+    if common.sessione:
+        text = "Durante le sessioni d'esame, tutte le prenotazioni valgono per una e una sola volta." \
+               " Non sono previste distinzioni tra prenotazioni temporanee o permanenti."
+    else:
+        text = "Prenotazione *Temporanea (una-tantum)*:" \
+               "\nLe prenotazioni una-tantum valgono per una singola volta . Una volta completato il" \
+               " viaggio, vengono automaticamente cancellate ed addebitate il giorno dopo la prenotazione." \
+               " E' possibile prenotarsi a un viaggio già avvenuto nella stessa giornata, ma verrà addebitato" \
+               " comunque e non sarà valido per la settimana successiva." \
+               "\n\nPrenotazione *Permanente*" \
+               "\nLe prenotazioni permanenti valgono dal momento della prenotazione fino alla" \
+               " cancellazione del viaggio o della prenotazione, ogni settimana. Verranno" \
+               " addebitate anche per i viaggi prenotati per la giornata corrente."
 
     keyboard = [
         [InlineKeyboardButton("↩ Indietro", callback_data=ccd("BOOKING_MENU"))],
@@ -111,11 +121,17 @@ def booking_handler(bot, update):
         mode = data[2]
 
         if common.is_booking_time():
-            bot.edit_message_text(chat_id=chat_id,
-                                  message_id=update.callback_query.message.message_id,
-                                  text=f"{common.mode_name(mode)}"
-                                       f"\n\nSeleziona il giorno della prenotazione.",
-                                  reply_markup=booking_keyboard(mode, common.today(), show_bookings=False))
+            if common.sessione:
+                bot.edit_message_text(chat_id=chat_id,
+                                      message_id=update.callback_query.message.message_id,
+                                      text=f"Scegli la prenotazione.",
+                                      reply_markup=booking_keyboard(mode, common.today()))
+            else:
+                bot.edit_message_text(chat_id=chat_id,
+                                      message_id=update.callback_query.message.message_id,
+                                      text=f"{common.mode_name(mode)}"
+                                           f"\n\nSeleziona il giorno della prenotazione.",
+                                      reply_markup=booking_keyboard(mode, common.today(), show_bookings=False))
         else:
             bot.edit_message_text(chat_id=chat_id,
                                   message_id=update.callback_query.message.message_id,

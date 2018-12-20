@@ -45,11 +45,20 @@ def trips_handler(bot, update):
         trip = get_trip(direction, day, chat_id)
 
         if trip["Suspended"]:
-            suspend_string = "✔ Annullare la sospensione"
             text_string = " - 🚫 Sospeso"
-            keyboard = []
+            keyboard = [[InlineKeyboardButton("✔ Annullare la sospensione",
+                                              callback_data=ccd("TRIPS", "SUS_TRIP", direction, day))]]
+        elif not common.sessione:
+            text_string = ""
+            keyboard = [
+                [InlineKeyboardButton("🕓 Modificare l'ora",
+                                      callback_data=ccd("TRIPS", "EDIT_TRIP_HOUR", direction, day))],
+                [InlineKeyboardButton("👥 Modificare i passeggeri",
+                                      callback_data=ccd("TRIPS", "EDIT_PASS", direction, day))],
+                [InlineKeyboardButton("🚫 Sospendere il viaggio",
+                                      callback_data=ccd("TRIPS", "SUS_TRIP", direction, day))]
+            ]
         else:
-            suspend_string = "🚫 Sospendere il viaggio"
             text_string = ""
             keyboard = [
                 [InlineKeyboardButton("🕓 Modificare l'ora",
@@ -59,7 +68,6 @@ def trips_handler(bot, update):
             ]
 
         keyboard += [
-            [InlineKeyboardButton(suspend_string, callback_data=ccd("TRIPS", "SUS_TRIP", direction, day))],
             [InlineKeyboardButton("❌ Cancellare il viaggio",
                                   callback_data=ccd("TRIPS", "REMOVE_TRIP", direction, day))],
             [InlineKeyboardButton("↩ Tornare indietro", callback_data=ccd("ME", "TRIPS"))],
@@ -368,6 +376,9 @@ def add_passenger(bot, update):
             [InlineKeyboardButton("↩ Indietro", callback_data=ccd("ADD_PASS", "SELECT", direction, day, "0"))],
             [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
+
+        if common.sessione:
+            del keyboard[1]  # TODO renderla un po' elegante...
 
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
