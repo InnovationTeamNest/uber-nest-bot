@@ -37,7 +37,7 @@ def help(bot, update):
                         "\n📚 /prenota - Gestisci le tue prenotazioni."
                         "\n🚗 /parcheggio - Registra il tuo parcheggio di oggi.")
 
-            if common.sessione:
+            if common.is_sessione():
                 text.append("\n🗓 /oggi - Visualizza i viaggi disponibili.")
             else:
                 text.append(
@@ -55,49 +55,49 @@ def help(bot, update):
 
 
 def oggi(bot, update):
-    message, keyboard = fetch_bookings(str(update.message.chat_id), common.today()) if not common.sessione \
+    message, keyboard = fetch_bookings(str(update.message.chat_id), common.today()) if not common.is_sessione() \
         else fetch_sessione()
 
     bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard, parse_mode="Markdown")
 
 
 def domani(bot, update):
-    message, keyboard = fetch_bookings(str(update.message.chat_id), common.tomorrow()) if not common.sessione \
+    message, keyboard = fetch_bookings(str(update.message.chat_id), common.tomorrow()) if not common.is_sessione() \
         else fetch_sessione()
 
     bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard, parse_mode="Markdown")
 
 
 def lunedi(bot, update):
-    message, keyboard = fetch_bookings(str(update.message.chat_id), "Lunedì") if not common.sessione \
+    message, keyboard = fetch_bookings(str(update.message.chat_id), "Lunedì") if not common.is_sessione() \
         else fetch_sessione()
 
     bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard, parse_mode="Markdown")
 
 
 def martedi(bot, update):
-    message, keyboard = fetch_bookings(str(update.message.chat_id), "Martedì") if not common.sessione \
+    message, keyboard = fetch_bookings(str(update.message.chat_id), "Martedì") if not common.is_sessione() \
         else fetch_sessione()
 
     bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard, parse_mode="Markdown")
 
 
 def mercoledi(bot, update):
-    message, keyboard = fetch_bookings(str(update.message.chat_id), "Mercoledì") if not common.sessione \
+    message, keyboard = fetch_bookings(str(update.message.chat_id), "Mercoledì") if not common.is_sessione() \
         else fetch_sessione()
 
     bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard, parse_mode="Markdown")
 
 
 def giovedi(bot, update):
-    message, keyboard = fetch_bookings(str(update.message.chat_id), "Giovedì") if not common.sessione \
+    message, keyboard = fetch_bookings(str(update.message.chat_id), "Giovedì") if not common.is_sessione() \
         else fetch_sessione()
 
     bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard, parse_mode="Markdown")
 
 
 def venerdi(bot, update):
-    message, keyboard = fetch_bookings(str(update.message.chat_id), "Venerdì") if not common.sessione \
+    message, keyboard = fetch_bookings(str(update.message.chat_id), "Venerdì") if not common.is_sessione() \
         else fetch_sessione()
 
     bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard, parse_mode="Markdown")

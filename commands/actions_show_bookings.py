@@ -12,7 +12,10 @@ def show_bookings(bot, update):
 
     data = separate_callback_data(update.callback_query.data)
 
-    message, keyboard = fetch_bookings(chat_id, data[1])
+    if common.is_sessione():
+        message, keyboard = fetch_sessione()
+    else:
+        message, keyboard = fetch_bookings(chat_id, data[1])
 
     bot.edit_message_text(chat_id=chat_id,
                           message_id=update.callback_query.message.message_id,
@@ -25,14 +28,20 @@ def fetch_sessione():
     text = ["Riepilogo viaggi:"]
     today_number = datetime.datetime.today().weekday()
 
-    for item in range(len(common.work_days)):
-        day = (item + today_number) % len(common.work_days)
+    for item in range(len(common.days)):
+        day = common.day_to_string((item + today_number) % len(common.days))
+
+        if day == "Sabato" or day == "Domenica":  # Sabato, domenica
+            continue
+
+        empty_day = True
 
         for direction in "Salita", "Discesa":
             bookings = get_all_trips_fixed_direction(direction, day)
 
             if len(bookings) > 0:
-                text.append(f"\n\n🗓 Viaggi di {common.days[day].lower()} {datetime.datetime.today().day}")
+                empty_day = False
+                text.append(f"\n\n🗓 Viaggi di {day.lower()} {datetime.datetime.today().day + item}")
                 for time, driver in bookings:
                     trip = get_trip(direction, day, driver)
                     # Raccolgo in una list comprehension le persone che partecipano al viaggio
@@ -41,13 +50,13 @@ def fetch_sessione():
                     # Aggiungo ogni viaggio trovato alla lista
                     text.append(f"\n🚗 [{get_name(driver)}](tg://user?id={driver}) "
                                 f"(*{time}*, {common.dir_name(direction)}): {', '.join(people)}\n")
-            else:
-                text.append(f"\n\n😱 Nessuno in viaggio per "
-                            f"{common.days[day].lower()} {datetime.datetime.today().day}.")
+
+        if empty_day:
+            text.append(f"\n😱 Nessuno viaggio previsto per {day.lower()} {datetime.datetime.today().day + item}.")
 
     keyboard = [
         [InlineKeyboardButton("🔂 Prenota",
-                              callback_data=ccd("BOOKING", "DAY", "Temporary", "Lunedì"))],
+                              callback_data=ccd("BOOKING", "START", "Temporary"))],
         [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
     ]
 

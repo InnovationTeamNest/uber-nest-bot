@@ -76,20 +76,6 @@ def data():
 
 @app.route('/localscripts', methods=['GET'])
 def script():
-    from data.dumpable import get_data, dump_data
-    from data import dataset
-
-    get_data()
-
-    for direction in dataset.groups:
-        trip = dataset.groups[direction]["Martedì"]
-
-        for item in list(trip):
-            print(trip[item])
-            del trip[item]
-
-    dump_data()
-
     return "", 403
 
 

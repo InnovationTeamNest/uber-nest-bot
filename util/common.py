@@ -4,8 +4,6 @@ import datetime
 
 import pytz
 
-sessione = True
-
 PAGE_SIZE = 5  # Numero di bottoni per pagina (in caso di visualizzazione di utenti multipli)
 MAX_ATTEMPTS = 5  # Tentativi massimi di processo del webhook
 
@@ -67,6 +65,10 @@ def today():
 
 def tomorrow():
     return day_to_string((datetime.datetime.now() + datetime.timedelta(hours=1 + is_dst())).weekday() + 1)
+
+
+def is_sessione():
+    return datetime.date(2019, 2, 15) >= datetime.datetime.today().date() >= datetime.date(2018, 12, 22)
 
 
 def day_to_string(number):

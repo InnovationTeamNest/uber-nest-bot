@@ -68,7 +68,7 @@ def process_driver(direction, driver, trip):
             log.critical(ex)
             messages.append(f"⚠ Exception in debit processing: {direction}/{driver}")
 
-    if common.sessione:
+    if common.is_sessione():
         try:
             del trip[driver]
         except Exception as ex:

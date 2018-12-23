@@ -44,15 +44,24 @@ def remind_driver(bot, chat_id):
                 message.append("⚠ Sommario dei tuoi viaggi di domani:")
 
             trip = trip[chat_id]
-            permanent_people = ", ".join(f"[{get_name(user)}](tg://user?id={user})"
-                                         for user in trip["Permanent"])
-            temporary_people = ", ".join(f"[{get_name(user)}](tg://user?id={user})"
-                                         for user in trip["Temporary"])
 
-            message.append(f"\n\n🕓 {trip['Time']}"
-                           f"\n{common.dir_name(direction)}"
-                           f"\n👥 permanenti: {permanent_people}"
-                           f"\n👥 temporanei: {temporary_people}")
+            if common.is_sessione():
+                people = ", ".join(f"[{get_name(user)}](tg://user?id={user})"
+                                   for user in trip["Temporary"])
+
+                message.append(f"\n\n🕓 {trip['Time']}"
+                               f"\n{common.dir_name(direction)}"
+                               f"\n👥: {people}")
+            else:
+                permanent_people = ", ".join(f"[{get_name(user)}](tg://user?id={user})"
+                                             for user in trip["Permanent"])
+                temporary_people = ", ".join(f"[{get_name(user)}](tg://user?id={user})"
+                                             for user in trip["Temporary"])
+
+                message.append(f"\n\n🕓 {trip['Time']}"
+                               f"\n{common.dir_name(direction)}"
+                               f"\n👥 permanenti: {permanent_people}"
+                               f"\n👥 temporanei: {temporary_people}")
 
     if message:
         bot.send_message(chat_id=chat_id, text="".join(message), parse_mode="Markdown")
@@ -70,8 +79,10 @@ def remind_user(bot, chat_id):
         direction, driver, mode, time = item
         message.append(f"\n\n🚗 [{get_name(driver)}](tg://user?id={driver})"
                        f"\n🕓 {time}"
-                       f"\n {common.dir_name(direction)}"
-                       f"\n{common.mode_name(mode)}")
+                       f"\n{common.dir_name(direction)}")
+
+        if not common.is_sessione():
+            message.append(f"\n{common.mode_name(mode)}")
 
     if message:
         bot.send_message(chat_id=chat_id, text="".join(message), parse_mode="Markdown")

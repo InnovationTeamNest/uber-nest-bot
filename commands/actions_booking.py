@@ -49,7 +49,7 @@ def info_booking(bot, update):
     """
     chat_id = str(update.callback_query.from_user.id)
 
-    if common.sessione:
+    if common.is_sessione():
         text = "Durante le sessioni d'esame, tutte le prenotazioni valgono per una e una sola volta." \
                " Non sono previste distinzioni tra prenotazioni temporanee o permanenti."
     else:
@@ -91,7 +91,7 @@ def booking_handler(bot, update):
         mode = data[2]
 
         if common.is_booking_time():
-            if common.sessione:
+            if common.is_sessione():
                 bot.edit_message_text(chat_id=chat_id,
                                       message_id=update.callback_query.message.message_id,
                                       text=f"Scegli la prenotazione.",
@@ -141,7 +141,7 @@ def booking_handler(bot, update):
         direction, day, driver, mode = data[2:]
 
         user_keyboard = [
-            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("BOOKING", "DAY", mode, day))],
+            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("BOOKING", "START", mode))],
             [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 

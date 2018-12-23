@@ -37,8 +37,14 @@ def me_keyboard(chat_id):
 #
 def trips_keyboard(chat_id):
     keyboard = [[InlineKeyboardButton("Aggiungi un nuovo viaggio", callback_data=ccd("TRIPS", "ADD"))]]
+    today_number = datetime.datetime.today().weekday()
 
-    for day in common.work_days:
+    for item in range(len(common.days)):
+        day = common.day_to_string((item + today_number) % len(common.days))
+
+        if day == "Sabato" or day == "Domenica":  # Sabato, domenica
+            continue
+
         for direction in "Salita", "Discesa":
             try:
                 group = get_trip(direction, day, chat_id)
@@ -48,8 +54,13 @@ def trips_keyboard(chat_id):
                 else:
                     counter = str(len(group["Permanent"]) + len(group["Temporary"]))
 
+                if common.is_sessione():
+                    shown_day = str(day) + str(datetime.datetime.today().day + item)
+                else:
+                    shown_day = day
+
                 keyboard.append(
-                    [InlineKeyboardButton(f"{day}: {group['Time']}"
+                    [InlineKeyboardButton(f"{shown_day}: {group['Time']}"
                                           f" {common.dir_name(direction)} ({counter})",
                                           callback_data=ccd("TRIPS", "EDIT_TRIP", direction, day))])
             except Exception:  # Viaggio non segnato...
@@ -70,17 +81,24 @@ def trips_keyboard(chat_id):
 def booking_keyboard(mode, day, show_bookings=True):
     keyboard = []
 
-    if common.sessione:
+    if common.is_sessione():
         today_number = datetime.datetime.today().weekday()
-        for item in range(len(common.work_days)):
-            _day = (item + today_number) % len(common.work_days)
+        for item in range(len(common.days)):
+            _day = common.day_to_string((item + today_number) % len(common.days))
+
+            if _day == "Sabato" or _day == "Domenica":  # Sabato, domenica
+                continue
+
             bookings = get_all_trips_day(_day)
 
             for time, name, direction, driver in bookings:
                 if not is_suspended(direction, _day, driver):
+                    shortened_direction = "Povo" if direction == "Salita" else "NEST"
                     keyboard.append(
-                        [InlineKeyboardButton(f"🚗 {name.split(' ')[-1]} 🕓 {time} "
-                                              f"{common.dir_name(direction)}",
+                        [InlineKeyboardButton(f"🚗 {name.split(' ')[-1]}/"
+                                              f"{_day[:2]} "
+                                              f"{datetime.datetime.today().day + item} "
+                                              f"{time}/{shortened_direction}",
                                               callback_data=ccd("BOOKING", "CONFIRM", direction,
                                                                 _day, driver, "Temporary"))])
 
@@ -123,7 +141,7 @@ def booking_keyboard(mode, day, show_bookings=True):
 
 
 def booking_menu_keyboard():
-    if common.sessione:
+    if common.is_sessione():
         return InlineKeyboardMarkup([
             [InlineKeyboardButton("🔂 Prenotare",
                                   callback_data=ccd("BOOKING", "START", "Temporary"))],

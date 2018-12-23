@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import datetime
 import math
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
@@ -48,7 +49,7 @@ def trips_handler(bot, update):
             text_string = " - 🚫 Sospeso"
             keyboard = [[InlineKeyboardButton("✔ Annullare la sospensione",
                                               callback_data=ccd("TRIPS", "SUS_TRIP", direction, day))]]
-        elif not common.sessione:
+        elif not common.is_sessione():
             text_string = ""
             keyboard = [
                 [InlineKeyboardButton("🕓 Modificare l'ora",
@@ -81,10 +82,16 @@ def trips_handler(bot, update):
         suspended_passengers = ", ".join(f"[{get_name(user)}](tg://user?id={user})"
                                          for user in trip['SuspendedUsers'])
 
+        if common.is_sessione():
+            delta = common.days.index(day) + len(common.days) - datetime.datetime.today().weekday()
+            shown_day = str(day) + str(datetime.datetime.today().day + delta)
+        else:
+            shown_day = day
+
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
                               text=f"Viaggio selezionato: {text_string}"
-                                   f"\n\n🗓 {day}"
+                                   f"\n\n🗓 {shown_day}"
                                    f"\n{common.dir_name(direction)}"
                                    f"\n🕓 {trip['Time']}"
                                    f"\n👥 (_temporanei_) {temporary_passengers}"
@@ -368,7 +375,7 @@ def add_passenger(bot, update):
     elif action == "MODE":
         direction, day, user = data[2:5]
 
-        if common.sessione:
+        if common.is_sessione():
             keyboard = [
                 [InlineKeyboardButton("🔂 Temporanea", callback_data=ccd("ADD_PASS", "CONFIRM",
                                                                          direction, day, user, "Temporary"))],
@@ -423,7 +430,7 @@ def add_passenger(bot, update):
                                   f"\n\n🗓 {day}"
                                   f"\n🕓 {trip['Time']}"
                                   f"\n{common.dir_name(direction)}"
-                                  f"\n{common.mode_name(mode)}",
+                                  f"{common.mode_name(mode)}",
                              parse_mode="Markdown")
 
             bot.edit_message_text(chat_id=chat_id,
@@ -451,7 +458,7 @@ def add_trip(bot, update):
     # Dati in entrata: "ADD_TRIP", "DAY", direction
     #
     if mode == "DAY":
-        direction = data[2:]
+        direction = data[2:][0]
         keyboard = []
 
         for day in common.work_days:
