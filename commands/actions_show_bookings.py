@@ -35,13 +35,14 @@ def fetch_sessione():
             continue
 
         empty_day = True
-
         for direction in "Salita", "Discesa":
             bookings = get_all_trips_fixed_direction(direction, day)
 
             if len(bookings) > 0:
+                if empty_day:
+                    text.append(f"\n\n🗓 Viaggi di {day.lower()} {datetime.datetime.today().day + item}")
+
                 empty_day = False
-                text.append(f"\n\n🗓 Viaggi di {day.lower()} {datetime.datetime.today().day + item}")
                 for time, driver in bookings:
                     trip = get_trip(direction, day, driver)
                     # Raccolgo in una list comprehension le persone che partecipano al viaggio

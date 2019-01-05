@@ -83,8 +83,9 @@ def trips_handler(bot, update):
                                          for user in trip['SuspendedUsers'])
 
         if common.is_sessione():
+            # Numero di giorni da sommare al giorno corrente
             delta = common.days.index(day) + len(common.days) - datetime.datetime.today().weekday()
-            shown_day = str(day) + str(datetime.datetime.today().day + delta)
+            shown_day = f"{day} {datetime.datetime.today().day + delta}"
         else:
             shown_day = day
 
@@ -461,8 +462,15 @@ def add_trip(bot, update):
         direction = data[2:][0]
         keyboard = []
 
-        for day in common.work_days:
-            keyboard.append(InlineKeyboardButton(day[:2], callback_data=ccd("ADD_TRIP", "HOUR", day, direction)))
+        today_number = datetime.datetime.today().weekday()
+        for item in range(len(common.days)):
+            day = common.day_to_string((item + today_number) % len(common.days))
+
+            if day == "Sabato" or day == "Domenica":  # Sabato, domenica
+                continue
+
+            keyboard.append(InlineKeyboardButton(f"{day[:2]} {item + datetime.datetime.today().day}",
+                                                 callback_data=ccd("ADD_TRIP", "HOUR", day, direction)))
 
         keyboard = [keyboard,
                     [InlineKeyboardButton("↩ Indietro", callback_data=ccd("TRIPS", "ADD"))],
@@ -470,7 +478,7 @@ def add_trip(bot, update):
 
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
-                              text="Scegli il giorno della settimana del viaggio.",
+                              text="Scegli il giorno del viaggio.",
                               reply_markup=InlineKeyboardMarkup(keyboard))
     #
     # Metodo per l'inserimento dell'ora
@@ -490,7 +498,7 @@ def add_trip(bot, update):
 
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
-                              text="Scegli l'ora di partenza del viaggio. ",
+                              text="Scegli l'ora di partenza del viaggio.",
                               reply_markup=InlineKeyboardMarkup(keyboard))
     #
     # Metodo per l'inserimento dei minuti
@@ -521,7 +529,7 @@ def add_trip(bot, update):
         time = f"{hour.zfill(2)}:{minute.zfill(2)}"
 
         keyboard = [
-            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("ADD_TRIP", "MINUTE", hour, day, direction))],
+            [InlineKeyboardButton("↩ Indietro", callback_data=ccd("ME", "TRIPS"))],
             [InlineKeyboardButton("🔚 Esci", callback_data=ccd("EXIT"))]
         ]
 

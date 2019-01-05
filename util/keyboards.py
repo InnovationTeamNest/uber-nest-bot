@@ -52,10 +52,10 @@ def trips_keyboard(chat_id):
                 if group["Suspended"]:
                     counter = "SOSP."
                 else:
-                    counter = str(len(group["Permanent"]) + len(group["Temporary"]))
+                    counter = f"{len(group['Permanent']) + len(group['Temporary'])}"
 
                 if common.is_sessione():
-                    shown_day = str(day) + str(datetime.datetime.today().day + item)
+                    shown_day = f"{day} {datetime.datetime.today().day + item}"
                 else:
                     shown_day = day
 
