@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import data.dataset
+import data.dataset as dt
 from util.common import work_days, trip_price
 
 
@@ -14,7 +14,7 @@ def add_user(chat_id, user):
     :param user: The username.
     :return:
     """
-    data.dataset.users[str(chat_id)] = {"Name": str(user), "Debit": {}}
+    dt.users[str(chat_id)] = {"Name": str(user), "Debit": {}}
 
 
 def is_registered(chat_id):
@@ -23,7 +23,7 @@ def is_registered(chat_id):
     :param chat_id: The chat_id to check.
     :return: True if the user is registered, else False.
     """
-    return str(chat_id) in data.dataset.users
+    return str(chat_id) in dt.users
 
 
 def get_name(chat_id):
@@ -32,14 +32,14 @@ def get_name(chat_id):
     :param chat_id: The chat_id to check.
     :return: A string representing the relative username
     """
-    return data.dataset.users[chat_id]["Name"]
+    return dt.users[chat_id]["Name"]
 
 
 def all_users():
     """
     :return: Returns all the chat_id present in the system.
     """
-    return data.dataset.users.keys()
+    return dt.users.keys()
 
 
 def delete_user(chat_id):
@@ -48,7 +48,7 @@ def delete_user(chat_id):
     :param chat_id: The chat_id to delete.
     :return:
     """
-    del data.dataset.users[chat_id]
+    del dt.users[chat_id]
     if is_driver(chat_id):
         delete_driver(chat_id)
 
@@ -64,7 +64,7 @@ def get_single_debit(chat_id, creditor):
     :return: The value owed
     """
     try:
-        return data.dataset.users[chat_id]["Debit"][creditor]
+        return dt.users[chat_id]["Debit"][creditor]
     except KeyError:
         return None
 
@@ -77,7 +77,7 @@ def set_single_debit(chat_id, creditor, value):
     :param value: The value to be placed
     :return:
     """
-    data.dataset.users[chat_id]["Debit"][creditor] = value
+    dt.users[chat_id]["Debit"][creditor] = value
 
 
 def quick_debit_edit(chat_id, creditor, mode):
@@ -94,23 +94,23 @@ def quick_debit_edit(chat_id, creditor, mode):
 
     if mode == "+":
         try:
-            data.dataset.users[chat_id]["Debit"][creditor] += trip_price
+            dt.users[chat_id]["Debit"][creditor] += trip_price
         except KeyError:
-            data.dataset.users[chat_id]["Debit"][creditor] = trip_price
+            dt.users[chat_id]["Debit"][creditor] = trip_price
 
     elif mode == "-":
         try:
-            data.dataset.users[chat_id]["Debit"][creditor] -= trip_price
+            dt.users[chat_id]["Debit"][creditor] -= trip_price
         except KeyError:
-            data.dataset.users[chat_id]["Debit"][creditor] = -trip_price
+            dt.users[chat_id]["Debit"][creditor] = -trip_price
 
     elif mode == "0":
-        data.dataset.users[chat_id]["Debit"][creditor] = 0
+        dt.users[chat_id]["Debit"][creditor] = 0
 
     else:
         raise ValueError
 
-    return data.dataset.users[chat_id]["Debit"][creditor]
+    return dt.users[chat_id]["Debit"][creditor]
 
 
 def get_all_debits(chat_id):
@@ -119,7 +119,7 @@ def get_all_debits(chat_id):
     :param chat_id: The chat_id to get the debits from.
     :return: A dictionary with keys containing chat_ids and values containing debits
     """
-    return data.dataset.users[chat_id]["Debit"]
+    return dt.users[chat_id]["Debit"]
 
 
 def remove_single_debit(chat_id, creditor):
@@ -129,7 +129,7 @@ def remove_single_debit(chat_id, creditor):
     :param creditor: The creditor to delete from the list.
     :return:
     """
-    del data.dataset.users[chat_id]["Debit"][creditor]
+    del dt.users[chat_id]["Debit"][creditor]
 
 
 # Autisti
@@ -142,7 +142,7 @@ def add_driver(chat_id, slots):
     :param slots:T The amount of seats, driver excluded
     :return:
     """
-    data.dataset.drivers[chat_id] = {"Slots": slots}
+    dt.drivers[chat_id] = {"Slots": slots}
 
 
 def is_driver(chat_id):
@@ -151,7 +151,7 @@ def is_driver(chat_id):
     :param chat_id: The chat_id to check.
     :return: True if the user is registered.
     """
-    return chat_id in data.dataset.drivers
+    return chat_id in dt.drivers
 
 
 def delete_driver(chat_id):
@@ -160,16 +160,16 @@ def delete_driver(chat_id):
     :param chat_id: The chat_id to remove.
     :return:
     """
-    del data.dataset.drivers[chat_id]
+    del dt.drivers[chat_id]
 
-    for direction in data.dataset.groups:
-        for day in data.dataset.groups[direction]:
-            if chat_id in data.dataset.groups[direction][day]:
-                del data.dataset.groups[direction][day][chat_id]
+    for direction in dt.groups:
+        for day in dt.groups[direction]:
+            if chat_id in dt.groups[direction][day]:
+                del dt.groups[direction][day][chat_id]
 
-    for user in data.dataset.users:
-        if chat_id in data.dataset.users[user]["Debit"]:
-            del data.dataset.users[user]["Debit"][chat_id]
+    for user in dt.users:
+        if chat_id in dt.users[user]["Debit"]:
+            del dt.users[user]["Debit"][chat_id]
 
 
 def get_slots(chat_id):
@@ -178,7 +178,7 @@ def get_slots(chat_id):
     :param chat_id: The chat_id of the driver.
     :return: An integer, representing the number of available slots.
     """
-    return data.dataset.drivers[chat_id]["Slots"]
+    return dt.drivers[chat_id]["Slots"]
 
 
 # Trip multipli
@@ -191,14 +191,14 @@ def get_trip_group(direction, day):
     :param day: A day spanning the whole work week ("Lunedì"-"Venerdì")
     :return: A dictionary containing entries for each trip.
     """
-    return data.dataset.groups[direction][day]
+    return dt.groups[direction][day]
 
 
 def all_directions():
     """
     :return: Returns all the available directions.
     """
-    return data.dataset.groups.keys()
+    return dt.groups.keys()
 
 
 # Trip singolo
@@ -213,7 +213,7 @@ def new_trip(direction, day, driver, time):
     :param time: The time of departure.
     :return:
     """
-    data.dataset.groups[direction][day][driver] = {"Time": time,
+    dt.groups[direction][day][driver] = {"Time": time,
                                                    "Permanent": [],
                                                    "Temporary": [],
                                                    "SuspendedUsers": [],
@@ -229,7 +229,7 @@ def get_trip(direction, day, driver):
     :return: A dictionary entry for the requested trip.
     """
     try:
-        return data.dataset.groups[direction][day][driver]
+        return dt.groups[direction][day][driver]
     except KeyError:
         return None
 
@@ -243,7 +243,7 @@ def get_time(direction, day, driver):
     :return: A string representing the departure time, formatted as %H:%M (24h)
     """
     try:
-        return data.dataset.groups[direction][day][driver]["Time"]
+        return dt.groups[direction][day][driver]["Time"]
     except KeyError:
         return None
 
@@ -257,7 +257,7 @@ def is_suspended(direction, day, driver):
     :return: True if the trip is suspended.
     """
     try:
-        return data.dataset.groups[direction][day][driver]["Suspended"]
+        return dt.groups[direction][day][driver]["Suspended"]
     except KeyError:
         return None
 
@@ -270,7 +270,7 @@ def suspend_trip(direction, day, driver):
     :param driver: The chat_id of the driver.
     :return:
     """
-    data.dataset.groups[direction][day][driver]["Suspended"] = True
+    dt.groups[direction][day][driver]["Suspended"] = True
 
 
 def unsuspend_trip(direction, day, driver):
@@ -281,7 +281,7 @@ def unsuspend_trip(direction, day, driver):
     :param driver: The chat_id of the driver.
     :return:
     """
-    data.dataset.groups[direction][day][driver]["Suspended"] = False
+    dt.groups[direction][day][driver]["Suspended"] = False
 
 
 def add_passenger(direction, day, driver, mode, chat_id):
@@ -294,7 +294,7 @@ def add_passenger(direction, day, driver, mode, chat_id):
     :param chat_id: The chat_id of the passenger.
     :return:
     """
-    data.dataset.groups[direction][day][driver][mode].append(chat_id)
+    dt.groups[direction][day][driver][mode].append(chat_id)
 
 
 def remove_passenger(direction, day, driver, mode, chat_id):
@@ -308,7 +308,7 @@ def remove_passenger(direction, day, driver, mode, chat_id):
     :raises: KeyError
     :return:
     """
-    data.dataset.groups[direction][day][driver][mode].remove(chat_id)
+    dt.groups[direction][day][driver][mode].remove(chat_id)
 
 
 def remove_trip(direction, day, driver):
@@ -319,7 +319,7 @@ def remove_trip(direction, day, driver):
     :param driver: The chat_id of the driver.
     :return:
     """
-    del data.dataset.groups[direction][day][driver]
+    del dt.groups[direction][day][driver]
 
 
 # Comandi avanzati
@@ -327,45 +327,46 @@ def remove_trip(direction, day, driver):
 
 def get_bookings(person):
     """Ritorna tutte le prenotazioni di una certa persona"""
-    return [(direction, day, driver, mode, data.dataset.groups[direction][day][driver]["Time"])
+    return [(direction, day, driver, mode, dt.groups[direction][day][driver]["Time"])
             for direction in ("Salita", "Discesa")
             for day in work_days
-            for driver in data.dataset.groups[direction][day]
-            for mode in data.dataset.groups[direction][day][driver]
+            for driver in dt.groups[direction][day]
+            for mode in dt.groups[direction][day][driver]
             if (mode == "Permanent" or mode == "Temporary" or mode == "SuspendedUsers")
-            and person in data.dataset.groups[direction][day][driver][mode]]
+            and person in dt.groups[direction][day][driver][mode]]
 
 
 def get_bookings_day_nosusp(person, day):
-    return [(direction, driver, mode, data.dataset.groups[direction][day][driver]["Time"])
+    return [(direction, driver, mode, dt.groups[direction][day][driver]["Time"])
             for direction in ("Salita", "Discesa")
-            for driver in data.dataset.groups[direction][day]
-            for mode in data.dataset.groups[direction][day][driver]
+            for driver in dt.groups[direction][day]
+            if not dt.groups[direction][day][driver]["Suspended"]
+            for mode in dt.groups[direction][day][driver]
             if (mode == "Permanent" or mode == "Temporary")
-            and person in data.dataset.groups[direction][day][driver][mode]]
+            and person in dt.groups[direction][day][driver][mode]]
 
 
 def get_credits(input_creditor):
     """Restituisce un array di tuple contenente, dato un creditore, gli ID dei debitori e il valore."""
-    return [(user, data.dataset.users[user]["Debit"][creditor]) for user in data.dataset.users
-            for creditor in data.dataset.users[user]["Debit"] if creditor == input_creditor]
+    return [(user, dt.users[user]["Debit"][creditor]) for user in dt.users
+            for creditor in dt.users[user]["Debit"] if creditor == input_creditor]
 
 
 def get_debit_tuple(input_debitor):
     """Restituisce un array di tuple contenente, dato un debitore, gli ID dei creditore e il valore."""
-    return [(creditor, data.dataset.users[input_debitor]["Debit"][creditor])
-            for creditor in data.dataset.users[input_debitor]["Debit"]]
+    return [(creditor, dt.users[input_debitor]["Debit"][creditor])
+            for creditor in dt.users[input_debitor]["Debit"]]
 
 
 def get_new_debitors(chat_id):
     # Resituisce una lista di tuple del tipo (Nome, ID)
     return sorted([
         (
-            data.dataset.users[user]["Name"],
+            dt.users[user]["Name"],
             user
         )
-        for user in data.dataset.users
-        if user != chat_id and chat_id not in data.dataset.users[user]["Debit"]
+        for user in dt.users
+        if user != chat_id and chat_id not in dt.users[user]["Debit"]
     ])
 
 
@@ -373,10 +374,10 @@ def get_new_passengers(chat_id):
     # Resituisce una lista di tuple del tipo (Nome, ID)
     return sorted([
         (
-            data.dataset.users[user]["Name"],
+            dt.users[user]["Name"],
             user
         )
-        for user in data.dataset.users
+        for user in dt.users
         if user != chat_id
     ])
 
@@ -384,11 +385,11 @@ def get_new_passengers(chat_id):
 def get_all_trips_fixed_direction(direction, day):
     return sorted([
         (
-            data.dataset.groups[direction][day][driver]["Time"],  # Orario di partenza
+            dt.groups[direction][day][driver]["Time"],  # Orario di partenza
             driver  # Chat ID dell'autista
         )
-        for driver in data.dataset.groups[direction][day]
-        if not data.dataset.groups[direction][day][driver]["Suspended"]
+        for driver in dt.groups[direction][day]
+        if not dt.groups[direction][day][driver]["Suspended"]
     ])
 
 
@@ -396,9 +397,9 @@ def get_all_trips_day(day):
     return sorted([
         # Restituisce una tupla del tipo (ora, guidatore, direzione, chat_id) riordinata
         (
-            data.dataset.groups[direction][day][driver]["Time"],
-            data.dataset.users[driver]["Name"], direction, driver
+            dt.groups[direction][day][driver]["Time"],
+            dt.users[driver]["Name"], direction, driver
         )
-        for direction in data.dataset.groups
-        for driver in data.dataset.groups[direction][day]
+        for direction in dt.groups
+        for driver in dt.groups[direction][day]
     ])
