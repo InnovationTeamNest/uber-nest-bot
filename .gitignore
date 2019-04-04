@@ -1,7 +1,9 @@
 .idea/
 .vscode/
-*.bak
-secrets.py
+dataset_backup.bak
+auto/
 client_secret.json
 calendar-python-quickstart.json
 venv/
+dataset.py
+secrets.py

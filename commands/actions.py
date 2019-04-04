@@ -2,12 +2,11 @@
 
 import logging as log
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-
-import secrets
-from commands.actions_show_bookings import fetch_bookings
+from commands.actions_show_bookings import fetch_bookings, fetch_sessione
+from data.data_api import is_registered, add_user, delete_user
+from data.secrets import owner_id
+from routing.filters import ReplyStatus
 from util import common
-from util.filters import ReplyStatus, create_callback_data
 
 
 #
@@ -31,19 +30,23 @@ def help(bot, update):
     if update.message.chat.type == "private":
         text = ["Comandi disponibili:"]
 
-        if str(update.message.chat_id) in secrets.users:
-            text.append("\n\n👤 /me - Gestisci il tuo profilo."
+        text.append("\n\nℹ /info - Visualizza informazioni sulla versione del Bot.")
+
+        if is_registered(update.message.chat_id):
+            text.append("\n👤 /me - Gestisci il tuo profilo."
                         "\n📚 /prenota - Gestisci le tue prenotazioni."
                         "\n🚗 /parcheggio - Registra il tuo parcheggio di oggi.")
-        else:
-            text.append("\n\n🖊 /registra - Inizia a usare UberNEST registrandoti al sistema.")
 
-        text.append("\n\n🗓 /oggi - Visualizza le prenotazioni per oggi."
+            if common.is_sessione():
+                text.append("\n🗓 /oggi - Visualizza i viaggi disponibili.")
+            else:
+                text.append(
+                    "\n\n🗓 /oggi - Visualizza le prenotazioni per oggi."
                     "\n🗓 /domani - Visualizza le prenotazioni per domani."
-                    "\n📅 /settimana - Visualizza le prenotazioni per la settimana."
-                    "\n\n/lunedi - /martedi - /mercoledi"
-                    "\n/giovedi - /venerdi - Visualizza le prenotazioni dei singoli giorni."
-                    "\n\nℹ /info - Visualizza informazioni sulla versione del Bot.")
+                    "\n\n📅 /lunedi - /martedi - /mercoledi"
+                    "\n/giovedi - /venerdi - Visualizza le prenotazioni dei singoli giorni.")
+        else:
+            text.append("\n🖊 /registra - Inizia a usare UberNEST registrandoti al sistema.")
 
         bot.send_message(chat_id=update.message.chat_id, text="".join(text))
     else:
@@ -51,96 +54,92 @@ def help(bot, update):
                          text="Per informazioni, scrivimi /help in privato su @ubernestbot.")
 
 
-def info(bot, update):
-    bot.send_message(chat_id=update.message.chat_id,
-                     text="UberNEST Bot v2.0 - sviluppata dal"
-                          " NEST Innovation Team. Contatta @mfranzil per suggerimenti,"
-                          " proposte, bug o per partecipare attivamente allo"
-                          " sviluppo del bot.\n\nUberNEST è una piattaforma creata da"
-                          " Paolo Teta e Filippo Spaggiari nel 2017 come forma di"
-                          " car-sharing per gli studenti di Povo residenti al NEST.")
-
-
 def oggi(bot, update):
-    message, keyboard = fetch_bookings(update.message.chat_id, common.today())
+    message, keyboard = fetch_bookings(str(update.message.chat_id), common.today()) if not common.is_sessione() \
+        else fetch_sessione()
 
     bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard, parse_mode="Markdown")
 
 
 def domani(bot, update):
-    message, keyboard = fetch_bookings(update.message.chat_id, common.tomorrow())
+    message, keyboard = fetch_bookings(str(update.message.chat_id), common.tomorrow()) if not common.is_sessione() \
+        else fetch_sessione()
 
     bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard, parse_mode="Markdown")
 
 
 def lunedi(bot, update):
-    message, keyboard = fetch_bookings(update.message.chat_id, "Lunedì")
+    message, keyboard = fetch_bookings(str(update.message.chat_id), "Lunedì") if not common.is_sessione() \
+        else fetch_sessione()
 
     bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard, parse_mode="Markdown")
 
 
 def martedi(bot, update):
-    message, keyboard = fetch_bookings(update.message.chat_id, "Martedì")
+    message, keyboard = fetch_bookings(str(update.message.chat_id), "Martedì") if not common.is_sessione() \
+        else fetch_sessione()
 
     bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard, parse_mode="Markdown")
 
 
 def mercoledi(bot, update):
-    message, keyboard = fetch_bookings(update.message.chat_id, "Mercoledì")
+    message, keyboard = fetch_bookings(str(update.message.chat_id), "Mercoledì") if not common.is_sessione() \
+        else fetch_sessione()
 
     bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard, parse_mode="Markdown")
 
 
 def giovedi(bot, update):
-    message, keyboard = fetch_bookings(update.message.chat_id, "Giovedì")
+    message, keyboard = fetch_bookings(str(update.message.chat_id), "Giovedì") if not common.is_sessione() \
+        else fetch_sessione()
 
     bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard, parse_mode="Markdown")
 
 
 def venerdi(bot, update):
-    message, keyboard = fetch_bookings(update.message.chat_id, "Venerdì")
+    message, keyboard = fetch_bookings(str(update.message.chat_id), "Venerdì") if not common.is_sessione() \
+        else fetch_sessione()
 
     bot.send_message(chat_id=update.message.chat_id, text=message, reply_markup=keyboard, parse_mode="Markdown")
 
 
-def settimana(bot, update):
-    keyboard = []
-
-    for day in common.work_days:
-        keyboard.append(InlineKeyboardButton(day[:2], callback_data=create_callback_data("SHOW_BOOKINGS", day)))
-
-    bot.send_message(chat_id=update.message.chat_id,
-                     text="Scegli il giorno di cui visualizzare le prenotazioni.",
-                     reply_markup=InlineKeyboardMarkup([keyboard]))
-
-
 def registra(bot, update):
-    if str(update.message.chat_id) in secrets.users:
+    if is_registered(update.message.chat_id):
         bot.send_message(chat_id=update.message.chat_id,
                          text="Questo utente risulta già iscritto a sistema!")
     else:
         bot.send_message(chat_id=update.message.chat_id,
-                         text="In seguito all'iscrizione, assicurati di unirti "
-                              "al gruppo UberNEST, e di aver letto ed accettato "
-                              "il regolamento in tutti i suoi punti. Per ulteriori"
-                              " informazioni, contatta un membro del direttivo di "
-                              "UberNEST.")
+                         text="In seguito all'iscrizione, assicurati di unirti"
+                              " al gruppo UberNEST, e di aver letto ed accettato"
+                              " il regolamento in tutti i suoi punti. Per ulteriori"
+                              " informazioni, contatta un membro del direttivo di"
+                              " UberNEST.")
         bot.send_message(chat_id=update.message.chat_id,
                          text="Inserire nome e cognome, che verranno mostrati"
                               " sia agli autisti sia ai passeggeri. Ogni violazione di"
-                              " queste regole verrà punita con la rimo<zione dal"
+                              " queste regole verrà punita con la rimozione dal"
                               " sistema.")
         ReplyStatus.response_mode = 1
 
 
 def response_registra(bot, update):
     user = update.message.text
-    secrets.users[str(update.message.chat_id)] = {"Name": str(user), "Debit": {}}
+    add_user(update.message.chat_id, user)
     bot.send_message(chat_id=update.message.chat_id,
                      text="Il tuo username è stato aggiunto con successo"
-                          " al database. Usa i seguenti comandi:\n/me "
-                          "per gestire il tuo profilo, gestire i debiti e "
-                          "i crediti e diventare autista di UberNEST.\n"
-                          "/prenota per effettuare e disdire prenotazioni.")
+                          " al database. Usa i seguenti comandi:"
+                          "\n\n/me per gestire il tuo profilo, gestire i debiti"
+                          " e i crediti e diventare autista di UberNEST."
+                          "\n/prenota per effettuare e disdire prenotazioni.")
+    bot.send_message(chat_id=owner_id,
+                     text=f"Nuovo utente iscritto a sistema: {user} con"
+                          f" chat_id {update.message.chat_id}")
     log.info(f"Nuovo utente iscritto: {user}")
     ReplyStatus.response_mode = 0
+
+
+def ban_user(bot, update, args):
+    if update.message.chat_id == owner_id:
+        user = args[0]
+        delete_user(user)
+        bot.send_message(chat_id=user, text="Sei stato bannato da UberNEST Bot.")

@@ -3,68 +3,86 @@
 import datetime
 import logging as log
 
-import telegram
-
-import secrets
+from data.data_api import all_users, is_driver, all_directions, get_trip_group, get_name, get_bookings_day_nosusp
 from util import common
 
 
 def remind():
-    bot = telegram.Bot(secrets.bot_token)
-    if (datetime.datetime.today() + datetime.timedelta(days=1)).date() not in common.no_trip_days:
-        for chat_id in secrets.users:
+    from routing.webhook import BotUtils
+    bot = BotUtils.bot
+
+    today = datetime.datetime.today()
+
+    if 0 <= (today.weekday() + 1) % 7 <= 4 and (today + datetime.timedelta(days=1)).date() \
+            not in common.no_trip_days:
+        # Il comando va eseguito solo nei giorni feriali e comunque non
+        # nei giorni esplicitamente segnati in secrets.py
+        for chat_id in all_users():
             try:
                 remind_user(bot, chat_id)
             except Exception as ex:
-                log.info(f"Failed to alert {str(chat_id)}", ex)
+                log.critical(f"Failed to alert {chat_id}")
+                log.critical(ex)
 
-        for chat_id in secrets.drivers:
-            try:
-                remind_driver(bot, chat_id)
-            except Exception as ex:
-                log.info(f"Failed to alert {str(chat_id)}", ex)
+            if is_driver(chat_id):
+                try:
+                    remind_driver(bot, chat_id)
+                except Exception as ex:
+                    log.critical(f"Failed to alert driver {chat_id}")
+                    log.critical(ex)
 
 
 def remind_driver(bot, chat_id):
     """Questo comando verrà eseguito alle 23:30 di ogni giorno feriale."""
-    today = datetime.datetime.today().weekday()
-    if 0 <= (today + 1) % 7 <= 4:
-        heading_sent = False
-        message = []
-        tomorrow = common.tomorrow()
+    message = []
 
-        for direction in secrets.groups:
-            if str(chat_id) in secrets.groups[direction][tomorrow] \
-                    and not secrets.groups[direction][tomorrow][chat_id]["Suspended"]:
-                # Mando il messaggio iniziale una sola volta
-                if not heading_sent:
-                    message.append("Sommario dei viaggi per domani:")
-                    heading_sent = True
+    for direction in all_directions():
+        trip = get_trip_group(direction, common.tomorrow())
+        if chat_id in trip and not trip[chat_id]["Suspended"]:
+            # Mando il messaggio iniziale una sola volta
+            if not message:
+                message.append("⚠ Sommario dei tuoi viaggi di domani:")
 
-                trip = secrets.groups[direction][tomorrow][chat_id]
-                permanent_people = ",".join(secrets.users[i]["Name"] for i in trip["Permanent"])
-                temporary_people = ",".join(secrets.users[i]["Name"] for i in trip["Temporary"])
-                message.append(f"\n\nViaggio {common.dir_name(direction)} - {trip['Time']}"
-                               f"\n\nPermanentemente: {permanent_people}"
-                               f"\nSolo domani: {temporary_people}")
+            trip = trip[chat_id]
 
-        if heading_sent:
-            bot.send_message(chat_id=chat_id, text=message)
+            if common.is_sessione():
+                people = ", ".join(f"[{get_name(user)}](tg://user?id={user})"
+                                   for user in trip["Temporary"])
+
+                message.append(f"\n\n🕓 {trip['Time']}"
+                               f"\n{common.dir_name(direction)}"
+                               f"\n👥: {people}")
+            else:
+                permanent_people = ", ".join(f"[{get_name(user)}](tg://user?id={user})"
+                                             for user in trip["Permanent"])
+                temporary_people = ", ".join(f"[{get_name(user)}](tg://user?id={user})"
+                                             for user in trip["Temporary"])
+
+                message.append(f"\n\n🕓 {trip['Time']}"
+                               f"\n{common.dir_name(direction)}"
+                               f"\n👥 permanenti: {permanent_people}"
+                               f"\n👥 temporanei: {temporary_people}")
+
+    if message:
+        bot.send_message(chat_id=chat_id, text="".join(message), parse_mode="Markdown")
 
 
 def remind_user(bot, chat_id):
     """Questo comando verrà eseguito alle 23:30 di ogni giorno feriale"""
-    bookings = common.search_by_booking(chat_id)
+    bookings = get_bookings_day_nosusp(chat_id, common.tomorrow())
 
-    today = datetime.datetime.today().weekday()
-    if 0 <= (today + 1) % 7 <= 4:
-        for item in bookings:
-            direction, day, driver, mode, time = item
-            if day == common.tomorrow() and mode != "SuspendedUsers":
-                bot.send_message(chat_id=chat_id,
-                                 text=f"REMINDER: Domani hai un viaggio: "
-                                      f"\n\n🚗 {str(secrets.users[driver]['Name'])}"
-                                      f"\n🗓 {day}"
-                                      f"\n🕓 {time}"
-                                      f"\n {common.dir_name(direction)}"
-                                      f"\n{common.mode_name(mode)}")
+    message = []
+    for item in bookings:
+        if not message:
+            message.append("⚠ Sommario dei tuoi viaggi di domani:")
+
+        direction, driver, mode, time = item
+        message.append(f"\n\n🚗 [{get_name(driver)}](tg://user?id={driver})"
+                       f"\n🕓 {time}"
+                       f"\n{common.dir_name(direction)}")
+
+        if not common.is_sessione():
+            message.append(f"\n{common.mode_name(mode)}")
+
+    if message:
+        bot.send_message(chat_id=chat_id, text="".join(message), parse_mode="Markdown")

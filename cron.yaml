@@ -1,8 +1,4 @@
 cron:
-- description: set up the webhook to prevent failures
-  url: /set_webhook
-  timezone: Europe/Rome
-  schedule: every 24 hours
 - description: process credit changes and suspensions
   url: /night
   timezone: Europe/Rome
