@@ -28,7 +28,7 @@ def parcheggio(bot, update):
 
             if "Location" in day_trips[chat_id]:
                 message = f"La posizione di ritrovo corrente è settata a: {day_trips[chat_id]['Location']}." \
-                          f"\nSeleziona un nuovo luogo di ritrovo."
+                    f"\nSeleziona un nuovo luogo di ritrovo."
             else:
                 message = "Seleziona il luogo di ritrovo per il viaggio di ritorno."
         else:
@@ -63,8 +63,8 @@ def confirm_parking(bot, update):
         for passenger in passenger_group:
             bot.send_message(chat_id=passenger,
                              text=f"Per il viaggio di ritorno,"
-                                  f" [{get_name(chat_id)}](tg://user?id={chat_id})"
-                                  f" ha impostato il luogo di ritrovo:\n📍 {location}.",
+                             f" [{get_name(chat_id)}](tg://user?id={chat_id})"
+                             f" ha impostato il luogo di ritrovo:\n📍 {location}.",
                              reply_markup=InlineKeyboardMarkup(keyboard))
 
 

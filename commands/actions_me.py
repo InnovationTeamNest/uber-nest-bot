@@ -175,8 +175,8 @@ def me_handler(bot, update):
         for creditor in user_debits:
             bot.send_message(chat_id=creditor,
                              text=f"ATTENZIONE! [{get_name(chat_id)}](tg://user?id={chat_id})"
-                                  f" si è cancellato da UberNEST. Ha ancora "
-                                  f"{str(user_debits[creditor])} EUR di debito con te.",
+                             f" si è cancellato da UberNEST. Ha ancora "
+                             f"{str(user_debits[creditor])} EUR di debito con te.",
                              parse_mode="Markdown")
 
         delete_user(chat_id)

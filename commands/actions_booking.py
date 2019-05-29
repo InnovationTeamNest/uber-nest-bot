@@ -100,13 +100,13 @@ def booking_handler(bot, update):
                 bot.edit_message_text(chat_id=chat_id,
                                       message_id=update.callback_query.message.message_id,
                                       text=f"{common.mode_name(mode)}"
-                                           f"\n\nSeleziona il giorno della prenotazione.",
+                                      f"\n\nSeleziona il giorno della prenotazione.",
                                       reply_markup=booking_keyboard(mode, common.today(), show_bookings=False))
         else:
             bot.edit_message_text(chat_id=chat_id,
                                   message_id=update.callback_query.message.message_id,
                                   text=f"Mi dispiace, non è possibile effettuare prenotazioni"
-                                       f" tramite UberNEST dalle 02:30 alle 03:30.")
+                                  f" tramite UberNEST dalle 02:00 alle 02:15.")
     #
     # Dati in entrata ("BOOKING", "DAY", mode, day)
     # Questo menù viene chiamato rispettivamente dal metodo sopra (BOOKING) e dai visualizzatori
@@ -123,14 +123,14 @@ def booking_handler(bot, update):
             bot.edit_message_text(chat_id=chat_id,
                                   message_id=update.callback_query.message.message_id,
                                   text=f"🗓 {day}"
-                                       f"\n{common.mode_name(mode)}"
-                                       f"\n\nSeleziona il viaggio da prenotare.",
+                                  f"\n{common.mode_name(mode)}"
+                                  f"\n\nSeleziona il viaggio da prenotare.",
                                   reply_markup=booking_keyboard(mode, day))
         else:
             bot.edit_message_text(chat_id=chat_id,
                                   message_id=update.callback_query.message.message_id,
                                   text=f"Mi dispiace, non è possibile effettuare prenotazioni"
-                                       f" tramite UberNEST dalle 02:30 alle 03:30.")
+                                  f" tramite UberNEST dalle 02:30 alle 03:30.")
     #
     # Dati in entrata ("BOOKING", "CONFIRM", direction, day, driver, mode)
     # Messaggio finale di conferma all'utente e all'autista. Il metodo calcola se la prenotazione scelta è
@@ -181,23 +181,23 @@ def booking_handler(bot, update):
             ]
 
             user_text = f"Prenotazione completata. Dati del viaggio:" \
-                        f"\n\n🚗: [{get_name(driver)}](tg://user?id={driver})" \
-                        f"\n🗓 {day}" \
-                        f"\n🕓 {trip_time}" \
-                        f"\n{common.dir_name(direction)}" \
-                        f"\n{common.mode_name(mode)}" \
-                        f"\n📍 {location}" \
-                        f"\n\nLa prenotazione sarà resa valida al momento della conferma dall'autista."
+                f"\n\n🚗: [{get_name(driver)}](tg://user?id={driver})" \
+                f"\n🗓 {day}" \
+                f"\n🕓 {trip_time}" \
+                f"\n{common.dir_name(direction)}" \
+                f"\n{common.mode_name(mode)}" \
+                f"\n📍 {location}" \
+                f"\n\nLa prenotazione sarà resa valida al momento della conferma dall'autista."
 
             driver_text = "Hai una nuova prenotazione: " \
-                          f"\n\n👤: [{get_name(chat_id)}](tg://user?id={chat_id}) " \
-                          f"({slots} posti rimanenti)" \
-                          f"\n🗓 {day}" \
-                          f"\n🕓 {trip_time}" \
-                          f"\n{common.dir_name(direction)}" \
-                          f"\n{common.mode_name(mode)}" \
-                          f".\n\nPer favore, conferma la presa visione della prenotazione. In caso negativo," \
-                          f" la prenotazione verrà considerata non valida."
+                f"\n\n👤: [{get_name(chat_id)}](tg://user?id={chat_id}) " \
+                f"({slots} posti rimanenti)" \
+                f"\n🗓 {day}" \
+                f"\n🕓 {trip_time}" \
+                f"\n{common.dir_name(direction)}" \
+                f"\n{common.mode_name(mode)}" \
+                f".\n\nPer favore, conferma la presa visione della prenotazione. In caso negativo," \
+                f" la prenotazione verrà considerata non valida."
 
             bot.send_message(chat_id=driver,
                              text=driver_text,
@@ -296,11 +296,11 @@ def edit_booking(bot, update):
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
                               text=f"Prenotazione selezionata: {text_string}\n"
-                                   f"\n🚗 [{get_name(driver)}](tg://user?id={driver})"
-                                   f"\n🗓 {day}"
-                                   f"\n{common.dir_name(direction)}"
-                                   f"\n🕓 {trip_time}"
-                                   f"\n{common.mode_name(mode)}",
+                              f"\n🚗 [{get_name(driver)}](tg://user?id={driver})"
+                              f"\n🗓 {day}"
+                              f"\n{common.dir_name(direction)}"
+                              f"\n🕓 {trip_time}"
+                              f"\n{common.mode_name(mode)}",
                               reply_markup=InlineKeyboardMarkup(keyboard),
                               parse_mode="Markdown")
     #
@@ -348,8 +348,8 @@ def edit_booking(bot, update):
 
             user_message = "Prenotazione sospesa. Verrà ripristinata il prossimo viaggio."
             driver_message = f"[{get_name(chat_id)}](tg://user?id={chat_id})" \
-                             f" ha sospeso la sua prenotazione permanente" \
-                             f" per {day.lower()} {common.dir_name(direction)}."
+                f" ha sospeso la sua prenotazione permanente" \
+                f" per {day.lower()} {common.dir_name(direction)}."
 
         elif mode == "SuspendedUsers":
             occupied_slots = len(trip["Permanent"]) + len(trip["Temporary"])
@@ -361,9 +361,9 @@ def edit_booking(bot, update):
                 bot.edit_message_text(chat_id=chat_id,
                                       message_id=update.callback_query.message.message_id,
                                       text=f"Mi dispiace, ma non puoi rendere operativa la"
-                                           f" tua prenotazione in quanto la macchina è ora piena."
-                                           f"Contatta [{get_name(driver)}](tg://user?id={driver})"
-                                           f" per risolvere la questione.",
+                                      f" tua prenotazione in quanto la macchina è ora piena."
+                                      f"Contatta [{get_name(driver)}](tg://user?id={driver})"
+                                      f" per risolvere la questione.",
                                       reply_markup=InlineKeyboardMarkup(keyboard),
                                       parse_mode="Markdown")
                 return
@@ -373,8 +373,8 @@ def edit_booking(bot, update):
 
             user_message = "La prenotazione è di nuovo operativa."
             driver_message = f"[{get_name(chat_id)}](tg://user?id={chat_id})" \
-                             f" ha reso operativa la sua prenotazione permanente" \
-                             f" di {day.lower()} {common.dir_name(direction)}."
+                f" ha reso operativa la sua prenotazione permanente" \
+                f" di {day.lower()} {common.dir_name(direction)}."
 
         else:
             user_message = "Errore fatale nel Bot. Contatta il creatore del bot al più presto."
@@ -421,9 +421,9 @@ def edit_booking(bot, update):
                               reply_markup=InlineKeyboardMarkup(keyboard))
         bot.send_message(chat_id=driver,
                          text=f"Una prenotazione al tuo viaggio è stata cancellata:"
-                              f"\n\n👤 [{get_name(chat_id)}](tg://user?id={chat_id})"
-                              f"\n🗓 {day}"
-                              f"\n{common.dir_name(direction)}",
+                         f"\n\n👤 [{get_name(chat_id)}](tg://user?id={chat_id})"
+                         f"\n🗓 {day}"
+                         f"\n{common.dir_name(direction)}",
                          parse_mode="Markdown")
 
 
@@ -443,15 +443,15 @@ def alert_user(bot, update):
             if user not in trip[mode]:
                 add_passenger(direction, day, chat_id, mode, user)
                 edited_text = "Hai una nuova prenotazione: " \
-                              f"\n\n👤: [{get_name(user)}](tg://user?id={user}) ✔" \
-                              f"(*{total_slots - occupied_slots - 1} posti rimanenti*)" \
-                              f"\n🗓 {day}" \
-                              f"\n🕓 {get_time(direction, day, chat_id)}" \
-                              f"\n{common.dir_name(direction)}" \
-                              f"\n{common.mode_name(mode)}" \
-                              f".\n\nPrenotazione confermata con successo."
+                    f"\n\n👤: [{get_name(user)}](tg://user?id={user}) ✔" \
+                    f"(*{total_slots - occupied_slots - 1} posti rimanenti*)" \
+                    f"\n🗓 {day}" \
+                    f"\n🕓 {get_time(direction, day, chat_id)}" \
+                    f"\n{common.dir_name(direction)}" \
+                    f"\n{common.mode_name(mode)}" \
+                    f".\n\nPrenotazione confermata con successo."
                 booker_text = f"[{get_name(chat_id)}](tg://user?id={chat_id})" \
-                              f" ha confermato la tua prenotazione."
+                    f" ha confermato la tua prenotazione."
             else:
                 edited_text = "⚠ Attenzione, questa persona è già prenotata con te in questo viaggio."
                 booker_text = "⚠ Ti sei già prenotato in questa data con questa persona!"
@@ -459,7 +459,7 @@ def alert_user(bot, update):
             edited_text = "⚠ Attenzione, hai esaurito i posti disponibili per questo viaggio. Non è" \
                           " possibile confermarlo."
             booker_text = f"⚠ Mi dispiace, ma qualcun'altro si è prenotato prima di te. Contatta " \
-                          f"[{get_name(chat_id)}](tg://user?id={chat_id}) per disponibilità posti."
+                f"[{get_name(chat_id)}](tg://user?id={chat_id}) per disponibilità posti."
 
         bot.send_message(chat_id=user,
                          parse_mode="Markdown",

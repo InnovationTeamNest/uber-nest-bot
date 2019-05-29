@@ -99,8 +99,8 @@ def is_dst():
 
 def is_booking_time():
     """Controlla che l'orario attuale sia compreso all'interno degli orari di prenotazioni definiti sopra"""
-    return datetime.time(2, 30) <= now_time() <= datetime.time(23, 59) or \
-           datetime.time(0, 0) <= now_time() <= datetime.time(1, 30)
+    return datetime.time(2, 16) <= now_time() <= datetime.time(23, 59) or \
+           datetime.time(0, 0) <= now_time() <= datetime.time(1, 59)
 
 
 def dir_name(direction):

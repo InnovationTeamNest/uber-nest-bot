@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import math
-
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 from data.data_api import (get_name, is_driver, set_single_debit, get_single_debit,
@@ -83,20 +82,20 @@ def edit_money(bot, update):
         money = quick_debit_edit(user, chat_id, "-")
 
         user_text = f"💶 Hai saldato {str(common.trip_price)} EUR con " \
-                    f"[{get_name(chat_id)}](tg://user?id={chat_id}). " \
-                    f"Debito corrente : {money} EUR."
+            f"[{get_name(chat_id)}](tg://user?id={chat_id}). " \
+            f"Debito corrente : {money} EUR."
 
     elif action == "ADD":
         money = quick_debit_edit(user, chat_id, "+")
         user_text = f"💶 [{get_name(chat_id)}](tg://user?id={chat_id})" \
-                    f" ti ha addebitato {str(common.trip_price)} EUR. " \
-                    f"Debito corrente: {money} EUR."
+            f" ti ha addebitato {str(common.trip_price)} EUR. " \
+            f"Debito corrente: {money} EUR."
 
     elif action == "ZERO":
         remove_single_debit(user, chat_id)
         money = 0
         user_text = f"💸 [{get_name(chat_id)}](tg://user?id={chat_id})" \
-                    f" ha azzerato il debito con te."
+            f" ha azzerato il debito con te."
 
     elif action == "NEW":
         money = 0
@@ -106,7 +105,7 @@ def edit_money(bot, update):
         user_text = ""
 
     else:
-        user_text = "Sembra che questo messaggio sia stato inavvertitamente mandato.\n" \
+        user_text = "Sembra che questo messaggio sia stato mandato inavvertitamente.\n" \
                     "Contatta il creatore del bot per segnalare il problema."
 
     if money != 0:
@@ -121,7 +120,7 @@ def edit_money(bot, update):
     bot.edit_message_text(chat_id=chat_id,
                           message_id=update.callback_query.message.message_id,
                           text=f"👤 [{get_name(user)}](tg://user?id={user})"
-                               f"\n💶 *{money} EUR*", reply_markup=InlineKeyboardMarkup(keyboard),
+                          f"\n💶 *{money} EUR*", reply_markup=InlineKeyboardMarkup(keyboard),
                           parse_mode="Markdown")
 
     if action == "ADD" or action == "ZERO" or action == "SUBTRACT":

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
-import math
 
+import math
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 from data.data_api import get_trip, get_name, is_suspended, unsuspend_trip, suspend_trip, remove_passenger, get_time, \
@@ -92,13 +92,13 @@ def trips_handler(bot, update):
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
                               text=f"Viaggio selezionato: {text_string}"
-                                   f"\n\n🗓 {shown_day}"
-                                   f"\n{common.dir_name(direction)}"
-                                   f"\n🕓 {trip['Time']}"
-                                   f"\n👥 (_temporanei_) {temporary_passengers}"
-                                   f"\n👥 (_permanenti_) {permanent_passengers}"
-                                   f"\n👥 (_sospesi_) {suspended_passengers}"
-                                   f"\n\nCosa vuoi fare?",
+                              f"\n\n🗓 {shown_day}"
+                              f"\n{common.dir_name(direction)}"
+                              f"\n🕓 {trip['Time']}"
+                              f"\n👥 (_temporanei_) {temporary_passengers}"
+                              f"\n👥 (_permanenti_) {permanent_passengers}"
+                              f"\n👥 (_sospesi_) {suspended_passengers}"
+                              f"\n\nCosa vuoi fare?",
                               reply_markup=InlineKeyboardMarkup(keyboard),
                               parse_mode="Markdown")
     #
@@ -207,14 +207,14 @@ def trips_handler(bot, update):
             for user in user_group:
                 bot.send_message(chat_id=user,
                                  text=f"[{get_name(chat_id)}](tg://user?id={chat_id})"
-                                      f" ha spostato l'orario del viaggio di "
-                                      f"{day} {common.dir_name(direction)} alle {time}.",
+                                 f" ha spostato l'orario del viaggio di "
+                                 f"{day} {common.dir_name(direction)} alle {time}.",
                                  parse_mode="Markdown")
 
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
                               text=f"Nuovo orario di partenza:\n{day} alle "
-                                   f"{time} {common.dir_name(direction)}",
+                              f"{time} {common.dir_name(direction)}",
                               reply_markup=InlineKeyboardMarkup(keyboard))
     #
     # I seguenti comandi sono utilizzati per modificare la lista dei viaggitori di un
@@ -288,10 +288,10 @@ def trips_handler(bot, update):
 
         bot.send_message(chat_id=user,
                          text=f"Sei stato rimosso dal seguente viaggio: "
-                              f"\n\n🚗 [{get_name(chat_id)}](tg://user?id={chat_id})"
-                              f"\n🗓 {day}"
-                              f"\n🕓 {get_time(direction, day, chat_id)}"
-                              f"\n{common.dir_name(direction)}",
+                         f"\n\n🚗 [{get_name(chat_id)}](tg://user?id={chat_id})"
+                         f"\n🗓 {day}"
+                         f"\n🕓 {get_time(direction, day, chat_id)}"
+                         f"\n{common.dir_name(direction)}",
                          parse_mode="Markdown")
     # Comando chiamato quando si clicca su "Rimuovi viaggio" nella vista viaggio
     elif action == "REMOVE_TRIP":
@@ -427,22 +427,22 @@ def add_passenger(bot, update):
 
             bot.send_message(chat_id=user,
                              text=f"[{get_name(chat_id)}](tg://user?id={chat_id})"
-                                  f" ha effettuato una nuova prenotazione a tuo nome nel suo viaggio: "
-                                  f"\n\n🗓 {day}"
-                                  f"\n🕓 {trip['Time']}"
-                                  f"\n{common.dir_name(direction)}"
-                                  f"{common.mode_name(mode)}",
+                             f" ha effettuato una nuova prenotazione a tuo nome nel suo viaggio: "
+                             f"\n\n🗓 {day}"
+                             f"\n🕓 {trip['Time']}"
+                             f"\n{common.dir_name(direction)}"
+                             f"{common.mode_name(mode)}",
                              parse_mode="Markdown")
 
             bot.edit_message_text(chat_id=chat_id,
                                   message_id=update.callback_query.message.message_id,
                                   reply_markup=InlineKeyboardMarkup(keyboard),
                                   text="Prenotazione completata. Dati del viaggio:"
-                                       f"\n\n👤 {str(get_name(user))}"
-                                       f"\n🗓 {day}"
-                                       f"\n🕓 {trip['Time']}"
-                                       f"\n{common.dir_name(direction)}"
-                                       f"\n{common.mode_name(mode)}")
+                                  f"\n\n👤 {str(get_name(user))}"
+                                  f"\n🗓 {day}"
+                                  f"\n🕓 {trip['Time']}"
+                                  f"\n{common.dir_name(direction)}"
+                                  f"\n{common.mode_name(mode)}")
 
 
 #
@@ -536,9 +536,9 @@ def add_trip(bot, update):
         new_trip(direction, day, chat_id, time)
 
         user_text = f"Viaggio aggiunto con successo:" \
-                    f"\n\n{common.dir_name(direction)}" \
-                    f"\n🗓 {day}" \
-                    f"\n🕓 {time}"
+            f"\n\n{common.dir_name(direction)}" \
+            f"\n🗓 {day}" \
+            f"\n🕓 {time}"
 
         bot.edit_message_text(chat_id=chat_id,
                               message_id=update.callback_query.message.message_id,
@@ -557,17 +557,17 @@ def alert_suspension(bot, direction, day, driver):
         for user in permanent_users:
             bot.send_message(chat_id=user,
                              text=f"Attenzione! {driver_name} ha sospeso il viaggio di {day}"
-                                  f" {dir_name(direction)}. Non verrai addebitato per questa volta.",
+                             f" {dir_name(direction)}. Non verrai addebitato per questa volta.",
                              parse_mode="Markdown")
         for user in temporary_users:
             bot.send_message(chat_id=user,
                              text=f"Attenzione! {driver_name} ha sospeso il viaggio di {day}"
-                                  f" {dir_name(direction)}."
-                                  f" La tua prenotazione scalerà alla settimana successiva.",
+                             f" {dir_name(direction)}."
+                             f" La tua prenotazione scalerà alla settimana successiva.",
                              parse_mode="Markdown")
     else:
         for user in (permanent_users + temporary_users):
             bot.send_message(chat_id=user,
                              text=f"Attenzione! {driver_name} ha annullato la sospensione del viaggio di {day}"
-                                  f" {dir_name(direction)}.",
+                             f" {dir_name(direction)}.",
                              parse_mode="Markdown")

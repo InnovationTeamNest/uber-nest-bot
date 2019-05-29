@@ -214,10 +214,10 @@ def new_trip(direction, day, driver, time):
     :return:
     """
     dt.groups[direction][day][driver] = {"Time": time,
-                                                   "Permanent": [],
-                                                   "Temporary": [],
-                                                   "SuspendedUsers": [],
-                                                   "Suspended": False}
+                                         "Permanent": [],
+                                         "Temporary": [],
+                                         "SuspendedUsers": [],
+                                         "Suspended": False}
 
 
 def get_trip(direction, day, driver):

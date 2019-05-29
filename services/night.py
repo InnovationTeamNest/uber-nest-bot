@@ -96,14 +96,14 @@ def process_money(direction, driver, trip):
 
             bot.send_message(chat_id=str(user),
                              text=f"Ti sono stati addebitati"
-                                  f" {str(common.trip_price)} EUR "
-                                  f"da {str(get_name(driver))}.")
+                             f" {str(common.trip_price)} EUR "
+                             f"da {str(get_name(driver))}.")
             messages.append(f"Alerted driver for credit: u{user} d{driver} {direction}")
 
             bot.send_message(chat_id=str(driver),
                              text=f"Hai ora un credito di "
-                                  f"{str(common.trip_price)} EUR"
-                                  f" da parte di {str(get_name(user))}.")
+                             f"{str(common.trip_price)} EUR"
+                             f" da parte di {str(get_name(user))}.")
             messages.append(f"Alerted user for debit: u{user} d{driver} {direction}")
 
     # Poi ripristino le persone sospese
@@ -116,11 +116,11 @@ def process_money(direction, driver, trip):
         if occupied_slots > total_slots:
             bot.send_message(chat_id=str(user),
                              text=f"ATTENZIONE: Non è stato possibile ripristinare"
-                                  f" la tua prenotazione di {day.lower()} con "
-                                  f"{get_name(driver)} "
-                                  f"{common.dir_name(direction)}"
-                                  f"; qualcun'altro ha occupato il tuo posto. "
-                                  f"Contatta l'autista per risolvere il problema.")
+                             f" la tua prenotazione di {day.lower()} con "
+                             f"{get_name(driver)} "
+                             f"{common.dir_name(direction)}"
+                             f"; qualcun'altro ha occupato il tuo posto. "
+                             f"Contatta l'autista per risolvere il problema.")
             messages.append(f"Overbooking for: u{user} d{driver}  {direction}")
         # Caso normale, la persona è spostata su Permanent
         else:
@@ -134,14 +134,14 @@ def process_money(direction, driver, trip):
 
             bot.send_message(chat_id=str(user),
                              text=f"La prenotazione per {day.lower()} con "
-                                  f"{get_name(driver)} "
-                                  f"{common.dir_name(direction)} è di nuovo operativa.")
+                             f"{get_name(driver)} "
+                             f"{common.dir_name(direction)} è di nuovo operativa.")
             messages.append(f"Alerted user for booking restored: u{user} d{driver} {direction}")
 
             bot.send_message(chat_id=str(driver),
                              text="La prenotazione di "
-                                  f"{get_name(user)} per {day.lower()} "
-                                  f"{common.dir_name(direction)} è stata ripristinata.")
+                             f"{get_name(user)} per {day.lower()} "
+                             f"{common.dir_name(direction)} è stata ripristinata.")
             messages.append(f"Alerted driver for booking restored: u{user} d{driver} {direction}")
 
     # Elimino eventuali persone temporanee
@@ -170,16 +170,16 @@ def process_suspended_trip(direction, driver, trip):
     trip[driver]["Suspended"] = False  # Rimuovo la sospensione del viaggio
     bot.send_message(chat_id=driver,
                      text=f"Il tuo viaggio di {day.lower()} "
-                          f"{common.dir_name(direction)} è stato ripristinato.")
+                     f"{common.dir_name(direction)} è stato ripristinato.")
     messages.append(f"Restored trip: {direction} {driver}")
 
     for mode in "Temporary", "Permanent":
         for user in trip[driver][mode]:
             bot.send_message(chat_id=user,
                              text=f"Il viaggio di {get_name(driver)}"
-                                  f" per {day.lower()} {common.dir_name(direction)}"
-                                  f" è di nuovo operativo. La tua prenotazione "
-                                  f"{common.mode_name(mode)} è di nuovo valida.")
+                             f" per {day.lower()} {common.dir_name(direction)}"
+                             f" è di nuovo operativo. La tua prenotazione "
+                             f"{common.mode_name(mode)} è di nuovo valida.")
             messages.append(f"Reminder sent for restored trip: u{user} d{driver} {direction}")
 
 

@@ -133,7 +133,7 @@ def response_registra(bot, update):
                           "\n/prenota per effettuare e disdire prenotazioni.")
     bot.send_message(chat_id=owner_id,
                      text=f"Nuovo utente iscritto a sistema: {user} con"
-                          f" chat_id {update.message.chat_id}")
+                     f" chat_id {update.message.chat_id}")
     log.info(f"Nuovo utente iscritto: {user}")
     ReplyStatus.response_mode = 0
 
