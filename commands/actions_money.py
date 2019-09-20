@@ -26,12 +26,12 @@ def check_money(bot, update):
         people = []
         for creditor_id, value in debit_list:
             people.append(f"[{get_name(creditor_id)}](tg://user?id={creditor_id})"
-                          f" 💶 {str(value)} EUR\n")
+                          f" 🚗 {str(value)} {'viaggi' if value > 1 else 'viaggio'}\n")
 
-        message.append(f"💸 Al momento possiedi debiti verso le seguenti persone:\n{''.join(people)}"
+        message.append(f"💸 Al momento risultano viaggi da pagare alle seguenti persone:\n{''.join(people)}"
                        f"\nContatta ciascun autista per saldare i relativi debiti.")
     else:
-        message.append("💰 Al momento sei a posto con i debiti.")
+        message.append("💰 Al momento non hai viaggi non saldati.")
 
     # Poi creo un bottone separato per ogni credito.
     # Questa sezione del codice viene fatta girare solo se l'utente è un autista.
@@ -41,10 +41,10 @@ def check_money(bot, update):
         credit_list = get_credits(chat_id)
         if len(credit_list) > 0:
             for debitor_id, value in credit_list:
-                keyboard.insert(0, [InlineKeyboardButton(f"{get_name(debitor_id)} 💶 {str(value)} EUR",
+                keyboard.insert(0, [InlineKeyboardButton(f"{get_name(debitor_id)} 🚗 {str(value)} {'viaggi' if value > 1 else 'viaggio'}",
                                                          callback_data=ccd("EDIT_MONEY", "VIEW", debitor_id))])
 
-            message.append("\n\n💰 Al momento possiedi queste persone hanno debiti con te. "
+            message.append("\n\n💰 Al momento possiedi queste persone hanno viaggi non saldati con te. "
                            "Clicca su una persona per modificare o azzerare il debito:")
         else:
             message.append("\n\n💸 Nessuno ti deve denaro al momento.")
@@ -61,10 +61,10 @@ def edit_money(bot, update):
     chat_id = str(update.callback_query.message.chat_id)
 
     try:
-        money = str(get_single_debit(user, chat_id))
+        trips = str(get_single_debit(user, chat_id))
     except KeyError:
         set_single_debit(user, chat_id, 0)
-        money = "0.0"
+        trips = "0"
 
     #
     # Tre azioni possibili: SUBTRACT (sottrae il prezzo di un viaggio), ADD (aggiunge il prezzo
@@ -72,33 +72,33 @@ def edit_money(bot, update):
     #
 
     edit_money_keyboard = [
-        InlineKeyboardButton(f"+ {str(common.trip_price)} EUR",
+        InlineKeyboardButton(f"+",
                              callback_data=ccd("EDIT_MONEY", "ADD", user)),
-        InlineKeyboardButton(f"- {str(common.trip_price)} EUR",
+        InlineKeyboardButton(f"-",
                              callback_data=ccd("EDIT_MONEY", "SUBTRACT", user))
     ]
 
     if action == "SUBTRACT":
-        money = quick_debit_edit(user, chat_id, "-")
+        trips = quick_debit_edit(user, chat_id, "-")
 
-        user_text = f"💶 Hai saldato {str(common.trip_price)} EUR con " \
+        user_text = f"💶 Hai saldato un viaggio con " \
             f"[{get_name(chat_id)}](tg://user?id={chat_id}). " \
-            f"Debito corrente : {money} EUR."
+            f"Viaggi da pagare rimanenti: {trips}."
 
     elif action == "ADD":
-        money = quick_debit_edit(user, chat_id, "+")
+        trips = quick_debit_edit(user, chat_id, "+")
         user_text = f"💶 [{get_name(chat_id)}](tg://user?id={chat_id})" \
-            f" ti ha addebitato {str(common.trip_price)} EUR. " \
-            f"Debito corrente: {money} EUR."
+            f" ha aggiunto un viaggio da pagargli.\n" \
+            f"Viaggi da pagare rimanenti: {trips}."
 
     elif action == "ZERO":
         remove_single_debit(user, chat_id)
-        money = 0
+        trips = 0
         user_text = f"💸 [{get_name(chat_id)}](tg://user?id={chat_id})" \
-            f" ha azzerato il debito con te."
+            f" ha azzerato i viaggi da pagare con te."
 
     elif action == "NEW":
-        money = 0
+        trips = 0
         user_text = ""
 
     elif action == "VIEW":
@@ -108,7 +108,7 @@ def edit_money(bot, update):
         user_text = "Sembra che questo messaggio sia stato mandato inavvertitamente.\n" \
                     "Contatta il creatore del bot per segnalare il problema."
 
-    if money != 0:
+    if trips != 0:
         edit_money_keyboard.append(InlineKeyboardButton("Azzera", callback_data=ccd("EDIT_MONEY", "ZERO", user)))
 
     keyboard = [
@@ -120,7 +120,8 @@ def edit_money(bot, update):
     bot.edit_message_text(chat_id=chat_id,
                           message_id=update.callback_query.message.message_id,
                           text=f"👤 [{get_name(user)}](tg://user?id={user})"
-                          f"\n💶 *{money} EUR*", reply_markup=InlineKeyboardMarkup(keyboard),
+                          f"\n🚗 *{trips} {'viaggi' if trips > 1 else 'viaggio'}*",
+                          reply_markup=InlineKeyboardMarkup(keyboard),
                           parse_mode="Markdown")
 
     if action == "ADD" or action == "ZERO" or action == "SUBTRACT":
@@ -168,5 +169,5 @@ def new_debitor(bot, update):
 
     bot.edit_message_text(chat_id=chat_id,
                           message_id=update.callback_query.message.message_id,
-                          text="Scegli un utente a cui aggiungere un debito.",
+                          text="Scegli un utente a cui aggiungere un viaggio da pagare.",
                           reply_markup=InlineKeyboardMarkup(keyboard))

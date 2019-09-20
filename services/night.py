@@ -15,7 +15,7 @@ messages = []
 def process_day():
     """Questo comando verrà fatto partire alle 02:00 di ogni giorno.
     Questo comando scorre tutta la lista di utenti controllando i viaggi effettuati in giornata
-    e addebitandogli il prezzo impostato in common.trip_price. Se il viaggio è temporaneo, vengono
+    e addebitandogli il prezzo impostato in common.1. Se il viaggio è temporaneo, vengono
     anche rimossi.
     """
     today = datetime.datetime.today()
@@ -95,15 +95,11 @@ def process_money(direction, driver, trip):
                 messages.append(f"⚠ Failed to update debits for u{user} from d{driver} {direction}")
 
             bot.send_message(chat_id=str(user),
-                             text=f"Ti sono stati addebitati"
-                             f" {str(common.trip_price)} EUR "
-                             f"da {str(get_name(driver))}.")
+                             text=f"Hai un nuovo viaggio da pagare a {str(get_name(driver))}.")
             messages.append(f"Alerted driver for credit: u{user} d{driver} {direction}")
 
             bot.send_message(chat_id=str(driver),
-                             text=f"Hai ora un credito di "
-                             f"{str(common.trip_price)} EUR"
-                             f" da parte di {str(get_name(user))}.")
+                             text=f"{str(get_name(user))} ha un nuovo viaggio da pagarti.")
             messages.append(f"Alerted user for debit: u{user} d{driver} {direction}")
 
     # Poi ripristino le persone sospese

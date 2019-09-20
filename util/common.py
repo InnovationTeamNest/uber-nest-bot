@@ -13,9 +13,6 @@ days = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "
 # Sottoinsieme di days contenente i giorni lavorativi - cambiare se si vuole includere il sabato
 work_days = days[:5]
 
-# Costo di ogni viaggio
-trip_price = 0.50
-
 # Emoji usate per gli slots dell'autista
 emoji_numbers = ["0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣"]
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import data.dataset as dt
-from util.common import work_days, trip_price
+from util.common import work_days
 
 
 # Utenti
@@ -94,15 +94,15 @@ def quick_debit_edit(chat_id, creditor, mode):
 
     if mode == "+":
         try:
-            dt.users[chat_id]["Debit"][creditor] += trip_price
+            dt.users[chat_id]["Debit"][creditor] += 1
         except KeyError:
-            dt.users[chat_id]["Debit"][creditor] = trip_price
+            dt.users[chat_id]["Debit"][creditor] = 1
 
     elif mode == "-":
         try:
-            dt.users[chat_id]["Debit"][creditor] -= trip_price
+            dt.users[chat_id]["Debit"][creditor] -= 1
         except KeyError:
-            dt.users[chat_id]["Debit"][creditor] = -trip_price
+            dt.users[chat_id]["Debit"][creditor] = -1
 
     elif mode == "0":
         dt.users[chat_id]["Debit"][creditor] = 0
