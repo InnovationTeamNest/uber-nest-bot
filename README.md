@@ -43,7 +43,8 @@ owner_id = "..."
 
 # The URL of the Google App Engine application, used for the Webhook:
 url = "https://sample-name123456.appspot.com/"
- ```
- 
+```
+
 ## Contribute
+
 Feel free to contribute by forking the project and issuing a pull request. Any contribution will be assessed by the NEST Innovation Team before merging the pull request.

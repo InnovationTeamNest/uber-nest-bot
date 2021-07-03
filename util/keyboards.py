@@ -14,13 +14,13 @@ from util import common
 def me_keyboard(chat_id):
     keyboard = []
     if is_driver(chat_id):
-        trips_string = "💰 Gestire i miei viaggi"
+        trips_string = "💰 Gestire i debiti e crediti"
         driver_string = "🚫 Smettere di essere un autista"
         keyboard.append([InlineKeyboardButton("🚗 Gestire i miei viaggi", callback_data=ccd("ME", "TRIPS"))])
         keyboard.append([InlineKeyboardButton(f"{common.emoji_numbers[get_slots(chat_id)]}"
                                               f" Modificare il numero di posti", callback_data=ccd("ME", "ED_DR_SL"))])
     else:
-        trips_string = "💸 Gestire i miei viaggi"
+        trips_string = "💸 Gestire i debiti"
         driver_string = "🚗 Diventare un autista"
 
     keyboard.append([InlineKeyboardButton(trips_string, callback_data=ccd("MONEY"))])
