@@ -37,21 +37,6 @@ class BotUtils:
 
 def dispatcher_setup():
     from commands import actions, actions_booking, actions_me, actions_parking
-    from data.dumpable import get_data, dump_data
-
-    # Inizio prendendo i dati da Datastore
-    outcome = get_data()
-    log.info("Getting data from Cloud Datastore...")
-
-    # Se non ci sono dati, provo a inviarli da quanto salvato in secrets.py
-    if not outcome:
-        outcome = dump_data()
-        log.info("Dumping data to Cloud Datastore...")
-
-    # Se non ci sono manco quelli, non ha senso far partire il bot
-    if not outcome:
-        log.info("Failed to start bot!")
-        raise SystemExit
 
     # Inizializzo il dispatcher
     BotUtils.start_thread()

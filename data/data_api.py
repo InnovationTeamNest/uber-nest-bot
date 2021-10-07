@@ -1,20 +1,31 @@
 # -*- coding: utf-8 -*-
+import logging
+
+from sqlalchemy import text
 
 import data.dataset as dt
 from util.common import work_days
+from .database import engine
 
 
-# Utenti
+# Users
 
-
-def add_user(chat_id, user):
+def add_user(chat_id: int, user: str) -> bool:
     """
     This function adds a user to a dataset, given its chat id.
     :param chat_id: The chat_id of the user.
     :param user: The username.
-    :return:
+    :return: True if the operation succeded.
     """
-    dt.users[str(chat_id)] = {"Name": str(user), "Debit": {}}
+    try:
+        with engine().connect() as conn:
+            conn.execute(text("INSERT INTO Person (person_id, full_name) VALUES (:pid, :fn)"),
+                         {"pid": chat_id, "fn": user})
+            conn.commit()
+            return True
+    except Exception as ex:
+        logging.error(f"Failed to insert Person: {ex}.", exc_info=True)
+        raise Exception(ex)
 
 
 def is_registered(chat_id):
@@ -23,7 +34,14 @@ def is_registered(chat_id):
     :param chat_id: The chat_id to check.
     :return: True if the user is registered, else False.
     """
-    return str(chat_id) in dt.users
+    try:
+        with engine().connect() as conn:
+            result = conn.execute(text("SELECT person_id from Person where person_id = :pid"),
+                                  {"pid": chat_id})
+            return len(result) == 1  # Cannot be more, since person_id is primary key on the database
+    except Exception as ex:
+        logging.error(f"Failed to retrieve Person: {ex}.", exc_info=True)
+        raise Exception(ex)
 
 
 def get_name(chat_id):
@@ -32,25 +50,51 @@ def get_name(chat_id):
     :param chat_id: The chat_id to check.
     :return: A string representing the relative username
     """
-    return dt.users[chat_id]["Name"]
+    try:
+        with engine().connect() as conn:
+            result = conn.execute(text("SELECT person_id from Person where person_id = :pid"),
+                                  {"pid": chat_id})
+            if len(result) == 0:
+                raise ValueError("User is not registered, cannot retrieve name.")
+            elif len(result) < 0 or len(result) > 1:
+                raise ValueError(f"Error in DB data: {result}")
+
+            return result[0].person_id
+    except Exception as ex:
+        logging.error(f"Failed to retrieve Person's name: {ex}.", exc_info=True)
+        raise Exception(ex)
 
 
 def all_users():
     """
     :return: Returns all the chat_id present in the system.
     """
-    return dt.users.keys()
+    try:
+        with engine().connect() as conn:
+            result = conn.execute(text("SELECT person_id from Person"))
+            return [item.person_id for item in result]
+    except Exception as ex:
+        logging.error(f"Failed to retrieve all People: {ex}.", exc_info=True)
+        raise Exception(ex)
 
 
 def delete_user(chat_id):
     """
     Wipes a user from the system, including driver data if present
     :param chat_id: The chat_id to delete.
-    :return:
+    :return: True if the operation succeeded.
     """
-    del dt.users[chat_id]
-    if is_driver(chat_id):
-        delete_driver(chat_id)
+    try:
+        with engine().connect() as conn:
+            conn.execute(text("DELETE FROM Driver WHERE driver_id = :did"),
+                         {"did": chat_id})
+            conn.execute(text("DELETE FROM Person WHERE person_id = :pid"),
+                         {"pid": chat_id})
+            conn.commit()
+            return True
+    except Exception as ex:
+        logging.error(f"Failed to remove Person: {ex}.", exc_info=True)
+        raise Excepion(ex)
 
 
 # Debiti
