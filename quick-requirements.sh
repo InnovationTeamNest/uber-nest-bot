@@ -1,0 +1,1 @@
+conda install flask google-api-core google-auth google-cloud-core google-cloud-datastore python-telegram-bot google-api-python-client
