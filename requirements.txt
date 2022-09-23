@@ -29,7 +29,7 @@ MarkupSafe==2.0.1
 multidict==5.1.0
 pip==21.2.4
 proto-plus==1.19.0
-protobuf==3.18.0
+protobuf==3.18.3
 pyasn1==0.4.8
 pyasn1-modules==0.2.7
 pycparser==2.20
