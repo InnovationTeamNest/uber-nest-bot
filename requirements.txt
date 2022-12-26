@@ -49,5 +49,5 @@ ujson==5.1.0
 uritemplate==3.0.1
 urllib3==1.26.7
 Werkzeug==2.0.1
-wheel==0.37.0
+wheel==0.38.1
 yarl==1.6.3
